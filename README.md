@@ -45,6 +45,34 @@ It uses one or more loops to iterate through a range of test values, given as co
 The simulation begins either with a single homogeneous clone or with a series of clones (heterogeneous
 population). The heterogeneous population is read in from a hetpop.dat file, specified in parameters.sh.
 
+The following parameters can be changed in the shell script:
+
+        --filename 
+        --testname
+        --testgroup
+        --loops - Number of Loops/Cycles in simulation
+        --die - Death rate
+        --pro - Proliferation rate
+        --mut - Mutation rate
+        --maxsize_lim - Maximum Tumour Size
+        --prolif_lim  - Proliferation Limit #not used
+        --init_size   - Initial Tumour Size
+        --select_time - Selective Pressure Time
+        --select_pressure - Amount of Selective Pressure
+        --mutagenic_pressure - Mut drop/inc during selection event
+        --scale        - scaling parameter, partly hard coded at the moment
+        --prob_mut_pos - Probability that mutation with be beneficial
+        --prob_mut_neg - Probability that mutation will be deleterious
+        --mut_amount_change - Amount of max mutation change
+        --prob_inc_mut - Probability of increasing mutation rate
+        --prob_dec_mut - Probability of decreasing mutation rate
+        --init_diversity - Initial Diversity of Population
+        --R - Output data in R format instead of matplotlib
+        --M - Introduce selective pressure automatically at max size
+        --A - Broken
+        --Z - Prune tree while running for larger executions
+    
+
 ##### Homogeneous Population
 
 See parametersHom.sh
