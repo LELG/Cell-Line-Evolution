@@ -1,4 +1,4 @@
-popln\_mut
+# popln\_mut
 ==========
 
 A program to simulate a heterogeneous tumour population growth, mutation and strong selective pressure.
