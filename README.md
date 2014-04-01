@@ -102,6 +102,19 @@ There will also be a
 
 Note, I will refer to a run as a single instance of `main.py` while a test involves running `parameter.sh` with potentially many runs.
 
+The plots produced by a single run are:
+
+* Populations - Tumour size against time (number of discrete cycles)
+* Subpopulations - Plot of the number of clones (alive) against time. 
+* Mutation Rate - Plot of average mutation rate against time
+* Mutation Distribution – Mid and End - Histogram of the mutation rates distributed acoss the total number of cells. Two graphs are plotted together, one showing the distribution before the crash, and the second showing the distribution of mutation rates after the crash. Thus we can see the change and trends in mutation rate.
+* Proliferation Rate - Plot of the effective proliferation rate, that is the average of the proliferation rate for each cell, taking into account a reduction in proliferation due to population constraints as well as due to selective pressure.
+* Proliferation Distribution – Mid and End - Histogram of the proliferation rates distributed acoss the total number of cells. Two graphs are plotted together, one showing the distribution before the crash, and the second showing the distribution of mutation rates after the crash. Thus we can see the change and trends in proliferation rate.
+* Cell Line Graph - Each vertical line indicates the emergence of a clone. When the line ends, that clone has died out (or maybe it to the end of the simulation). Graph is sorted by time of initial emergence of that clone.
+* Alleles - Shows the distribution of alleles (or mutations) across the population. That is, if one mutation is found in a lot of desendents, it will show up as one of the larger allele frequencies.
+
+
+
 ### 4. Compile results from multiple runs
 
 There are several options for compiling results. The script `compact.py` reads the combined output from the results.dat file found in the top level of a test. The results are for all the runs under one `parameter.sh` file.
