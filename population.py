@@ -50,7 +50,7 @@ class Population():
                  self.opt.pro, self.opt.mut, 
                  depth, time, mut_type, \
                  'n', self.opt.prob_mut_pos, self.opt.prob_mut_neg, self.opt.prob_inc_mut,\
-                 self.opt.prob_dec_mut, self.opt.mscale ) ##I HOPE THIS WORKS
+                 self.opt.prob_dec_mut, self.opt.mscale, 0 ) ##I HOPE THIS WORKS
         self.s.size = opt.init_size
         self.analytics_base = Analytics()
         self.select_pressure = 0.0
@@ -259,6 +259,7 @@ class Population():
                     self.selective_pressure()
                     if not self.opt.NP:
                         self.print_results("mid",i)
+                    tree_to_xml.tree_parse(self.s, self.tumoursize, i, "mid0")
                     self.selective_pressure_applied = True
                     #PRINT RESULTS with diff filename
 
@@ -271,6 +272,7 @@ class Population():
                             self.selective_pressure()
                             if not self.opt.NP:
                                 self.print_results("mid",i)
+                            tree_to_xml.tree_parse(self.s, self.tumoursize, i, "mid")
                             self.opt.select_time = i #update time when sel press introduced
                             self.selective_pressure_applied = True
                             #PRINT RESULTS with diff filename
@@ -302,7 +304,8 @@ class Population():
             self.print_plots("new",i)
 
         #ALWAYS PLOT TREE
-        tree_to_xml.tree_parse(self.s,self.tumoursize)
+        fname=""
+        tree_to_xml.tree_parse(self.s,self.tumoursize,i,fname)
         return 1
         #print(self.analytics_base.population)
 
@@ -345,7 +348,8 @@ class Population():
         else:
             from plotdata import make_plot, make_subpop_life, make_hist, \
                     mutation_v_proliferation, mutation_v_proliferation_dat,\
-                    mutation_distribution,  mutation_crash, make_subpop_life_mut
+                    mutation_distribution,  mutation_crash, make_subpop_life_mut,\
+                    make_popsub
 
         """ Print only once at end of simulation """
 
@@ -353,11 +357,30 @@ class Population():
             #POPULATION
             make_plot(self.analytics_base.time,
                     self.analytics_base.population,
-                    filename+"population_graph","POPULATION") 
+                    filename+"population_graph","Population Size") 
             #SUBPOPULATION
             make_plot(self.analytics_base.time,
                     self.analytics_base.subpopulation,
-                    filename+"subpop_graph","SUBPOPULATION") 
+                    filename+"subpop_graph","No. of Clones") 
+
+            #POPULATION + SUBPOPULATION
+            make_popsub(self.analytics_base.time, self.analytics_base.population,
+                    self.analytics_base.time, self.analytics_base.subpopulation,
+                    filename+"popsubpop",'Tumour Size','No. of Clones')
+            #MUTATION RATE BUT SUBPOPULATION
+            make_popsub(self.analytics_base.time, self.analytics_base.mutation,
+                    self.analytics_base.time, self.analytics_base.subpopulation,
+                    filename+"mutsubpop",'Average Mutation Rate','No. of Clones')
+
+            #PROLIFERATION RATE + MUTATION RATE
+            make_popsub(self.analytics_base.time, self.analytics_base.mutation,
+                    self.analytics_base.time, self.analytics_base.proliferation,
+                    filename+"prolifmut",'Mutation Rate','Proliferation Rate')
+            #PROLIFERATION RATE + POPULATION
+            make_popsub(self.analytics_base.time, self.analytics_base.population,
+                    self.analytics_base.time, self.analytics_base.proliferation,
+                    filename+"prolifandpop",'Tumour Size','Proliferation Rate')
+
             #EFFECTIVE PROLIFERATION RATE
             make_plot(self.analytics_base.time,
                     self.analytics_base.proliferation,
@@ -394,9 +417,6 @@ class Population():
                     "CELL LIFESPAN",end_time,self.opt.loops, 
                     self.opt.select_time,self.opt.mut,self.tumoursize)
             """
-
-            #output to xml
-            #tree_to_xml.tree_parse(self.s,self.tumoursize)
 
 
         """ Print at mid and end of simulation """       

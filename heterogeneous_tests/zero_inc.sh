@@ -31,10 +31,10 @@ prob_mut_pos=0.01
 prob_mut_neg=0.99 #zero neutral
 prob_inc_mut=0.0
 prob_dec_mut=0.0
-test_per_permuation=1000 #run each 0 to n times
+test_per_permuation=100 #run each 0 to n times
 scale=0.5
 mscale=1.0
-sub_file="zero_inc.dat"
+sub_file="heterogeneous_dat/zero_inc.dat"
 
 #FLAGS: --M auto selective pressure @ max size
 

@@ -8,7 +8,7 @@ import numpy.random
 #import tree_to_xml_screen
 
 class Subpopulation():
-    def __init__(self,opt,p,m,depth,time,mut_type,col,pmp,pmn,pim,pdm,msc):
+    def __init__(self,opt,p,m,depth,time,mut_type,col,pmp,pmn,pim,pdm,msc,prev_time):
         self.opt = opt #convert opt to dictionary
         self.proliferation = p
         self.mutation = m
@@ -32,6 +32,7 @@ class Subpopulation():
         self.prob_dec_mut = pdm #opt["prob_dec_mut"]
         self.mutagenic_pressure = 0
         self.col = col
+        self.branch_length = time - prev_time
 
     def newsubpop_from_file(self, filename):
         import os
@@ -50,7 +51,7 @@ class Subpopulation():
             #add new subpopulation node
             new_subpop = Subpopulation(self.opt, \
                     self.proliferation, mut,
-                    1, 0, 'n', col, pmp, pmn, pim, pdm, msc)
+                    1, 0, 'n', col, pmp, pmn, pim, pdm, msc, 0)
             new_subpop.size = self.opt["init_size"]
             self.nodes.append(new_subpop)
 
@@ -193,7 +194,7 @@ class Subpopulation():
         pdm = self.prob_dec_mut
         msc = self.mscale
         self.nodes.append(Subpopulation(self.opt, p, m, depth, time, mut_type, col, \
-                pmp, pmn, pim, pdm, msc)) #add new subpop
+                pmp, pmn, pim, pdm, msc, self.s_time)) #add new subpop
 
     """ GATHER DATA FOR ANALYTICS """
     """ Dangerous loops beyond this sign """
