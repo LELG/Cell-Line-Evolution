@@ -3,6 +3,7 @@ import os
 import subpopulation
 import tree_to_xml
 import time
+import dropdata
 
 class Analytics():
     """ Record analytics on population
@@ -199,7 +200,7 @@ class Population():
     def info(self):
         print("Parameter Set: ", self.opt)
 
-    def cycle(self):
+    def cycle(self,opt):
         self.selective_pressure_applied = False
         extra_lim = self.maxsize_lim * 0.05 #EXTRA LIM NOW 5%
         """ Iteratively cycle through discrete time model
@@ -260,6 +261,8 @@ class Population():
                     if not self.opt.NP:
                         self.print_results("mid",i)
                     tree_to_xml.tree_parse(self.s, self.tumoursize, i, "mid0")
+                    if opt.init_diversity:
+                        dropdata.drop(self.s, self.tumoursize, i, "mid0")
                     self.selective_pressure_applied = True
                     #PRINT RESULTS with diff filename
 
@@ -273,6 +276,8 @@ class Population():
                             if not self.opt.NP:
                                 self.print_results("mid",i)
                             tree_to_xml.tree_parse(self.s, self.tumoursize, i, "mid")
+                            if opt.init_diversity:
+                                dropdata.drop(self.s, self.tumoursize, i, "mid")
                             self.opt.select_time = i #update time when sel press introduced
                             self.selective_pressure_applied = True
                             #PRINT RESULTS with diff filename
@@ -306,6 +311,9 @@ class Population():
         #ALWAYS PLOT TREE
         fname=""
         tree_to_xml.tree_parse(self.s,self.tumoursize,i,fname)
+        if opt.init_diversity:
+            dropdata.drop(self.s, self.tumoursize, i, "end")
+            print("printing the DROP")
         return 1
         #print(self.analytics_base.population)
 

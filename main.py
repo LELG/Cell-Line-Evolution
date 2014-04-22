@@ -19,7 +19,7 @@ def run_simulation(opt):
     population_base = population.Population(opt)
     population_base.info()
    
-    while not population_base.cycle():
+    while not population_base.cycle(opt):
         population_base = population.Population(opt)
         population_base.info()
         print("restarting simulation - did not grow")

@@ -317,6 +317,10 @@ class Subpopulation():
             if self.size > 0:
                 self_node = [self.size]
 
+        if prm == "size_by_col":
+            if self.size > 0:
+                self_node = [(self.col, self.size)]
+
         if prm == "proliferation":
             if self.size > 0:
                 self_node = [self.proliferation]
@@ -375,5 +379,3 @@ class Subpopulation():
             for i in range(0,len(self.nodes)):
                  blank_ctree = blank_ctree + self.nodes[i].tree_to_list(prm)
         return blank_ctree + self_node
-
-
