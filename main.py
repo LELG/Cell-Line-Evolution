@@ -1,13 +1,30 @@
-""" Genomic Instability Simulation
+""" 
+LE MODIFICATIONS TO THE GA EXECUTION
+
+Genomic Instability Simulation 
 
 Simulate growth of and mutation of cancer cells 
 and introduction of selective pressure
+
+ 
+    python main.py -d 0.03 -p 0.04 -m 0.001 --loops 1000000 --maxsize_lim 1000000 --prolif_lim 0.0 --init_size 25 -f simple/1-1/ -s 0.01 -t 400000 --prob_mut_pos 0.01 --prob_mut_neg 0.99 --prob_inc_mut 0.0 --prob_dec_mut 0.0 --scale 0.5 --mscale 1.0 --M -n simple -g simple/1 --init_diversity 1 --sub_file /Users/Luis/Documents/MSc/Thesis/Code/src/AB/popln/heterogeneous_dat/zero_inc.dat --Z --NP
+    testgroup='simple/1', testname='simple')
+ 
 
 """
 
 from __future__ import print_function
 import argparse
 import population
+import os
+
+
+'''
+    This function cast a dict into a Namespace
+'''
+class Bunch(object):
+    def __init__(self, adict):
+        self.__dict__.update(adict)
 
 def run_simulation(opt):
     """ 
@@ -17,16 +34,75 @@ def run_simulation(opt):
     """
     
     population_base = population.Population(opt)
-    population_base.info()
+    #population_base.info()
+    val = population_base.cycle(opt)
+    print('LE ->Main ', val)
    
-    while not population_base.cycle(opt):
-        population_base = population.Population(opt)
-        population_base.info()
-        print("restarting simulation - did not grow")
-  
+    #while not population_base.cycle(opt):
+     #   population_base = population.Population(opt)
+       # population_base.info()
+        #print("restarting simulation - did not grow")
 
+def ComputeFitness(FamilyMemeber):
+    print ('Running simulation from '+ FamilyMemeber.g )
+    return ( callFromGA(FamilyMemeber.genome) )
+
+def callFromGA(Parameters_dict):
+    path = os.getcwd() + '/heterogeneous_dat/zero_inc.dat'
+    L = {'A':False, 
+         'M':True, 
+         'NP':True, 
+         'R':False, 
+         'Z':True, 
+         'die':Parameters_dict['DeathRate'],
+         'filename':'simple/1-1/',
+         'init_diversity':Parameters_dict['InitialDiversity'],
+         'init_size':Parameters_dict['InitSize'],
+         'loops':Parameters_dict['loops'],
+         'maxsize_lim':Parameters_dict['MaxSize'],
+         'mscale':Parameters_dict['MutScale'],
+         'mut':Parameters_dict['MutationRate'],
+         'mut_amount_change':None,
+         'mutagenic_pressure':0.0,
+         'pro':Parameters_dict['ProliferationRate'],
+         'prob_dec_mut':Parameters_dict['P_DecMutRate'],
+         'prob_inc_mut':Parameters_dict['P_IncMutRate'],
+         'prob_mut_neg':Parameters_dict['P_DelMutation'],
+         'prob_mut_pos':Parameters_dict['P_BenMutation'],
+         'prolif_lim':0.0,
+         'scale':Parameters_dict['scale'],
+         'select_pressure':Parameters_dict['SelectivePressure'],
+         'select_time':400000,
+         'sub_file':path,
+         'testgroup':'simple/1',
+         'testname':'simple'
+         }
+    opt = Bunch(L)
+    print('Running with Parameters', Parameters_dict)
+    FitnessValues = run(Parameters_dict, opt)
+    return (FitnessValues)
+
+    #opt = Bunch(Parameters_dict)
+    
+def run(Parameters_dict,opt):
+    Fitnessvalues =  list()
+    population_base = population.Population(opt)
+    for i in xrange(Parameters_dict['Permutation']):
+        val = population_base.cycle(opt) 
+        if val == 0:
+            val = 0.00000000001
+        Fitnessvalues.append(val)
+
+    print('Simulation values are ', Fitnessvalues)
+    return (Fitnessvalues)
+
+
+
+if __name__ == '__main__':
+    callFromGA(dict())
+"""
 def main():
-    """ Read simulation parameters from command line
+     Read simulation parameters from command line
     
     filename 
     testname
@@ -53,7 +129,7 @@ def main():
     --A - Broken
     --Z - Prune tree while running for larger executions
     
-    """
+    
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--filename', default='filename')
     parser.add_argument('--sub_file', default='sub_file.dat')
@@ -84,8 +160,10 @@ def main():
     parser.add_argument('--NP', action="store_true", default=False)
     opt = parser.parse_args()
 
+    print(opt)
+
     #run_simulation(vars(opt))
     run_simulation(opt)
 
 main()
-
+"""

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h1>Peter MacCalum Bioinformatics Division: GA Algortihm v 1.0</h1>
+<p>Multivariate Regression for Generation:2</p><p>Host: localhost.localdomain</p>
+<p>Exploration: basic4</p>
+<p>Scheme: Smooth</p>
+<p>Model of Form: Fitness = P_Beneficial + P_Deleterious + P_IncMutRate + P_DecMutRate</p><p> Multivariate Regression </p>
+<pre>
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:             AvgFitness   R-squared:                       0.018
+Model:                            OLS   Adj. R-squared:                 -0.032
+Method:                 Least Squares   F-statistic:                    0.3588
+Date:                Fri, 16 Jan 2015   Prob (F-statistic):              0.837
+Time:                        15:05:27   Log-Likelihood:                 261.72
+No. Observations:                  84   AIC:                            -513.4
+Df Residuals:                      79   BIC:                            -501.3
+Df Model:                           4                                         
+==============================================================================
+                 coef    std err          t      P>|t|      [95.0% Conf. Int.]
+------------------------------------------------------------------------------
+Intercept      0.0018      0.005      0.400      0.690        -0.007     0.011
+P_Ben          0.0014      0.013      0.109      0.914        -0.024     0.027
+P_Del         -0.0012      0.013     -0.088      0.930        -0.028     0.025
+P_Inc         -0.0003      0.014     -0.020      0.984        -0.027     0.027
+P_Dec          0.0066      0.013      0.501      0.618        -0.020     0.033
+==============================================================================
+Omnibus:                       87.683   Durbin-Watson:                   2.167
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):              783.131
+Skew:                           3.388   Prob(JB):                    8.81e-171
+Kurtosis:                      16.336   Cond. No.                         27.6
+==============================================================================
+</pre>
+<p> Mulivariate log Regression </p>
+<pre>
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:             AvgFitness   R-squared:                       0.017
+Model:                            OLS   Adj. R-squared:                 -0.033
+Method:                 Least Squares   F-statistic:                    0.3417
+Date:                Fri, 16 Jan 2015   Prob (F-statistic):              0.849
+Time:                        15:05:27   Log-Likelihood:                -259.60
+No. Observations:                  84   AIC:                             529.2
+Df Residuals:                      79   BIC:                             541.3
+Df Model:                           4                                         
+==============================================================================
+                 coef    std err          t      P>|t|      [95.0% Conf. Int.]
+------------------------------------------------------------------------------
+Intercept     -8.7390      1.489     -5.868      0.000       -11.703    -5.775
+P_Ben         -0.5210      0.890     -0.586      0.560        -2.291     1.250
+P_Del         -0.9434      1.167     -0.808      0.421        -3.266     1.380
+P_Inc          0.8548      0.982      0.870      0.387        -1.100     2.810
+P_Dec          0.8367      0.920      0.909      0.366        -0.995     2.669
+==============================================================================
+Omnibus:                       41.442   Durbin-Watson:                   2.099
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):               87.772
+Skew:                          -1.884   Prob(JB):                     8.72e-20
+Kurtosis:                       6.299   Cond. No.                         7.98
+==============================================================================
+</pre>
+</body>
+</html>
