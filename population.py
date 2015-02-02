@@ -87,10 +87,10 @@ class Population():
 
         recover, recover_type, recover_percent = self.complete_status()
 
-        went_crash = 'N'
+        went_through_crash = 'N'
         size_from_precrash = 0
         if self.went_through_crash():
-            went_crash = 'Y'
+            went_through_crash = 'Y'
             pp = self.s.tree_to_list("two_side_size")
             #print("pp",pp)
             for (pre,pos) in pp:
@@ -101,9 +101,10 @@ class Population():
         #TRACE self.opt.pro
 
         #Run summary
+        #TODO rewrite with csv library, making sure to match header
         print(">", "," ,
               self.opt.filename,",", 
-              went_crash, ",", 
+              went_through_crash, ",", 
               recover,",", 
               recover_type, ",", 
               recover_percent,",", 
