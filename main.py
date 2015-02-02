@@ -118,5 +118,6 @@ def main():
     #run_simulation(vars(opt))
     run_simulation(opt)
 
-main()
+if __name__ == '__main__':
+    main()
 
