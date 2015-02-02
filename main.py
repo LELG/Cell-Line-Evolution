@@ -36,6 +36,11 @@ def make_path_unless_exists(path):
             raise
 
 
+def initialise_results():
+    """Initialise results output for this simulation."""
+    pass
+
+
 def main():
     """ Read simulation parameters from command line
     
@@ -107,6 +112,8 @@ def main():
     parser.add_argument('--Z', action="store_true", default=False)
     parser.add_argument('--NP', action="store_true", default=False)
     opt = parser.parse_args()
+
+    initialise_results()
 
     #run_simulation(vars(opt))
     run_simulation(opt)
