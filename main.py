@@ -9,6 +9,7 @@ from __future__ import print_function
 import argparse
 import os
 import errno
+import csv
 import population
 
 def run_simulation(opt):
@@ -51,6 +52,10 @@ def initialise_results():
                'pre_crash_max', 'pre_crash_max_time',
                'post_crash_min', 'post_crash_min_time',
                'post_crash_max', 'post_crash_max_time')
+
+    results_file = open("results.dat", "w")
+    writer = csv.writer(results_file)
+    writer.writerow(columns)
 
 
 def main():
