@@ -38,7 +38,19 @@ def make_path_unless_exists(path):
 
 def initialise_results():
     """Initialise results output for this simulation."""
-    pass
+
+    columns = ('parameter_set', 'run_number',
+               'went_through_crash', 'recovered', 'recov_type', 'recov_percent',
+               'prolif_rate', 'death_rate', 'mut_rate',
+               'select_time', 'select_pressure',
+               'prob_ben_mut', 'prob_del_mut', 'prob_mut_incr', 'prob_mut_decr',
+               'pop_size', 'num_clones',
+               'avg_mut_rate_at_end', 'avg_prolif_rate_at_end',
+               'time', 'cycles',
+               'pre_crash_min', 'pre_crash_min_time',
+               'pre_crash_max', 'pre_crash_max_time',
+               'post_crash_min', 'post_crash_min_time',
+               'post_crash_max', 'post_crash_max_time')
 
 
 def main():
@@ -71,17 +83,6 @@ def main():
     
     """
 
-    params = ['>', 'filename', 'went through crash', 'recovered',
-              'recovery type', 'recovery percent',
-              'pro', 'die', 'mut', 'select time',
-              'select pressyre', 'prob pos mut', 'prob neg mut',
-              'prob of increase in mut rate', 'prob of mut incr',
-              'prob of mut decr', 'pop size', 'no. of clones',
-              'avg mut rate at end', 'avg pro rate at end', 'time',
-              'tumoursize', 'cycles', 'pre crash in', 'pre crash min time',
-              'pre crash max', 'ax time', 'post crash min', 'min time',
-              'post crash max', 'max time',
-              'scale', 'mutation scale', 'size at crash']
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--filename', default='filename')
