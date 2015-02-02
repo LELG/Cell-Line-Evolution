@@ -7,6 +7,8 @@ and introduction of selective pressure
 
 from __future__ import print_function
 import argparse
+import os
+import errno
 import population
 
 def run_simulation(opt):
@@ -23,7 +25,16 @@ def run_simulation(opt):
         population_base = population.Population(opt)
         population_base.info()
         print("restarting simulation - did not grow")
-  
+
+
+def make_path_unless_exists(path):
+    """Make a directory, unless it already exists"""
+    try:
+        os.makedirs(path)
+    except OSError as exception:
+        if exception.errno != errno.EEXIST:
+            raise
+
 
 def main():
     """ Read simulation parameters from command line
