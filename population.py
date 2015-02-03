@@ -62,7 +62,7 @@ class Population():
             self.s.size = 0 #don't use init dummy population if reading from file
             self.s.newsubpop_from_file(self.opt.sub_file)
 
-    def write_population_summary(self,end_time,recovered):
+    def write_population_summary(self, num_cycles, elapsed_time, recovered):
         """ Write details of simulation to master file
         
         In comma delimited format 
@@ -70,7 +70,8 @@ class Population():
         
         """
 
-        localtime = time.asctime( time.localtime(time.time()) )
+        # localtime = time.asctime( time.localtime(time.time()) )
+
         #Get min and max values pre crash 
         min_val, min_time, max_val, max_time = self.precrash_minmax()
         cmin_val = cmin_time = cmax_val = cmax_time = 0
@@ -82,7 +83,7 @@ class Population():
             self.postcrash_minmax()
             #hasty fix for calculting max time 
             if cmax_time == 0 and recovered:
-                cmax_time = end_time
+                cmax_time = num_cycles
 
         recover, recover_type, recover_percent = self.complete_status()
 
@@ -114,7 +115,7 @@ class Population():
                         self.analytics_base.subpopulation[-1], # num_clones
                         self.analytics_base.mutation[-1],      # avg_mut_rate
                         self.analytics_base.proliferation[-1], # avg_pro_rate
-                        localtime,
+                        elapsed_time,
                         len(self.analytics_base.population),   # cycles
                         min_val, min_time,
                         max_val, max_time,
@@ -200,6 +201,8 @@ class Population():
         """
 
         recovered = False 
+
+        start_time = time.time() # start timing simulation
 
         for i in range(0, self.opt.loops):
             self.analytics_base.time.append(i)
@@ -288,7 +291,9 @@ class Population():
             #self.s.info()
 
         print("cycle done")
-        self.write_population_summary(i,recovered)
+        end_time = time.time() # finish timing simulation
+        elapsed_time = end_time - start_time
+        self.write_population_summary(i, elapsed_time, recovered)
 
         if not self.opt.NP:
             self.print_results("end",i)

@@ -93,7 +93,7 @@ def initialise_results(testname):
                'prob_mut_incr', 'prob_mut_decr',
                'pop_size', 'num_clones',
                'avg_mut_rate_at_end', 'avg_prolif_rate_at_end',
-               'time', 'cycles',
+               'elapsed_time', 'cycles',
                'pre_crash_min', 'pre_crash_min_time',
                'pre_crash_max', 'pre_crash_max_time',
                'post_crash_min', 'post_crash_min_time',
