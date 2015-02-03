@@ -5,6 +5,7 @@ import subpopulation
 import tree_to_xml
 import time
 import dropdata
+from utilities import secs_to_hms
 
 class Analytics():
     """ Record analytics on population
@@ -115,7 +116,7 @@ class Population():
                         self.analytics_base.subpopulation[-1], # num_clones
                         self.analytics_base.mutation[-1],      # avg_mut_rate
                         self.analytics_base.proliferation[-1], # avg_pro_rate
-                        elapsed_time,
+                        secs_to_hms(elapsed_time),
                         len(self.analytics_base.population),   # cycles
                         min_val, min_time,
                         max_val, max_time,
