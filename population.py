@@ -1,5 +1,6 @@
 from __future__ import print_function
 import os
+import csv
 import subpopulation
 import tree_to_xml
 import time
@@ -83,8 +84,6 @@ class Population():
             if cmax_time == 0 and recovered:
                 cmax_time = end_time
 
-        file_summary = open(self.opt.testname+"/results.dat",'a')
-
         recover, recover_type, recover_percent = self.complete_status()
 
         went_through_crash = 'N'
@@ -100,44 +99,30 @@ class Population():
 
         #TRACE self.opt.pro
 
-        #Run summary
-        #TODO rewrite with csv library, making sure to match header
-        print(">", "," ,
-              self.opt.filename,",", 
-              went_through_crash, ",", 
-              recover,",", 
-              recover_type, ",", 
-              recover_percent,",", 
-              self.opt.pro,",",  #6
-              self.opt.die,",", 
-              self.opt.mut,",", #8
-              self.opt.select_time,",", 
-              self.opt.select_pressure,",", #10
-              self.s.prob_mut_pos,",", 
-              self.s.prob_mut_neg,",", 
-              self.s.prob_inc_mut, ",", 
-              self.s.prob_dec_mut, ",", 
-              self.analytics_base.population[-1],",", #15
-              self.analytics_base.subpopulation[-1],",", 
-              self.analytics_base.mutation[-1],",",
-              self.analytics_base.proliferation[-1],",", 
-              localtime,",",
-              self.tumoursize,",", #20
-              len(self.analytics_base.population),",", 
-              min_val,",",
-              min_time,",",
-              max_val,",",
-              max_time,",", #25        (26)
-              cmin_val,",",           #(27)
-              cmin_time,",",          #(28)
-              cmax_val,",",           #(29)
-              cmax_time,",",          #(30)
-              self.opt.scale,",", #30
-              self.opt.mscale,",",
-              size_from_precrash,",",
-              file = file_summary)
+        summary_file = open(self.opt.testname + "/results.dat", 'a')
+        summary_writer = csv.writer(summary_file)
 
-        file_summary.close()
+        # assemble values to write
+        summary_vals = (self.opt.filename, 'temp_run_num',
+                        went_through_crash,
+                        recover, recover_type, recover_percent,
+                        self.opt.pro, self.opt.die, self.opt.mut,
+                        self.opt.select_time, self.opt.select_pressure,
+                        self.s.prob_mut_pos, self.s.prob_mut_neg,
+                        self.s.prob_inc_mut, self.s.prob_dec_mut,
+                        self.analytics_base.population[-1],    # pop_size
+                        self.analytics_base.subpopulation[-1], # num_clones
+                        self.analytics_base.mutation[-1],      # avg_mut_rate
+                        self.analytics_base.proliferation[-1], # avg_pro_rate
+                        localtime,
+                        len(self.analytics_base.population),   # cycles
+                        min_val, min_time,
+                        max_val, max_time,
+                        cmin_val, cmin_time,
+                        cmax_val, cmax_time)
+
+        summary_writer.writerow(summary_vals)
+        summary_file.close()
 
     def went_through_crash(self):
         crash_buffer = 25 #check just past crash time
