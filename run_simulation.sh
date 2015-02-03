@@ -28,13 +28,11 @@ fi
 
 # check that supplied testname will make a valid directory name
 E_INVALID_FNAME=60
-if [ "${1/'/'}" == "$1" ] ; then
+if [ "${1/'/'}" != "$1" ] ; then
   echo "Invalid test group name: $1"
   exit $E_INVALID_FNAME
 else
   testname=$1
-  echo "all good"
-  exit 0
 fi
 
 # make main directory for this test group
@@ -91,9 +89,9 @@ echo "TESTSIZE, etc"
 param_set=1
 for mutation_rate in $mutation_values; do
   run_number=1
-  while [ $j -lt $test_per_permutation ]; do
-    filepath=$dirname/$param_set-$run_number/
-    testgroup=$dirname/$param_set
+  while [ $run_number -lt $test_per_permutation ]; do
+    filepath=$testname/$param_set-$run_number/
+    testgroup=$testname/$param_set
 
     if [ ! -d $filepath ]; then
       mkdir $filepath
