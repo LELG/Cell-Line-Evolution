@@ -37,7 +37,7 @@ def make_path_unless_exists(path):
             raise
 
 
-def initialise_results():
+def initialise_results(testname):
     """Initialise results output for this simulation."""
 
     columns = ('parameter_set', 'run_number',
@@ -53,15 +53,21 @@ def initialise_results():
                'post_crash_min', 'post_crash_min_time',
                'post_crash_max', 'post_crash_max_time')
 
-    results_file = open("results.dat", "w")
-    writer = csv.writer(results_file)
-    writer.writerow(columns)
+    try:
+        results_file = open("{}/results.dat".format(testname), "w")
+    except IOError:
+        print("Fatal error: testname directory does not exist")
+        return
+
+    results_writer = csv.writer(results_file)
+    results_writer.writerow(columns)
+    results_file.close()
 
 
 def main():
     """ Read simulation parameters from command line
-    
-    filename 
+
+    filename
     testname
     testgroup
     loops - Number of Loops/Cycles in simulation
@@ -119,7 +125,7 @@ def main():
     parser.add_argument('--NP', action="store_true", default=False)
     opt = parser.parse_args()
 
-    initialise_results()
+    initialise_results(opt.testname)
 
     #run_simulation(vars(opt))
     run_simulation(opt)
