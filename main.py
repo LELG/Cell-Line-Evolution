@@ -7,8 +7,6 @@ and introduction of selective pressure
 
 from __future__ import print_function
 import argparse
-import os
-import errno
 import csv
 import population
 
@@ -49,15 +47,6 @@ def run_simulation(opt):
         print("restarting simulation - did not grow")
 
 
-def make_path_unless_exists(path):
-    """Make a directory, unless it already exists"""
-    try:
-        os.makedirs(path)
-    except OSError as exception:
-        if exception.errno != errno.EEXIST:
-            raise
-
-
 def initialise_results(testname):
     """
     Initialise results file for this simulation.
@@ -84,7 +73,7 @@ def initialise_results(testname):
 
     """
 
-    columns = ('parameter_set', 'run_number',
+    columns = ('param_set', 'run_number',
                'went_through_crash',
                'recovered', 'recov_type', 'recov_percent',
                'prolif_rate', 'death_rate', 'mut_rate',
@@ -124,6 +113,12 @@ def main():
     filename
     testname
     testgroup
+    param_set : string
+        Identifier of a given parameter set.
+    run_number : integer
+        Counter that tracks how many times this
+        particular parameter set has been run in
+        this set of simulations.
     loops : integer
         Maximum number of time steps in simulation
     pro : float
@@ -183,6 +178,8 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--filename', default='filename')
+    parser.add_argument('--param_set', default='default')
+    parser.add_argument('--run_number', type=int, default=1)
     parser.add_argument('--sub_file', default='sub_file.dat')
     parser.add_argument('-n', '--testname', default='testname')
     parser.add_argument('-g', '--testgroup', default='testname')
@@ -211,7 +208,8 @@ def main():
     parser.add_argument('--NP', action="store_true", default=False)
     opt = parser.parse_args()
 
-    initialise_results(opt.testname)
+    if opt.run_number == 1:
+        initialise_results(opt.testname)
 
     # run_simulation(vars(opt))
     run_simulation(opt)

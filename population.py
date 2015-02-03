@@ -101,11 +101,11 @@ class Population():
 
         #TRACE self.opt.pro
 
-        summary_file = open(self.opt.testname + "/results.dat", 'a')
+        summary_file = open("{0}/results.dat".format(self.opt.testname), 'a')
         summary_writer = csv.writer(summary_file)
 
         # assemble values to write
-        summary_vals = (self.opt.filename, 'temp_run_num',
+        summary_vals = (self.opt.param_set, self.opt.run_number,
                         went_through_crash,
                         recover, recover_type, recover_percent,
                         self.opt.pro, self.opt.die, self.opt.mut,

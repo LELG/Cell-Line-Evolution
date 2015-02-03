@@ -89,7 +89,7 @@ echo "TESTSIZE, etc"
 param_set=1
 for mutation_rate in $mutation_values; do
   run_number=1
-  while [ $run_number -lt $test_per_permutation ]; do
+  while [ $run_number -le $test_per_permutation ]; do
     filepath=$testname/$param_set-$run_number/
     testgroup=$testname/$param_set
 
@@ -97,7 +97,7 @@ for mutation_rate in $mutation_values; do
       mkdir $filepath
     fi
 
-    python main.py -d $death_rate -p $proliferation_rate -m $mutation_rate --loops $loops --maxsize_lim $maxsize_lim --prolif_lim 0.0 --init_size $initial_size -f $filepath -s $selective_pressure -t $select_time --prob_mut_pos $prob_mut_pos --prob_mut_neg $prob_mut_neg --prob_inc_mut $prob_inc_mut --prob_dec_mut $prob_dec_mut --scale $scale --mscale $mscale --M -n $testname -g $testgroup --init_diversity $initial_diversity --sub_file $sub_file --Z --NP
+    python main.py --param_set $param_set --run_number $run_number -d $death_rate -p $proliferation_rate -m $mutation_rate --loops $loops --maxsize_lim $maxsize_lim --prolif_lim 0.0 --init_size $initial_size -f $filepath -s $selective_pressure -t $select_time --prob_mut_pos $prob_mut_pos --prob_mut_neg $prob_mut_neg --prob_inc_mut $prob_inc_mut --prob_dec_mut $prob_dec_mut --scale $scale --mscale $mscale --M -n $testname -g $testgroup --init_diversity $initial_diversity --sub_file $sub_file --Z --NP
 
     run_number=$((run_number+1))
   done
