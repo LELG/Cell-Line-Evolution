@@ -27,22 +27,25 @@ elif [ $# -eq 0 ]; then
 fi
 
 # check that supplied testname will make a valid directory name
-
-testname=$1
+E_INVALID_FNAME=60
+if [ "${1/'/'}" == "$1" ] ; then
+  echo "Invalid test group name: $1"
+  exit $E_INVALID_FNAME
+else
+  testname=$1
+  echo "all good"
+  exit 0
+fi
 
 # make main directory for this test group
 if [ ! -d $testname ]
 then
-	echo "Creating main test directory ..."
-	mkdir $testname
+  echo "Creating main test directory ..."
+  mkdir $testname
+  echo "... done"
 fi
 
-# read parameters from config file, if one has been specified
-
-# make relevant directories
-
-# run one / multiple sims
-
+#TODO get rid of these parameters
 proliferation_rate=0.04
 death_rate=0.03
 mutation_rate=0.001
@@ -56,61 +59,61 @@ prob_mut_pos=0.01
 prob_mut_neg=0.99 #zero neutral
 prob_inc_mut=0.0
 prob_dec_mut=0.0
-test_per_permuation=3 #run each 0 to n times
+test_per_permutation=3 #run each 0 to n times
 scale=0.5
 mscale=1.0
 sub_file="zero_inc.dat"
-
 #FLAGS: --M auto selective pressure @ max size
-
 mutation_values="0.001"
 
-pre_header="mutation_values: "$mutation_values", tests per group: "$test_per_permutation
+# read parameters from config file, if one has been specified
+if [ -z $2 ]; then
+  echo "No config file supplied, will use default parameters ..."
+else
+  echo "Reading parameters from config file"$2"..."
+  source $2
+fi
 
-header=">,filename,went through crash,recovered,recovery type, recovery percent, pro, die, mut, select time, select pressyre, prob pos mut, prob neg mut, prob of increase in mut rate, prob of mut incr, prob of mut decr, pop size, no. of clones, avg mut rate at end, avg pro rate at end, time, tumoursize, cycles, pre crash in, pre crash min time, pre crash max, ax time, post crash min, min time, post crash max, max time"
+# make relevant directories
+# run one / multiple sims
 
-#mkdir -p $testname/results/
+#pre_header="mutation_values: "$mutation_values", tests per group: "$test_per_permutation
+#echo $pre_header >> $testname/"results.dat"
 
-echo $pre_header >> $testname/"results.dat"
-echo $header >> $testname/"results.dat"
+# TODO check whether these files are still necessary
 touch $testname/"middropdata.dat"
 touch $testname/"enddropdata.dat"
 echo "TESTSIZE, etc"
 
-count=1
+# the following code assumes multiple mutation values and multiple tests
+# TODO make this more general
 
-#MULTIPLE TESTS
-for mutation_rate in $mutation_values
-do
+param_set=1
+for mutation_rate in $mutation_values; do
+  run_number=1
+  while [ $j -lt $test_per_permutation ]; do
+    filepath=$dirname/$param_set-$run_number/
+    testgroup=$dirname/$param_set
 
-        j=0
-        while [ $j -lt $test_per_permuation ]
-        do
+    if [ ! -d $filepath ]; then
+      mkdir $filepath
+    fi
 
-            j=$((j+1))
+    python main.py -d $death_rate -p $proliferation_rate -m $mutation_rate --loops $loops --maxsize_lim $maxsize_lim --prolif_lim 0.0 --init_size $initial_size -f $filepath -s $selective_pressure -t $select_time --prob_mut_pos $prob_mut_pos --prob_mut_neg $prob_mut_neg --prob_inc_mut $prob_inc_mut --prob_dec_mut $prob_dec_mut --scale $scale --mscale $mscale --M -n $testname -g $testgroup --init_diversity $initial_diversity --sub_file $sub_file --Z --NP
 
-            filepath=$dirname/$count-$j/
-            testgroup=$dirname/$count
+    run_number=$((run_number+1))
+  done
 
-            if [ ! -d $filepath ]
-            then
-                mkdir $filepath
-            fi
+  count=$(($count+1))
 
-            python main.py -d $death_rate -p $proliferation_rate -m $mutation_rate --loops $loops --maxsize_lim $maxsize_lim --prolif_lim 0.0 --init_size $initial_size -f $filepath -s $selective_pressure -t $select_time --prob_mut_pos $prob_mut_pos --prob_mut_neg $prob_mut_neg --prob_inc_mut $prob_inc_mut --prob_dec_mut $prob_dec_mut --scale $scale --mscale $mscale --M -n $testname -g $testgroup --init_diversity $initial_diversity --sub_file $sub_file --Z --NP
-
-        done
-        count=$(($count+1))
-
-    #INDICATE AN IDENTICAL SET OF TESTS FINISHED
-    echo "END_GROUP" >> $testname/"results.dat"
-    #python plot_circles.py -f $testgroup"_circles.dat"
-    #python plot_circles.py -f $testgroup"_circles_all.dat"
+  #INDICATE AN IDENTICAL SET OF TESTS FINISHED
+  echo "END_GROUP" >> $testname/"results.dat"
+  #python plot_circles.py -f $testgroup"_circles.dat"
+  #python plot_circles.py -f $testgroup"_circles_all.dat"
 done
 
-
 #python compact.py -f $testname/results.dat > $testname/summary.dat
-echo "about to run test"
-echo python -c "import dropdata; dropdata.read_drop("$testname")"
-python -c "import dropdata; dropdata.read_drop("\"$testname"\")"
-echo $testgroup
+#echo "about to run test"
+#echo python -c "import dropdata; dropdata.read_drop("$testname")"
+#python -c "import dropdata; dropdata.read_drop("\"$testname"\")"
+#echo $testgroup
