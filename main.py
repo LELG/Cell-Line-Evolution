@@ -89,7 +89,7 @@ def initialise_results(testname):
                'post_crash_max', 'post_crash_max_time')
 
     try:
-        results_file = open("{}/results.dat".format(testname), "w")
+        results_file = open("{}/results.csv".format(testname), "w")
     except IOError:
         print("Fatal error: testname directory does not exist")
         return

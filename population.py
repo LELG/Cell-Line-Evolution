@@ -101,7 +101,7 @@ class Population():
 
         #TRACE self.opt.pro
 
-        summary_file = open("{0}/results.dat".format(self.opt.testname), 'a')
+        summary_file = open("{0}/results.csv".format(self.opt.testname), 'a')
         summary_writer = csv.writer(summary_file)
 
         # assemble values to write
