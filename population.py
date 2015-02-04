@@ -59,7 +59,7 @@ class Population():
         self.select_pressure = 0.0
         self.mutagenic_pressure = 0.0
         self.selective_pressure_applied=False
-        for i in range(0,opt.init_diversity):
+        if opt.init_diversity:
             self.s.size = 0 #don't use init dummy population if reading from file
             self.s.newsubpop_from_file(self.opt.sub_file)
 
