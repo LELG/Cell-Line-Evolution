@@ -1,25 +1,44 @@
+"""
+High level simulation routines.
+
+Authors
+-------
+Andrew Bakshi
+Yoshua Wakeham : yoshua.wakeham@petermac.org
+"""
+
 from __future__ import print_function
 import os
 import csv
-import subpopulation
+from subpopulation import Subpopulation
 import tree_to_xml
 import time
 import dropdata
 from utilities import secs_to_hms
 
-class Analytics():
-    """ Record analytics on population
 
-    Population - population size at each point in time
-    Subpopulation - number of subpopulations (clones) at each time
-    Time - list of time 1... 1000 for plot purposes 
-    Mutation - Store average mutation rate at each point in time
-    Proliferation - Store average proliferation at each point in time
-    Subpopulation Mutation - Store mutation rate for each subpopulation
-    Subpopulation Proliferatioin - Store Proliferation rate 
-                                    for each subpopulation
+class Analytics(object):
+    """
+    Simple class for recording analytics on population.
 
-        """
+    Should either be replaced with a 'dict', or given
+    more functionality.
+
+    population
+        population size at each point in time
+    subpopulation
+        number of subpopulations (clones) at each time
+    time
+        list of time 1... 1000 for plot purposes
+    mutation
+        Store average mutation rate at each point in time
+    proliferation
+        Store average proliferation at each point in time
+    subpop_mutation
+        Store mutation rate for each subpopulation
+    subpop_proliferation
+        Store Proliferation rate for each subpopulation
+    """
     def __init__(self):
         self.population = []
         self.subpopulation = []
@@ -29,15 +48,16 @@ class Analytics():
         self.subpop_mutation = []
         self.subpop_proliferation = []
 
-class Population():
-    """ Contains high level simulation routines
 
-        Create initial clone (subpopulation) from input parameters
-        Run simulation
-        Store data in analytics for each loop
-        Print summary data to file
-        Print graphs
-        
+class Population(object):
+    """
+    Contains high level simulation routines.
+
+    Create initial clone (subpopulation) from input parameters
+    Run simulation
+    Store data in analytics for each loop
+    Print summary data to file
+    Print graphs
     """
     def __init__(self, opt):
         self.opt = opt
@@ -49,54 +69,57 @@ class Population():
         depth = 0
         time = 0
         mut_type = 'n'
-        self.s = subpopulation.Subpopulation(vars(self.opt),\
-                 self.opt.pro, self.opt.mut, 
-                 depth, time, mut_type, \
-                 'n', self.opt.prob_mut_pos, self.opt.prob_mut_neg, self.opt.prob_inc_mut,\
-                 self.opt.prob_dec_mut, self.opt.mscale, 0 ) ##I HOPE THIS WORKS
-        self.s.size = opt.init_size
+        self.subpop = Subpopulation(vars(self.opt),
+                                    self.opt.pro, self.opt.mut,
+                                    depth, time, mut_type, 'n',
+                                    self.opt.prob_mut_pos,
+                                    self.opt.prob_mut_neg,
+                                    self.opt.prob_inc_mut,
+                                    self.opt.prob_dec_mut,
+                                    self.opt.mscale, 0)
+        self.subpop.size = opt.init_size
         self.analytics_base = Analytics()
         self.select_pressure = 0.0
         self.mutagenic_pressure = 0.0
-        self.selective_pressure_applied=False
+        self.selective_pressure_applied = False
         if opt.init_diversity:
-            self.s.size = 0 #don't use init dummy population if reading from file
-            self.s.newsubpop_from_file(self.opt.sub_file)
+            self.subpop.size = 0 #don't use init dummy popn if reading from file
+            self.subpop.newsubpop_from_file(self.opt.sub_file)
+
 
     def write_population_summary(self, num_cycles, elapsed_time, recovered):
-        """ Write details of simulation to master file
-        
-        In comma delimited format 
-        If master file header doesnt exist have bash write it 
-        
+        """
+        Write simulation summary to master file.
+
+        Write summary data about a single simulation run
+        to the file 'results.csv', in CSV format.
         """
 
         # localtime = time.asctime( time.localtime(time.time()) )
 
-        #Get min and max values pre crash 
+        #Get min and max values pre crash
         min_val, min_time, max_val, max_time = self.precrash_minmax()
         cmin_val = cmin_time = cmax_val = cmax_time = 0
 
         if self.went_through_crash():
-            #Get min and max values post crash 
+            #Get min and max values post crash
             #if survived past the crash + buffer
-            cmin_val, cmin_time, cmax_val, cmax_time = \
-            self.postcrash_minmax()
-            #hasty fix for calculting max time 
+            cmin_val, cmin_time, cmax_val, cmax_time = self.postcrash_minmax()
+            #hasty fix for calculting max time
             if cmax_time == 0 and recovered:
                 cmax_time = num_cycles
 
         recover, recover_type, recover_percent = self.complete_status()
 
         went_through_crash = 'N'
-        size_from_precrash = 0
+        #size_from_precrash = 0
         if self.went_through_crash():
             went_through_crash = 'Y'
-            pp = self.s.tree_to_list("two_side_size")
+            #pp = self.subpop.tree_to_list("two_side_size")
             #print("pp",pp)
-            for (pre,pos) in pp:
-                if pre > 0:
-                    size_from_precrash+=pos
+            #for (pre, pos) in pp:
+            #    if pre > 0:
+            #        size_from_precrash += pos
 
 
         #TRACE self.opt.pro
@@ -110,8 +133,8 @@ class Population():
                         recover, recover_type, recover_percent,
                         self.opt.pro, self.opt.die, self.opt.mut,
                         self.opt.select_time, self.opt.select_pressure,
-                        self.s.prob_mut_pos, self.s.prob_mut_neg,
-                        self.s.prob_inc_mut, self.s.prob_dec_mut,
+                        self.subpop.prob_mut_pos, self.subpop.prob_mut_neg,
+                        self.subpop.prob_inc_mut, self.subpop.prob_dec_mut,
                         self.analytics_base.population[-1],    # pop_size
                         self.analytics_base.subpopulation[-1], # num_clones
                         self.analytics_base.mutation[-1],      # avg_mut_rate
@@ -126,32 +149,33 @@ class Population():
         summary_writer.writerow(summary_vals)
         summary_file.close()
 
+
     def went_through_crash(self):
+        """Determine whether this population survived the crash."""
         crash_buffer = 25 #check just past crash time
-        if len(self.analytics_base.population) > \
-        self.opt.select_time + crash_buffer:
-            return True
-        return False 
+        post_crash_time = self.opt.select_time + crash_buffer
+        return len(self.analytics_base.population) > post_crash_time
+
 
     def complete_status(self):
-        """ return recovery, full or partial,  percent 
+        """
+        Return recovery, full or partial,  percent
 
-        eg. 'N'  
-        eg. 'Y' 
-
-
+        eg. 'N'
+        eg. 'Y'
         """
         recover = 'N'
         recover_type = 'NONE'
-        
+
         if self.went_through_crash():
             if self.tumoursize > (self.maxsize_lim/2):
                 recover = 'Y'
                 recover_type = 'PART'
-                if self.tumoursize > (self.maxsize_lim-(self.maxsize_lim/4)): #if > 75% of original size
+                if self.tumoursize > self.maxsize_lim * 0.75:
+                    # recovered population is > 75% of original size
                     recover_type = 'FULL'
         else: #didnt crash
-            if self.tumoursize > (self.maxsize_lim-(self.maxsize_lim/4)):
+            if self.tumoursize > self.maxsize_lim * 0.75:
                 recover_type = 'FULLNC'
                 recover = 'Y'
 
@@ -159,9 +183,10 @@ class Population():
 
         return recover, recover_type, recover_percent
 
+
     def postcrash_minmax(self):
-        post_crash_pop =\
-                self.analytics_base.population[self.opt.select_time:]
+        """Return data on max and min post-crash population size."""
+        post_crash_pop = self.analytics_base.population[self.opt.select_time:]
         min_val = min(post_crash_pop) #VALIDATION - can return empty
         min_val_index = post_crash_pop[post_crash_pop.index(min_val)]
         #VALIDATION - can return empty
@@ -170,9 +195,9 @@ class Population():
         max_time = 0
         if post_crash_pop[min_val_index:]:
             max_val = max(post_crash_pop[min_val_index:])
-            max_time = post_crash_pop.index(max_val) + self.opt.select_time   
+            max_time = post_crash_pop.index(max_val) + self.opt.select_time
         #add back time that we cut out when filtering post crash
-        min_time = post_crash_pop.index(min_val) + self.opt.select_time 
+        min_time = post_crash_pop.index(min_val) + self.opt.select_time
         #max time after low point
         return min_val, min_time, max_val, max_time
 
@@ -221,12 +246,12 @@ class Population():
             """ NEW END """
             prolif_adj = ratio * float(self.prolif_lim)
 
-            #self.s.init_prolif(prolif_adj) #PUSHED TO CYCLE
+            #self.subpop.init_prolif(prolif_adj) #PUSHED TO CYCLE
 
 #CYCLE SHOULD RETURN POP COUNT
             #HAVE cycle return tumoursize
             self.tumoursize, self.clonecount, avg_mut, avg_pro \
-                                             = self.s.cycle(self.tumoursize, \
+                                             = self.subpop.cycle(self.tumoursize, \
                                                self.select_pressure, 
                                                self.mutagenic_pressure, i, 
                                                prolif_adj) 
@@ -246,13 +271,13 @@ class Population():
             
             if not self.selective_pressure_applied:
                 if i == self.opt.select_time:
-                    self.s.set_precrash_size()
+                    self.subpop.set_precrash_size()
                     self.selective_pressure()
                     if not self.opt.NP:
                         self.print_results("mid",i)
-                    tree_to_xml.tree_parse(self.s, self.tumoursize, i, "mid0")
+                    tree_to_xml.tree_parse(self.subpop, self.tumoursize, i, "mid0")
                     if opt.init_diversity:
-                        dropdata.drop(self.s, self.tumoursize, i, "mid0")
+                        dropdata.drop(self.subpop, self.tumoursize, i, "mid0")
                     self.selective_pressure_applied = True
                     #PRINT RESULTS with diff filename
 
@@ -261,13 +286,13 @@ class Population():
                 else:
                     if self.opt.M:
                         if self.tumoursize > self.maxsize_lim:
-                            self.s.set_precrash_size()
+                            self.subpop.set_precrash_size()
                             self.selective_pressure()
                             if not self.opt.NP:
                                 self.print_results("mid",i)
-                            tree_to_xml.tree_parse(self.s, self.tumoursize, i, "mid")
+                            tree_to_xml.tree_parse(self.subpop, self.tumoursize, i, "mid")
                             if opt.init_diversity:
-                                dropdata.drop(self.s, self.tumoursize, i, "mid")
+                                dropdata.drop(self.subpop, self.tumoursize, i, "mid")
                             self.opt.select_time = i #update time when sel press introduced
                             self.selective_pressure_applied = True
                             #PRINT RESULTS with diff filename
@@ -302,9 +327,9 @@ class Population():
 
         #ALWAYS PLOT TREE
         fname=""
-        tree_to_xml.tree_parse(self.s,self.tumoursize,i,fname)
+        tree_to_xml.tree_parse(self.subpop,self.tumoursize,i,fname)
         if opt.init_diversity:
-            dropdata.drop(self.s, self.tumoursize, i, "end")
+            dropdata.drop(self.subpop, self.tumoursize, i, "end")
             print("printing the DROP")
         return 1
         #print(self.analytics_base.population)
@@ -312,8 +337,8 @@ class Population():
     def selective_pressure(self):
         self.select_pressure = self.opt.select_pressure
         self.mutagenic_pressure = self.opt.mutagenic_pressure
-        self.mid_proliferation = self.s.tree_to_list("proliferation_size")
-        self.mid_mutation = self.s.tree_to_list("mutation_rate")
+        self.mid_proliferation = self.subpop.tree_to_list("proliferation_size")
+        self.mid_mutation = self.subpop.tree_to_list("mutation_rate")
 
     def update_analytics(self,avg_mut_rate,avg_pro_rate):
         #print("analytics")
@@ -390,7 +415,7 @@ class Population():
                   filename+"mutation_avg","MUTATION AVG")
 
             # Mutation...
-            md = self.s.tree_to_list("mutation_distribution")
+            md = self.subpop.tree_to_list("mutation_distribution")
             mutation_distribution(md, \
                     filename+"mutation_distribution", \
                     "MUTATION V TIME - PRE/POST CRASH",\
@@ -398,21 +423,21 @@ class Population():
 
             # Mutation
             if (self.tumoursize > 0):
-                md = self.s.tree_to_list("mutation_distribution_1")
+                md = self.subpop.tree_to_list("mutation_distribution_1")
                 mutation_crash(md, \
                         filename+"mutation_distribution_1", \
                         "MUTATION V TIME - PRE/POST CRASH",\
                         self.opt.scale)
 
             #cell lines graph  - [(self.s_time,self.d_time)]
-            make_subpop_life(self.s.tree_to_list("cell_line_time"),
+            make_subpop_life(self.subpop.tree_to_list("cell_line_time"),
                     filename+"cell_lines_alpha",
                     "CELL LIFESPAN",end_time,self.opt.max_cycles, 
                     self.opt.select_time)
 
             """
             #cell lines graph  - [(self.s_time,self.d_time)]
-            make_subpop_life_mut(self.s.tree_to_list("cell_line_time_mut"),
+            make_subpop_life_mut(self.subpop.tree_to_list("cell_line_time_mut"),
                     filename+"cell_lines_muta",
                     "CELL LIFESPAN",end_time,self.opt.max_cycles, 
                     self.opt.select_time,self.opt.mut,self.tumoursize)
@@ -426,9 +451,9 @@ class Population():
             #PROLIFERATION HISTOGRAM
             # [(self.proliferation-self.prolif_adj,self.size)]
 
-            pro_hist = self.s.tree_to_list("proliferation")
+            pro_hist = self.subpop.tree_to_list("proliferation")
             pro_hist.sort()
-            mut_hist = self.s.tree_to_list("mutation")
+            mut_hist = self.subpop.tree_to_list("mutation")
             mut_hist.sort()
 
             make_hist(pro_hist,
@@ -442,7 +467,7 @@ class Population():
             #POPULATION HISTOGRAM
             # [self.size]
 
-            pop_hist = self.s.tree_to_list("size"),
+            pop_hist = self.subpop.tree_to_list("size"),
 
             make_hist(pop_hist,
                       filename+"population_hist",
@@ -450,30 +475,30 @@ class Population():
             #ALLELE FREQ
             # just_allele_freq z = z + [i/float(tumoursize)]
             norm, r, just_allele_freq = \
-                    self.s.freq_of_mutation(self.tumoursize)
+                    self.subpop.freq_of_mutation(self.tumoursize)
             make_hist(just_allele_freq,
                     filename+"allele", "ALLELE FREQ",self.analytics_base.subpopulation[-1]) #bins equal to number of sub pops
             #CELL CIRCLE MUT V PRO RATES
             # if size > 0 [(self.mutation,self.proliferation,self.size)]
-            mutation_v_proliferation(self.s.tree_to_list("circles"), \
+            mutation_v_proliferation(self.subpop.tree_to_list("circles"), \
                     filename+"circles", \
                     "MUTATION V PROLIFERATION RATES",\
                     self.opt.scale)
 
             # [(self.mutation,self.proliferation,self.size)]
-            mutation_v_proliferation(self.s.tree_to_list("circles_all"), \
+            mutation_v_proliferation(self.subpop.tree_to_list("circles_all"), \
                     filename+"circles_all", \
                     "MUTATION V PROLIFERATION RATES",\
                     self.opt.scale)
 
             #MAKE CIRCLES ACROSS ALL GRAPHS BY WRITING TO 1 FILE
             # if size > 0 [(self.mutation,self.proliferation,self.size)]
-            mutation_v_proliferation_dat(self.s.tree_to_list("circles"), \
+            mutation_v_proliferation_dat(self.subpop.tree_to_list("circles"), \
                     self.opt.testgroup+"circles.dat", \
                     "MUTATION V PROLIFERATION RATES",\
                     self.opt.scale)
             # [(self.mutation,self.proliferation,self.size)]
-            mutation_v_proliferation_dat(self.s.tree_to_list("circles_all"), \
+            mutation_v_proliferation_dat(self.subpop.tree_to_list("circles_all"), \
                     self.opt.testgroup+"circles_all.dat", \
                     "MUTATION V PROLIFERATION RATES",\
                     self.opt.scale)
@@ -503,8 +528,8 @@ class Population():
 
         if (self.tumoursize > 0):
 
-            end_proliferation = self.s.tree_to_list("proliferation_size")
-            end_mutation = self.s.tree_to_list("mutation_rate")
+            end_proliferation = self.subpop.tree_to_list("proliferation_size")
+            end_mutation = self.subpop.tree_to_list("mutation_rate")
 
             #PROLIFERATION HISTOGRAM
             # [(self.proliferation-self.prolif_adj,self.size)]
