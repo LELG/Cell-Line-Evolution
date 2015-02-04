@@ -117,7 +117,7 @@ class Population():
                         self.analytics_base.mutation[-1],      # avg_mut_rate
                         self.analytics_base.proliferation[-1], # avg_pro_rate
                         secs_to_hms(elapsed_time),
-                        len(self.analytics_base.population),   # cycles
+                        len(self.analytics_base.population),   # elapsed_cycles
                         min_val, min_time,
                         max_val, max_time,
                         cmin_val, cmin_time,
