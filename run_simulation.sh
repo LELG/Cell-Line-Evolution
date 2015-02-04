@@ -82,7 +82,7 @@ for mutation_rate in $mutation_values; do
 
     echo "Parameter set "$param_set", run "$run_number" of "$runs_per_param_set
 
-    python main.py --param_set $param_set --run_number $run_number -d $death_rate -p $proliferation_rate -m $mutation_rate --max_cycles $max_cycles --maxsize_lim $maxsize_lim --prolif_lim 0.0 -f $filepath -s $selective_pressure -t $select_time --prob_mut_pos $prob_mut_pos --prob_mut_neg $prob_mut_neg --prob_inc_mut $prob_inc_mut --prob_dec_mut $prob_dec_mut --scale $scale --mscale $mscale -n $testname -g $testgroup $diversity $r_flag $m_flag $z_flag $np_flag
+    python2.7 main.py --param_set $param_set --run_number $run_number -d $death_rate -p $proliferation_rate -m $mutation_rate --max_cycles $max_cycles --maxsize_lim $maxsize_lim --prolif_lim 0.0 -f $filepath -s $selective_pressure -t $select_time --prob_mut_pos $prob_mut_pos --prob_mut_neg $prob_mut_neg --prob_inc_mut $prob_inc_mut --prob_dec_mut $prob_dec_mut --scale $scale --mscale $mscale -n $testname -g $testgroup $diversity $r_flag $m_flag $z_flag $np_flag
 
     run_number=$((run_number+1))
   done
