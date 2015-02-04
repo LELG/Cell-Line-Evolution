@@ -189,7 +189,7 @@ def main():
     parser.add_argument('-m', '--mut', type=float)
     parser.add_argument('-x', '--maxsize_lim', type=int)
     parser.add_argument('-i', '--prolif_lim', type=float)
-    parser.add_argument('-z', '--init_size', type=int)
+    parser.add_argument('-z', '--init_size', type=int, default=25)
     parser.add_argument('--init_diversity', type=int, default=0)
     parser.add_argument('-t', '--select_time', type=int)
     parser.add_argument('-s', '--select_pressure', type=float)
