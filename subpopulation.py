@@ -23,7 +23,7 @@ class Subpopulation():
         self.nodes = []
         self.depth = depth
         self.s_time = time
-        self.d_time = self.opt["loops"]+1
+        self.d_time = self.opt.max_cycles+1
         self.idnt = "" ##This gets created when we run freq through tree
         self.prob_mut_pos = pmp #opt["prob_mut_pos"]
         self.prob_mut_neg = pmn #opt["prob_mut_neg"]
@@ -74,7 +74,7 @@ class Subpopulation():
         cells_mut = 0
         if self.size <= 0: #DEAD
             self.size = 0
-            if self.d_time == self.opt["loops"]+1: #replace with real time of death
+            if self.d_time == self.opt.max_cycles+1: #replace with real time of death
                 self.d_time = time
 
         else:

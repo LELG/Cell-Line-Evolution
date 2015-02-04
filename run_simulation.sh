@@ -48,7 +48,7 @@ if [ -z $2 ]; then
   echo "No config file supplied, reading default parameters ..."
   source "default.conf"
 else
-  echo "Reading parameters from config file"$2"..."
+  echo "Reading parameters from config file "$2" ..."
   source $2
 fi
 
@@ -79,7 +79,7 @@ for mutation_rate in $mutation_values; do
 
     echo "Parameter set "$param_set", run "$run_number" of "$runs_per_param_set
 
-    python main.py --param_set $param_set --run_number $run_number -d $death_rate -p $proliferation_rate -m $mutation_rate --loops $loops --maxsize_lim $maxsize_lim --prolif_lim 0.0 --init_size $initial_size -f $filepath -s $selective_pressure -t $select_time --prob_mut_pos $prob_mut_pos --prob_mut_neg $prob_mut_neg --prob_inc_mut $prob_inc_mut --prob_dec_mut $prob_dec_mut --scale $scale --mscale $mscale -n $testname -g $testgroup --init_diversity $initial_diversity $sub_file $r_flag $m_flag $z_flag $np_flag
+    python main.py --param_set $param_set --run_number $run_number -d $death_rate -p $proliferation_rate -m $mutation_rate --max_cycles $max_cycles --maxsize_lim $maxsize_lim --prolif_lim 0.0 --init_size $initial_size -f $filepath -s $selective_pressure -t $select_time --prob_mut_pos $prob_mut_pos --prob_mut_neg $prob_mut_neg --prob_inc_mut $prob_inc_mut --prob_dec_mut $prob_dec_mut --scale $scale --mscale $mscale -n $testname -g $testgroup --init_diversity $initial_diversity $sub_file $r_flag $m_flag $z_flag $np_flag
 
     run_number=$((run_number+1))
   done

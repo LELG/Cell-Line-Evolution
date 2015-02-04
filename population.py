@@ -205,7 +205,7 @@ class Population():
 
         start_time = time.time() # start timing simulation
 
-        for i in range(0, self.opt.loops):
+        for i in range(0, self.opt.max_cycles):
             self.analytics_base.time.append(i)
             ratio = float(self.tumoursize) / float(self.maxsize_lim)
             #beta(alpha=3,beta=1)
@@ -276,7 +276,7 @@ class Population():
             #PRINT INFO EVERY 100 LOOPS?
             if i % 1000 == 0:
                 os.system('clear')
-                print(i, " out of", self.opt.loops, " tumour size: ", \
+                print(i, " out of", self.opt.max_cycles, " tumour size: ", \
                     self.tumoursize)
             if self.tumoursize == 0:
                 if not self.selective_pressure_applied:
@@ -407,14 +407,14 @@ class Population():
             #cell lines graph  - [(self.s_time,self.d_time)]
             make_subpop_life(self.s.tree_to_list("cell_line_time"),
                     filename+"cell_lines_alpha",
-                    "CELL LIFESPAN",end_time,self.opt.loops, 
+                    "CELL LIFESPAN",end_time,self.opt.max_cycles, 
                     self.opt.select_time)
 
             """
             #cell lines graph  - [(self.s_time,self.d_time)]
             make_subpop_life_mut(self.s.tree_to_list("cell_line_time_mut"),
                     filename+"cell_lines_muta",
-                    "CELL LIFESPAN",end_time,self.opt.loops, 
+                    "CELL LIFESPAN",end_time,self.opt.max_cycles, 
                     self.opt.select_time,self.opt.mut,self.tumoursize)
             """
 

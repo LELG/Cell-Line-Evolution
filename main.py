@@ -119,7 +119,7 @@ def main():
         Counter that tracks how many times this
         particular parameter set has been run in
         this set of simulations.
-    loops : integer
+    max_cycles : integer
         Maximum number of time steps in simulation
     pro : float
         Proliferation rate
@@ -183,7 +183,7 @@ def main():
     parser.add_argument('--sub_file', default='sub_file.dat')
     parser.add_argument('-n', '--testname', default='testname')
     parser.add_argument('-g', '--testgroup', default='testname')
-    parser.add_argument('-l', '--loops', type=int)
+    parser.add_argument('-l', '--max_cycles', type=int)
     parser.add_argument('-d', '--die', type=float)
     parser.add_argument('-p', '--pro', type=float)
     parser.add_argument('-m', '--mut', type=float)
