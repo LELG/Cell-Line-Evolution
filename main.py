@@ -181,7 +181,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--filename', default='filename')
-    parser.add_argument('--param_set', default='default')
+    parser.add_argument('--param_set', default=1)
     parser.add_argument('--run_number', type=int, default=1)
     parser.add_argument('--sub_file', default='sub_file.dat')
     parser.add_argument('-n', '--testname', default='testname')
@@ -211,7 +211,9 @@ def main():
     parser.add_argument('--NP', action="store_true", default=False)
     opt = parser.parse_args()
 
-    if opt.run_number == 1:
+    # TODO make this results init more robust
+    # currently relies on param_set being a number
+    if opt.param_set == 1:
         initialise_results(opt.testname)
 
     # run_simulation(vars(opt))
