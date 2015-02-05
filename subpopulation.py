@@ -40,13 +40,13 @@ class Subpopulation():
         subfile = open(filename)
         reader = csv.DictReader(subfile)
         for line in reader:
-            mut = float(reader["#mut"])
-            pmp = float(reader["pm+"])
-            pmn = float(reader["pm-"])
-            pim = float(reader["pim"])
-            pdm = float(reader["pdm"])
-            msc = float(reader["msc"])
-            col = reader["col"]
+            mut = float(line["#mut"])
+            pmp = float(line["pm+"])
+            pmn = float(line["pm-"])
+            pim = float(line["pim"])
+            pdm = float(line["pdm"])
+            msc = float(line["msc"])
+            col = line["col"]
 
             #add new subpopulation node
             new_subpop = Subpopulation(self.opt, \
