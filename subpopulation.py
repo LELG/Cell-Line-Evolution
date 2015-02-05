@@ -1,6 +1,7 @@
 from __future__ import print_function
 import random
 import os
+import csv
 import math
 import sys
 import tree_to_xml
@@ -35,18 +36,17 @@ class Subpopulation():
         self.branch_length = time - prev_time
 
     def newsubpop_from_file(self, filename):
-        import os
-
-        lines = [line.strip() for line in open(filename)]
-        for l in lines[1:]:
-            subpop_values = l.split(' ')
-            mut = float(subpop_values[0])
-            pmp = float(subpop_values[1])
-            pmn = float(subpop_values[2])
-            pim = float(subpop_values[3])
-            pdm = float(subpop_values[4])
-            msc = float(subpop_values[5])
-            col = str(subpop_values[6])
+        """Load a heterogeneous starting population from a subfile."""
+        subfile = open(filename)
+        reader = csv.DictReader(subfile)
+        for line in reader:
+            mut = float(reader["#mut"])
+            pmp = float(reader["pm+"])
+            pmn = float(reader["pm-"])
+            pim = float(reader["pim"])
+            pdm = float(reader["pdm"])
+            msc = float(reader["msc"])
+            col = reader["col"]
 
             #add new subpopulation node
             new_subpop = Subpopulation(self.opt, \
