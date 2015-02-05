@@ -92,7 +92,7 @@ for mutation_rate in $mutation_values; do
     run_number=$((run_number+1))
   done
 
-  count=$(($count+1))
+  param_set=$(($param_set+1))
 
   #INDICATE AN IDENTICAL SET OF TESTS FINISHED
   #echo "END_GROUP" >> $testname/"results.dat"
