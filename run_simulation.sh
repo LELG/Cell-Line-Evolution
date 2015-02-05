@@ -10,6 +10,11 @@
 # that may be required for running 100s or 1000s of
 # tests.
 
+# if we're on the cluster, make sure correct PYTHONPATH is exported
+if [[ ! -z $PBS_SERVER ]] && [[ $PBS_SERVER == "bioinf-head.petermac.org.au" ]]; then
+  export PYTHONPATH=/usr/local/cluster/all_arch/python_libraries/production/lib/python2.7/site-packages
+fi
+
 # first, check for correct invocation
 E_WRONG_ARGS=85
 script_parameters="testgroup_name [config_file]"
