@@ -42,11 +42,32 @@ else
   testname=$1
 fi
 
-# make main directory for this test group
-if [ ! -d $testname ]
+# make directory for today's date, unless it already exists
+todaydir="results/$(date +'%Y-%m-%d')"
+
+if [ ! -d "$todaydir" ]
 then
-  echo "Creating main test directory ..."
-  mkdir $testname
+  echo "Creating test directory for "$(date +'%Y-%m-%d')" ..."
+  mkdir "$todaydir"
+  echo "Done"
+fi
+
+# make main directory for this test group
+maintestdir="$todaydir/$testname"
+if [ ! -d $maintestdir ]
+then
+  echo "Creating main directory for test group "$testname" ..."
+  mkdir $maintestdir
+  echo "Done"
+else
+  echo "Warning: results for test group "$testname" already exist"
+  i=0
+  while [ -d $maintestdir-$i ] ; do
+    let i++
+  done
+  maintestdir="$maintestdir-$i"
+  echo "Creating directory test group "$maintestdir" ..."
+  mkdir $maintestdir
   echo "Done"
 fi
 
@@ -67,8 +88,8 @@ fi
 #echo $pre_header >> $testname/"results.dat"
 
 # TODO check whether these files are still necessary
-touch $testname/"middropdata.dat"
-touch $testname/"enddropdata.dat"
+touch $maintestdir/"middropdata.dat"
+touch $maintestdir/"enddropdata.dat"
 #echo "TESTSIZE, etc"
 
 # the following code assumes multiple mutation values and multiple tests
@@ -78,16 +99,16 @@ param_set=1
 for mutation_rate in $mutation_values; do
   run_number=1
   while [ $run_number -le $runs_per_param_set ]; do
-    filepath=$testname/$param_set-$run_number/
+    run_dir=$maintestdir/$param_set-$run_number/
     testgroup=$testname/$param_set
 
-    if [ ! -d $filepath ]; then
-      mkdir $filepath
+    if [ ! -d $run_dir ]; then
+      mkdir $run_dir
     fi
 
-    echo "Parameter set "$param_set", run "$run_number" of "$runs_per_param_set
+    echo "Parameter set "$param_set"; run "$run_number" of "$runs_per_param_set
 
-    python2.7 main.py --param_set $param_set --run_number $run_number -d $death_rate -p $proliferation_rate -m $mutation_rate --max_cycles $max_cycles --maxsize_lim $maxsize_lim --prolif_lim 0.0 -f $filepath -s $selective_pressure -t $select_time --prob_mut_pos $prob_mut_pos --prob_mut_neg $prob_mut_neg --prob_inc_mut $prob_inc_mut --prob_dec_mut $prob_dec_mut --scale $scale --mscale $mscale -n $testname -g $testgroup $diversity $r_flag $m_flag $z_flag $np_flag
+    python2.7 main.py --param_set $param_set --run_number $run_number -d $death_rate -p $proliferation_rate -m $mutation_rate --max_cycles $max_cycles --maxsize_lim $maxsize_lim --prolif_lim 0.0 --run_dir $run_dir --maintestdir $maintestdir -s $selective_pressure -t $select_time --prob_mut_pos $prob_mut_pos --prob_mut_neg $prob_mut_neg --prob_inc_mut $prob_inc_mut --prob_dec_mut $prob_dec_mut --scale $scale --mscale $mscale -n $testname -g $testgroup $diversity $r_flag $m_flag $z_flag $np_flag
 
     run_number=$((run_number+1))
   done

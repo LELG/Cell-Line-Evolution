@@ -50,7 +50,7 @@ def run_simulation(opt):
         print("restarting simulation - did not grow")
 
 
-def initialise_results(testname):
+def initialise_results(filepath):
     """
     Initialise results file for this simulation.
 
@@ -65,10 +65,8 @@ def initialise_results(testname):
 
     Parameters
     ----------
-    testname : string
-        Name of the main directory for this set
-        of simulations, where the results file
-        should be stored
+    filepath : string
+        Location of the results file to be created.
 
     Returns
     -------
@@ -92,10 +90,9 @@ def initialise_results(testname):
                'post_crash_max', 'post_crash_max_time')
 
     try:
-        results_file = open("{}/results.csv".format(testname), "w")
+        results_file = open(filepath, "w")
     except IOError:
-        print("Fatal error: testname directory does not exist")
-        return
+        raise
 
     results_writer = csv.writer(results_file)
     results_writer.writerow(columns)
@@ -113,7 +110,8 @@ def main():
     the simulation with the given parameter set. The parameters
     are as follows:
 
-    filename
+    rundir : string
+        Directory for storing results from this run.
     testname
     testgroup
     param_set : string
@@ -180,7 +178,8 @@ def main():
     """
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--filename', default='filename')
+    parser.add_argument('-f', '--rundir', default='results/default_test/1-1/')
+    parser.add_argument('--maintestdir', default='results/default_test/')
     parser.add_argument('--param_set', default=1)
     parser.add_argument('--run_number', type=int, default=1)
     parser.add_argument('--sub_file', default='sub_file.dat')
@@ -211,10 +210,10 @@ def main():
     parser.add_argument('--NP', action="store_true", default=False)
     opt = parser.parse_args()
 
-    # TODO make this results init more robust
-    # currently relies on param_set being a number
-    if opt.param_set == 1:
-        initialise_results(opt.testname)
+    # create results file, unless it already exists
+    results_fpath = "{0}/results.csv".format(opt.maintestdir)
+    if not os.path.exists(results_fpath):
+        initialise_results(results_fpath)
 
     # run_simulation(vars(opt))
     run_simulation(opt)
