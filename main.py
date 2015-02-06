@@ -7,6 +7,7 @@ and introduction of selective pressure
 
 from __future__ import print_function
 import argparse
+import os
 import csv
 import population
 
