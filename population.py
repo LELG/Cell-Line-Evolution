@@ -124,7 +124,8 @@ class Population(object):
 
         #TRACE self.opt.pro
 
-        summary_file = open("{0}/results.csv".format(self.opt.testname), 'a')
+        summary_fpath = "{0}/results.csv".format(self.opt.maintestdir)
+        summary_file = open(summary_fpath, 'a')
         summary_writer = csv.writer(summary_file)
 
         # assemble values to write
