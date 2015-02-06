@@ -495,12 +495,12 @@ class Population(object):
             #MAKE CIRCLES ACROSS ALL GRAPHS BY WRITING TO 1 FILE
             # if size > 0 [(self.mutation,self.proliferation,self.size)]
             mutation_v_proliferation_dat(self.subpop.tree_to_list("circles"), \
-                    self.opt.testgroup+"circles.dat", \
+                    self.opt.maintestdir+'/'+self.opt.param_set+"-circles.dat", \
                     "MUTATION V PROLIFERATION RATES",\
                     self.opt.scale)
             # [(self.mutation,self.proliferation,self.size)]
             mutation_v_proliferation_dat(self.subpop.tree_to_list("circles_all"), \
-                    self.opt.testgroup+"circles_all.dat", \
+                    self.opt.maintestdir+'/'+self.opt.param_set+"-circles_all.dat", \
                     "MUTATION V PROLIFERATION RATES",\
                     self.opt.scale)
 
