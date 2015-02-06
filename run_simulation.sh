@@ -48,7 +48,7 @@ todaydir="results/$(date +'%Y-%m-%d')"
 if [ ! -d "$todaydir" ]
 then
   echo "Creating test directory for "$(date +'%Y-%m-%d')" ..."
-  mkdir "$todaydir"
+  mkdir -p "$todaydir"
   echo "Done"
 fi
 
@@ -57,7 +57,7 @@ maintestdir="$todaydir/$testname"
 if [ ! -d $maintestdir ]
 then
   echo "Creating main directory for test group "$testname" ..."
-  mkdir $maintestdir
+  mkdir -p $maintestdir
   echo "Done"
 else
   echo "Warning: results for test group "$testname" already exist"
@@ -67,7 +67,7 @@ else
   done
   maintestdir="$maintestdir-$i"
   echo "Creating directory test group "$maintestdir" ..."
-  mkdir $maintestdir
+  mkdir -p $maintestdir
   echo "Done"
 fi
 
@@ -103,7 +103,7 @@ for mutation_rate in $mutation_values; do
     testgroup=$testname/$param_set
 
     if [ ! -d $run_dir ]; then
-      mkdir $run_dir
+      mkdir -p $run_dir
     fi
 
     echo "Parameter set "$param_set"; run "$run_number" of "$runs_per_param_set
