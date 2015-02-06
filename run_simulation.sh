@@ -81,8 +81,15 @@ else
   echo "Done"
 fi
 
-# make relevant directories
-# run one / multiple sims
+# get appropriate padding for run_dir
+get_padding () {
+  log_b_ten=$(echo 'l('"$1"')/l(10)' | bc -l)
+  log_truncated=${log_b_ten:0:1}
+  local padding=$((log_truncated+1))
+  echo "$padding"
+}
+
+runpadding=$(get_padding $runs_per_param_set)
 
 #pre_header="mutation_values: "$mutation_values", tests per group: "$runs_per_param_set
 #echo $pre_header >> $testname/"results.dat"
@@ -99,7 +106,7 @@ param_set=1
 for mutation_rate in $mutation_values; do
   run_number=1
   while [ $run_number -le $runs_per_param_set ]; do
-    run_dir=$maintestdir/$param_set-$run_number/
+    run_dir=$(printf "%s/%s-%0*d" $maintestdir $param_set $runpadding $run_number)
     testgroup=$testname/$param_set
 
     if [ ! -d $run_dir ]; then
