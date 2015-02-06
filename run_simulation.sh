@@ -61,7 +61,7 @@ then
   echo "Done"
 else
   echo "Warning: results for test group "$testname" already exist"
-  i=0
+  i=1
   while [ -d $maintestdir-$i ] ; do
     let i++
   done
