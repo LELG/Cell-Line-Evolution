@@ -7,7 +7,7 @@ import subpopulation
 
 def tree_parse(subpopulation,tumoursize,time,fname):
     min_size = 1 # 1% min
-    F = open(subpopulation.opt["filename"]+fname+"_phylo.xml",'w')
+    F = open(subpopulation.opt["run_dir"]+fname+"_phylo.xml",'w')
     print("<?xml version=\"1.0\" encoding=\"UTF-8\"?>",file=F)
     print("<phyloxml xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instancei\" xsi:schemaLocation=\"http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd\" xmlns=\"http://www.phyloxml.org\">",file=F)
     print("<phylogeny rooted=\"true\">",file=F)
@@ -18,7 +18,7 @@ def tree_parse(subpopulation,tumoursize,time,fname):
     print_end(subpopulation,fname)
 
 def print_end(subpopulation,fname):
-    F = open(subpopulation.opt["filename"]+fname+"_phylo.xml",'a')
+    F = open(subpopulation.opt["run_dir"]+fname+"_phylo.xml",'a')
     print("</clade>",file=F)
     print("</phylogeny>",file=F)
     print("</phyloxml>",file=F)
@@ -27,7 +27,7 @@ def print_end(subpopulation,fname):
 def print_clade(clade, min_size,time,fname):  #'clade' is subpop
     if 1: #len(clade.idnt) > 0:
         if clade.size > min_size or clade.depth == 0:
-            F = open(clade.opt["filename"]+fname+"_phylo.xml",'a')
+            F = open(clade.opt["run_dir"]+fname+"_phylo.xml",'a')
             print("<clade branch_length=\"",clade.branch_length/time,"\">",file=F)
             print("<name> p:"
                     +str(clade.proliferation)[0:6]+" m:"
@@ -43,7 +43,7 @@ def print_clade(clade, min_size,time,fname):  #'clade' is subpop
 
     if 1: #len(clade.idnt) > 0:
         if clade.size > min_size or clade.depth == 0:
-            F = open(clade.opt["filename"]+fname+"_phylo.xml",'a')
+            F = open(clade.opt["run_dir"]+fname+"_phylo.xml",'a')
             print("</clade>",file=F)
             F.close()
 

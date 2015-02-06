@@ -365,7 +365,7 @@ class Population(object):
 
         """
 
-        filename = self.opt.filename+when
+        filename = self.opt.run_dir+when
 
         if self.opt.R:
             from outputdata import make_plot, make_subpop_life, make_hist, \
@@ -513,7 +513,7 @@ class Population(object):
 
         """
 
-        filename = self.opt.filename+when
+        filename = self.opt.run_dir+when
 
         if self.opt.R:
             from outputdata import make_plot, make_subpop_life, make_hist, \
