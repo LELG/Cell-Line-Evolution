@@ -178,7 +178,7 @@ def main():
     """
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--rundir', default='results/default_test/1-1/')
+    parser.add_argument('-f', '--run_dir', default='results/default_test/1-1/')
     parser.add_argument('--maintestdir', default='results/default_test/')
     parser.add_argument('--param_set', default=1)
     parser.add_argument('--run_number', type=int, default=1)
