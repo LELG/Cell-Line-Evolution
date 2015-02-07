@@ -22,7 +22,7 @@ proliferation_rate=0.04
 death_rate=0.03
 mutation_rate=0.001
 loops=1000000
-maxsize_lim=100000
+max_size_lim=100000
 initial_size=25
 initial_diversity=0
 selective_pressure=0.02
@@ -71,7 +71,7 @@ do
                 mkdir $filepath
             fi
 
-            python main.py -d $death_rate -p $proliferation_rate -m $mutation_rate --loops $loops --maxsize_lim $maxsize_lim --prolif_lim 0.0 --init_size $initial_size -f $filepath -s $selective_pressure -t $select_time --prob_mut_pos $prob_mut_pos --prob_mut_neg $prob_mut_neg --prob_inc_mut $prob_inc_mut --prob_dec_mut $prob_dec_mut --scale $scale --mscale $mscale --M -n $testname -g $testgroup --init_diversity $initial_diversity --sub_file $sub_file --Z
+            python main.py -d $death_rate -p $proliferation_rate -m $mutation_rate --loops $loops --max_size_lim $max_size_lim --prolif_lim 0.0 --init_size $initial_size -f $filepath -s $selective_pressure -t $select_time --prob_mut_pos $prob_mut_pos --prob_mut_neg $prob_mut_neg --prob_inc_mut $prob_inc_mut --prob_dec_mut $prob_dec_mut --scale $scale --mscale $mscale --M -n $testname -g $testgroup --init_diversity $initial_diversity --sub_file $sub_file --Z
 
         done
         count=$(($count+1))

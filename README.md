@@ -54,7 +54,7 @@ The following parameters can be changed in the shell script:
         --die - Death rate
         --pro - Proliferation rate
         --mut - Mutation rate
-        --maxsize_lim - Maximum Tumour Size
+        --max_size_lim - Maximum Tumour Size
         --prolif_lim  - Proliferation Limit #not used
         --init_size   - Initial Tumour Size
         --select_time - Selective Pressure Time
