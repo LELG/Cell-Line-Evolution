@@ -63,7 +63,7 @@ class Population(object):
         self.opt = opt
         self.tumoursize = opt.init_size
         self.clonecount = 1
-        self.maxsize_lim = opt.maxsize_lim
+        self.max_size_lim = opt.max_size_lim
         self.prolif_lim = self.opt.pro - self.opt.die #could rebase this
         self.opt.prolif_lim = self.opt.pro - self.opt.die
         depth = 0
@@ -89,10 +89,13 @@ class Population(object):
 
     def write_population_summary(self, num_cycles, elapsed_time, recovered):
         """
-        Write simulation summary to master file.
+        Write simulation summary to file(s).
 
-        Write summary data about a single simulation run
-        to the file 'results.csv', in CSV format.
+        Write summary data about this simulation run
+        to two summary files, in CSV format:
+        
+        'testgroup_results.csv' (master summary file for this test group)
+        'testgroup_paramset_results.csv' (summary for this param set only)
         """
 
         # localtime = time.asctime( time.localtime(time.time()) )
@@ -124,9 +127,15 @@ class Population(object):
 
         #TRACE self.opt.pro
 
-        summary_fpath = "{0}/results.csv".format(self.opt.maintestdir)
-        summary_file = open(summary_fpath, 'a')
-        summary_writer = csv.writer(summary_file)
+        test_group_results_fpath = "{0}/{1}_results.csv".format(self.opt.test_group_dir,
+                                                                self.opt.test_group)
+        param_set_results_fpath = "{0}/{1}/{2}_{1}_results.csv".format(self.opt.test_group_dir,
+                                                                       self.opt.param_set,
+                                                                       self.opt.test_group)
+        tg_results_file = open(test_group_results_fpath, 'a')
+        ps_results_file = open(param_set_results_fpath, 'a')
+        tg_writer = csv.writer(tg_results_file)
+        ps_writer = csv.writer(ps_results_file)
 
         # assemble values to write
         summary_vals = (self.opt.param_set, self.opt.run_number,
@@ -147,8 +156,10 @@ class Population(object):
                         cmin_val, cmin_time,
                         cmax_val, cmax_time)
 
-        summary_writer.writerow(summary_vals)
-        summary_file.close()
+        tg_writer.writerow(summary_vals)
+        ps_writer.writerow(summary_vals)
+        tg_results_file.close()
+        ps_results_file.close()
 
 
     def went_through_crash(self):
@@ -169,18 +180,18 @@ class Population(object):
         recover_type = 'NONE'
 
         if self.went_through_crash():
-            if self.tumoursize > (self.maxsize_lim/2):
+            if self.tumoursize > (self.max_size_lim/2):
                 recover = 'Y'
                 recover_type = 'PART'
-                if self.tumoursize > self.maxsize_lim * 0.75:
+                if self.tumoursize > self.max_size_lim * 0.75:
                     # recovered population is > 75% of original size
                     recover_type = 'FULL'
         else: #didnt crash
-            if self.tumoursize > self.maxsize_lim * 0.75:
+            if self.tumoursize > self.max_size_lim * 0.75:
                 recover_type = 'FULLNC'
                 recover = 'Y'
 
-        recover_percent = self.tumoursize / float(self.maxsize_lim)
+        recover_percent = self.tumoursize / float(self.max_size_lim)
 
         return recover, recover_type, recover_percent
 
@@ -216,7 +227,7 @@ class Population(object):
 
     def cycle(self,opt):
         self.selective_pressure_applied = False
-        extra_lim = self.maxsize_lim * 0.05 #EXTRA LIM NOW 5%
+        extra_lim = self.max_size_lim * 0.05 #EXTRA LIM NOW 5%
         """ Iteratively cycle through discrete time model
 
         Recaculate ratio of population size
@@ -233,7 +244,7 @@ class Population(object):
 
         for i in range(0, self.opt.max_cycles):
             self.analytics_base.time.append(i)
-            ratio = float(self.tumoursize) / float(self.maxsize_lim)
+            ratio = float(self.tumoursize) / float(self.max_size_lim)
             #beta(alpha=3,beta=1)
             """ NEW BEGIN """
             """
@@ -286,7 +297,7 @@ class Population(object):
                 #at size lim
                 else:
                     if self.opt.M:
-                        if self.tumoursize > self.maxsize_lim:
+                        if self.tumoursize > self.max_size_lim:
                             self.subpop.set_precrash_size()
                             self.selective_pressure()
                             if not self.opt.NP:
@@ -308,7 +319,7 @@ class Population(object):
                 if not self.selective_pressure_applied:
                     return 0
                 break
-            if self.tumoursize > (self.maxsize_lim + extra_lim):
+            if self.tumoursize > (self.max_size_lim + extra_lim):
                 #IF TOO BIG BUT HASNT CRASHED, LET NEXT CYCLE CRASH IT
                 if self.selective_pressure_applied:
                     print("TUMOUR IS TOO BIG")
@@ -366,7 +377,10 @@ class Population(object):
 
         """
 
-        filename = self.opt.run_dir+when
+        filename = "{0}/{1}/{2}/{3}".format(self.opt.test_group_dir,
+                                            self.opt.param_set,
+                                            self.opt.run_number,
+                                            when)
 
         if self.opt.R:
             from outputdata import make_plot, make_subpop_life, make_hist, \
@@ -514,7 +528,10 @@ class Population(object):
 
         """
 
-        filename = self.opt.run_dir+when
+        filename = "{0}/{1}/{2}/{3}".format(self.opt.test_group_dir,
+                                            self.opt.param_set,
+                                            self.opt.run_number,
+                                            when)
 
         if self.opt.R:
             from outputdata import make_plot, make_subpop_life, make_hist, \

@@ -1,23 +1,16 @@
 #!/bin/bash
-
+#
 # MAIN SCRIPT FOR RUNNING TUMOUR SIMULATION
 #
-# This script gets the test parameters from
-# a config file, and supplies them to the main
-# Python routine. It co-ordinates the running of
-# multiple simulations; and hopefully in future
-# will co-ordinate the complicated qsub scheduling
-# that may be required for running 100s or 1000s of
-# tests.
 
 # if we're on the cluster, make sure correct PYTHONPATH is exported
 if [[ ! -z $PBS_SERVER ]] && [[ $PBS_SERVER == "bioinf-head.petermac.org.au" ]]; then
   export PYTHONPATH=/usr/local/cluster/all_arch/python_libraries/production/lib/python2.7/site-packages
 fi
 
-# first, check for correct invocation
+# check for correct invocation
 E_WRONG_ARGS=85
-script_parameters="testgroup_name [config_file]"
+script_parameters="test_group_name [config_file]"
 
 function usage-exit () {
   echo "Usage: ./`basename $0` $script_parameters"
@@ -29,7 +22,7 @@ num_expected_args=2
 if [ $# -gt $num_expected_args ]; then
   usage-exit "Too many parameters provided"
 elif [ $# -eq 0 ]; then
-  usage-exit "Need test name as first argument"
+  usage-exit "Need test group name as first argument"
 fi
 
 # check that supplied testname will make a valid directory name
@@ -39,39 +32,41 @@ if [[ "$1" == *\/* ]] || [[ "$1" == *\\* ]]; then
   echo "Error: test group name cannot contain slash/backslash"
   exit $E_INVALID_FNAME
 else
-  testname=$1
+  test_group=$1
 fi
 
 # make directory for today's date, unless it already exists
-todaydir="results/$(date +'%Y-%m-%d')"
+today=$(date +'%Y-%m-%d')
+today_dir="results/$today"
 
-if [ ! -d "$todaydir" ]
+if [ ! -d "$today_dir" ]
 then
-  echo "Creating test directory for "$(date +'%Y-%m-%d')" ..."
-  mkdir -p "$todaydir"
+  echo "Creating results directory for "$today" ..."
+  mkdir -p "$today_dir"
   echo "Done"
 fi
 
 # make main directory for this test group
-maintestdir="$todaydir/$testname"
-if [ ! -d $maintestdir ]
+test_group_dir="$today_dir/$test_group"
+if [ ! -d $test_group_dir ]
 then
-  echo "Creating main directory for test group "$testname" ..."
-  mkdir -p $maintestdir
+  echo "Creating main directory for test group "$test_group" ..."
+  mkdir -p $test_group_dir
   echo "Done"
 else
-  echo "Warning: results for test group "$testname" already exist"
+  echo "Warning: results for test group "$test_group" already exist"
   i=1
-  while [ -d $maintestdir-$i ] ; do
+  while [ -d $test_group_dir-$i ] ; do
     let i++
   done
-  maintestdir="$maintestdir-$i"
-  echo "Creating directory test group "$maintestdir" ..."
-  mkdir -p $maintestdir
+  test_group_dir="$test_group_dir-$i"
+  echo "Creating test group directory: "$test_group_dir" ..."
+  mkdir -p $test_group_dir
   echo "Done"
 fi
 
 # read parameters from config file, if one has been specified
+# TODO sort out which params come from .conf, which from PBS script
 if [ -z $2 ]; then
   echo "No config file supplied, reading default parameters ..."
   source "default.conf"
@@ -91,41 +86,56 @@ get_padding () {
 
 runpadding=$(get_padding $runs_per_param_set)
 
-#pre_header="mutation_values: "$mutation_values", tests per group: "$runs_per_param_set
-#echo $pre_header >> $testname/"results.dat"
-
 # TODO check whether these files are still necessary
-touch $maintestdir/"middropdata.dat"
-touch $maintestdir/"enddropdata.dat"
-#echo "TESTSIZE, etc"
+touch $test_group_dir/"middropdata.dat"
+touch $test_group_dir/"enddropdata.dat"
 
 # the following code assumes multiple mutation values and multiple tests
-# TODO make this more general
+# TODO delegate this looping to PBS script
 
 param_set=1
 for mutation_rate in $mutation_values; do
+  param_set_dir="$test_group_dir/$param_set"
+
+  if [ ! -d $param_set_dir ]; then
+    mkdir -p $param_set_dir
+  fi
+
   run_number=1
   while [ $run_number -le $runs_per_param_set ]; do
-    run_dir=$(printf "%s/%s-%0*d" $maintestdir $param_set $runpadding $run_number)
-    testgroup=$testname/$param_set
+    # note need to 'pad' run directories for proper ordering (001, 002 ... etc)
+    run_dir=$(printf "%s/%0*d" $param_set_dir $runpadding $run_number)
 
     if [ ! -d $run_dir ]; then
       mkdir -p $run_dir
     fi
 
-    echo "Parameter set "$param_set"; run "$run_number" of "$runs_per_param_set
+    echo "TEST GROUP: "$test_group
+    echo "Parameter set: "$param_set
+    echo "Run "$run_number" of "$runs_per_param_set
 
-    python2.7 main.py --param_set $param_set --run_number $run_number -d $death_rate -p $proliferation_rate -m $mutation_rate --max_cycles $max_cycles --maxsize_lim $maxsize_lim --prolif_lim 0.0 --run_dir $run_dir --maintestdir $maintestdir -s $selective_pressure -t $select_time --prob_mut_pos $prob_mut_pos --prob_mut_neg $prob_mut_neg --prob_inc_mut $prob_inc_mut --prob_dec_mut $prob_dec_mut --scale $scale --mscale $mscale -n $testname -g $testgroup $diversity $r_flag $m_flag $z_flag $np_flag
+    # build up full list of parameters to main.py
+    sim_params="--test_group $test_group --test_group_dir $test_group_dir"
+    sim_params="$sim_params --param_set $param_set --run_number $run_number"
+    sim_params="$sim_params --max_cycles $max_cycles --max_size_lim $max_size_lim"
+    sim_params="$sim_params -p $proliferation_rate -d $death_rate -m $mutation_rate"
+    sim_params="$sim_params --select_time $select_time --select_pressure $selective_pressure"
+    sim_params="$sim_params --prob_mut_pos $prob_mut_pos --prob_mut_neg $prob_mut_neg"
+    sim_params="$sim_params --prob_inc_mut $prob_inc_mut --prob_dec_mut $prob_dec_mut"
+    sim_params="$sim_params $diversity"
+    sim_params="$sim_params --scale $scale --mscale $mscale"
+    sim_params="$sim_params $r_flag $m_flag $z_flag $np_flag"
+
+    # run simulation with the full set of parameters
+    python2.7 main.py $sim_params
 
     run_number=$((run_number+1))
   done
 
   param_set=$(($param_set+1))
 
-  #INDICATE AN IDENTICAL SET OF TESTS FINISHED
-  #echo "END_GROUP" >> $testname/"results.dat"
-  #python plot_circles.py -f $testgroup"_circles.dat"
-  #python plot_circles.py -f $testgroup"_circles_all.dat"
+  #python plot_circles.py -f $param_set_dir"_circles.dat"
+  #python plot_circles.py -f $param_set_dir"_circles_all.dat"
 done
 
 #python compact.py -f $testname/results.dat > $testname/summary.dat
