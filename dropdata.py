@@ -11,40 +11,24 @@ def drop(subpop, tumoursize, time, label):
 
     cols_sizes.sort()
 
-    colours = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    colours = ['LightGray', 'Gray', 'LightSkyBlue', 'RoyalBlue',
+               'LightSkyGreen', 'MediumSeaGreen', 'Khaki', 'Goldenrod',
+               'Tomato', 'PaleVioletRed', 'DarkViolet']
+
+    col_totals = [0 for col in colours]
 
     #merge colours, super lazynaive method
     #will eventually change whole color sys to be dynamic
 
-    for item in cols_sizes:
-        if item[0] == 'LightGray':
-            colours[0] += item[1]
-        if item[0] == 'Gray':
-            colours[1] += item[1]
-        if item[0] == 'LightSkyBlue':
-            colours[2] += item[1]
-        if item[0] == 'RoyalBlue':
-            colours[3] += item[1]
-        if item[0] == 'LightSeaGreen':
-            colours[4] += item[1]
-        if item[0] == 'MediumSeaGreen':
-            colours[5] += item[1]
-        if item[0] == 'Khaki':
-            colours[6] += item[1]
-        if item[0] == 'Goldenrod':
-            colours[7] += item[1]
-        if item[0] == 'Tomato':
-            colours[8] += item[1]
-        if item[0] == 'PaleVioletRed':
-            colours[9] += item[1]
-        if item[0] == 'DarkViolet':
-            colours[10] += item[1]
+    for col, size in cols_sizes:
+        col_totals[colours.index(col)] += size
 
     drop_fpath = "{0}/{1}dropdata.csv".format(subpop.opt["test_group_dir"],
                                               label)
     drop_file = open(drop_fpath, 'a')
     drop_writer = csv.writer(drop_file)
     drop_writer.writerow(colours)
+    drop_writer.writerow(col_totals)
     drop_file.close()
 
 
@@ -59,6 +43,7 @@ def read_drop(test_dir):
     mid_infile = open(filename)
     mid_inreader = csv.reader(mid_infile)
     #sum total counts
+    _header = next(mid_inreader)
     for line in mid_inreader:
         sizes = [int(z) for z in line]
         print("and then")
@@ -74,6 +59,7 @@ def read_drop(test_dir):
     end_infile = open(filename)
     end_inreader = csv.reader(end_infile)
     #sum total counts
+    _header = next(end_inreader)
     for line in end_inreader:
         sizes = [int(z) for z in line]
         colours = [x + y for x, y in zip(colours, sizes)]

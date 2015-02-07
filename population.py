@@ -3,7 +3,7 @@ High level simulation routines.
 
 Authors
 -------
-Andrew Bakshi
+Andrew Bakshi : andrew.bakshi@gmail.com
 Yoshua Wakeham : yoshua.wakeham@petermac.org
 """
 
@@ -93,7 +93,7 @@ class Population(object):
 
         Write summary data about this simulation run
         to two summary files, in CSV format:
-        
+
         'testgroup_results.csv' (master summary file for this test group)
         'testgroup_paramset_results.csv' (summary for this param set only)
         """
@@ -127,13 +127,13 @@ class Population(object):
 
         #TRACE self.opt.pro
 
-        test_group_results_fpath = "{0}/{1}_results.csv".format(self.opt.test_group_dir,
-                                                                self.opt.test_group)
-        param_set_results_fpath = "{0}/{1}/{2}_{1}_results.csv".format(self.opt.test_group_dir,
-                                                                       self.opt.param_set,
-                                                                       self.opt.test_group)
-        tg_results_file = open(test_group_results_fpath, 'a')
-        ps_results_file = open(param_set_results_fpath, 'a')
+        tg_res_fpath = "{0}/{1}_results.csv".format(self.opt.test_group_dir,
+                                                    self.opt.test_group)
+        ps_res_fpath = "{0}/{1}/{2}_{1}_results.csv".format(self.opt.test_group_dir,
+                                                            self.opt.param_set,
+                                                            self.opt.test_group)
+        tg_results_file = open(tg_res_fpath, 'a')
+        ps_results_file = open(ps_res_fpath, 'a')
         tg_writer = csv.writer(tg_results_file)
         ps_writer = csv.writer(ps_results_file)
 
@@ -218,14 +218,14 @@ class Population(object):
                 self.analytics_base.population[:self.opt.select_time]
         min_val = min(pre_crash_pop)
         max_val = max(pre_crash_pop)
-        min_time = pre_crash_pop.index(min_val) 
-        max_time = pre_crash_pop.index(max_val) 
+        min_time = pre_crash_pop.index(min_val)
+        max_time = pre_crash_pop.index(max_val)
         return min_val, min_time, max_val, max_time
 
     def info(self):
         print("Parameter Set: ", self.opt)
 
-    def cycle(self,opt):
+    def cycle(self, opt):
         self.selective_pressure_applied = False
         extra_lim = self.max_size_lim * 0.05 #EXTRA LIM NOW 5%
         """ Iteratively cycle through discrete time model
@@ -238,7 +238,7 @@ class Population(object):
 
         """
 
-        recovered = False 
+        recovered = False
 
         start_time = time.time() # start timing simulation
 
@@ -260,13 +260,13 @@ class Population(object):
 
             #self.subpop.init_prolif(prolif_adj) #PUSHED TO CYCLE
 
-#CYCLE SHOULD RETURN POP COUNT
+            #CYCLE SHOULD RETURN POP COUNT
             #HAVE cycle return tumoursize
             self.tumoursize, self.clonecount, avg_mut, avg_pro \
-                                             = self.subpop.cycle(self.tumoursize, \
-                                               self.select_pressure, 
-                                               self.mutagenic_pressure, i, 
-                                               prolif_adj) 
+                                 = self.subpop.cycle(self.tumoursize,
+                                                     self.select_pressure,
+                                                     self.mutagenic_pressure, i,
+                                                     prolif_adj)
             #return 'changes' / number of cells instead of counting each time
             avg_mut_rate = 0
             avg_pro_rate = 0
@@ -280,16 +280,18 @@ class Population(object):
                     self.prolif_lim = self.analytics_base.proliferation[-1] - self.opt.die
                 else:
                     self.prolif_lim = self.opt.pro
-            
+
             if not self.selective_pressure_applied:
                 if i == self.opt.select_time:
                     self.subpop.set_precrash_size()
                     self.selective_pressure()
                     if not self.opt.NP:
-                        self.print_results("mid",i)
-                    tree_to_xml.tree_parse(self.subpop, self.tumoursize, i, "mid0")
+                        self.print_results("mid", i)
+                    tree_to_xml.tree_parse(self.subpop, self.tumoursize,
+                                           i, "mid0")
                     if opt.init_diversity:
-                        dropdata.drop(self.subpop, self.tumoursize, i, "mid0")
+                        dropdata.drop(self.subpop, self.tumoursize,
+                                      i, "mid0")
                     self.selective_pressure_applied = True
                     #PRINT RESULTS with diff filename
 
@@ -301,11 +303,14 @@ class Population(object):
                             self.subpop.set_precrash_size()
                             self.selective_pressure()
                             if not self.opt.NP:
-                                self.print_results("mid",i)
-                            tree_to_xml.tree_parse(self.subpop, self.tumoursize, i, "mid")
+                                self.print_results("mid", i)
+                            tree_to_xml.tree_parse(self.subpop, self.tumoursize,
+                                                   i, "mid")
                             if opt.init_diversity:
-                                dropdata.drop(self.subpop, self.tumoursize, i, "mid")
-                            self.opt.select_time = i #update time when sel press introduced
+                                dropdata.drop(self.subpop, self.tumoursize,
+                                              i, "mid")
+                            #update time when sel press introduced
+                            self.opt.select_time = i
                             self.selective_pressure_applied = True
                             #PRINT RESULTS with diff filename
 
@@ -338,8 +343,8 @@ class Population(object):
             self.print_plots("new",i)
 
         #ALWAYS PLOT TREE
-        fname=""
-        tree_to_xml.tree_parse(self.subpop,self.tumoursize,i,fname)
+        fname = ""
+        tree_to_xml.tree_parse(self.subpop, self.tumoursize, i, fname)
         if opt.init_diversity:
             dropdata.drop(self.subpop, self.tumoursize, i, "end")
             print("printing the DROP")
@@ -352,7 +357,7 @@ class Population(object):
         self.mid_proliferation = self.subpop.tree_to_list("proliferation_size")
         self.mid_mutation = self.subpop.tree_to_list("mutation_rate")
 
-    def update_analytics(self,avg_mut_rate,avg_pro_rate):
+    def update_analytics(self, avg_mut_rate, avg_pro_rate):
         #print("analytics")
         sub = self.clonecount
         self.analytics_base.population.append(self.tumoursize)
@@ -360,15 +365,14 @@ class Population(object):
 
         #EFFECTIVE PROLIFERATION
         if self.analytics_base.time[-1] > self.opt.select_time:
-            self.analytics_base.proliferation.append(\
-                    avg_pro_rate - self.opt.select_pressure)
+            self.analytics_base.proliferation.append(avg_pro_rate
+                                                     - self.opt.select_pressure)
         else:
-            self.analytics_base.proliferation.append(\
-                    avg_pro_rate) 
+            self.analytics_base.proliferation.append(avg_pro_rate)
 
         self.analytics_base.mutation.append(avg_mut_rate)
 
-    def print_results(self,when,end_time):
+    def print_results(self, when, end_time):
         """ Print all results to plots / file
 
 
@@ -388,81 +392,93 @@ class Population(object):
         else:
             from plotdata import make_plot, make_subpop_life, make_hist, \
                     mutation_v_proliferation, mutation_v_proliferation_dat,\
-                    mutation_distribution,  mutation_crash, make_subpop_life_mut,\
-                    make_popsub
+                    mutation_distribution, mutation_crash, \
+                    make_subpop_life_mut, make_popsub
 
-        """ Print only once at end of simulation """
+        # Print only once at end of simulation #
 
         if self.selective_pressure_applied: #ONLY PRINT AT END OF SIM
             #POPULATION
             make_plot(self.analytics_base.time,
-                    self.analytics_base.population,
-                    filename+"population_graph","Population Size") 
+                      self.analytics_base.population,
+                      filename + "population_graph", "Population Size")
             #SUBPOPULATION
             make_plot(self.analytics_base.time,
-                    self.analytics_base.subpopulation,
-                    filename+"subpop_graph","No. of Clones") 
+                      self.analytics_base.subpopulation,
+                      filename + "subpop_graph", "No. of Clones")
 
             #POPULATION + SUBPOPULATION
-            make_popsub(self.analytics_base.time, self.analytics_base.population,
-                    self.analytics_base.time, self.analytics_base.subpopulation,
-                    filename+"popsubpop",'Tumour Size','No. of Clones')
+            make_popsub(self.analytics_base.time,
+                        self.analytics_base.population,
+                        self.analytics_base.time,
+                        self.analytics_base.subpopulation,
+                        filename + "popsubpop", 'Tumour Size', 'No. of Clones')
             #MUTATION RATE BUT SUBPOPULATION
-            make_popsub(self.analytics_base.time, self.analytics_base.mutation,
-                    self.analytics_base.time, self.analytics_base.subpopulation,
-                    filename+"mutsubpop",'Average Mutation Rate','No. of Clones')
+            make_popsub(self.analytics_base.time,
+                        self.analytics_base.mutation,
+                        self.analytics_base.time,
+                        self.analytics_base.subpopulation,
+                        filename + "mutsubpop", 'Average Mutation Rate',
+                        'No. of Clones')
 
             #PROLIFERATION RATE + MUTATION RATE
-            make_popsub(self.analytics_base.time, self.analytics_base.mutation,
-                    self.analytics_base.time, self.analytics_base.proliferation,
-                    filename+"prolifmut",'Mutation Rate','Proliferation Rate')
+            make_popsub(self.analytics_base.time,
+                        self.analytics_base.mutation,
+                        self.analytics_base.time,
+                        self.analytics_base.proliferation,
+                        filename + "prolifmut", 'Mutation Rate',
+                        'Proliferation Rate')
             #PROLIFERATION RATE + POPULATION
-            make_popsub(self.analytics_base.time, self.analytics_base.population,
-                    self.analytics_base.time, self.analytics_base.proliferation,
-                    filename+"prolifandpop",'Tumour Size','Proliferation Rate')
+            make_popsub(self.analytics_base.time,
+                        self.analytics_base.population,
+                        self.analytics_base.time,
+                        self.analytics_base.proliferation,
+                        filename + "prolifandpop", 'Tumour Size',
+                        'Proliferation Rate')
 
             #EFFECTIVE PROLIFERATION RATE
             make_plot(self.analytics_base.time,
-                    self.analytics_base.proliferation,
-                    filename+"effect_prolif","EFFECT PROLIFERATION")
+                      self.analytics_base.proliferation,
+                      filename + "effect_prolif", "EFFECT PROLIFERATION")
             #MUTATION RATE AVG
-            make_plot(self.analytics_base.time, self.analytics_base.mutation,
-                  filename+"mutation_avg","MUTATION AVG")
+            make_plot(self.analytics_base.time,
+                      self.analytics_base.mutation,
+                      filename + "mutation_avg", "MUTATION AVG")
 
             # Mutation...
-            md = self.subpop.tree_to_list("mutation_distribution")
-            mutation_distribution(md, \
-                    filename+"mutation_distribution", \
-                    "MUTATION V TIME - PRE/POST CRASH",\
-                    self.opt.scale)
+            mut_distro = self.subpop.tree_to_list("mutation_distribution")
+            mutation_distribution(mut_distro,
+                                  filename + "mutation_distribution",
+                                  "MUTATION V TIME - PRE/POST CRASH",
+                                  self.opt.scale)
 
             # Mutation
-            if (self.tumoursize > 0):
-                md = self.subpop.tree_to_list("mutation_distribution_1")
-                mutation_crash(md, \
-                        filename+"mutation_distribution_1", \
-                        "MUTATION V TIME - PRE/POST CRASH",\
-                        self.opt.scale)
+            if self.tumoursize > 0:
+                mut_distro = self.subpop.tree_to_list("mutation_distribution_1")
+                mutation_crash(mut_distro,
+                               filename + "mutation_distribution_1",
+                               "MUTATION V TIME - PRE/POST CRASH",
+                               self.opt.scale)
 
             #cell lines graph  - [(self.s_time,self.d_time)]
             make_subpop_life(self.subpop.tree_to_list("cell_line_time"),
-                    filename+"cell_lines_alpha",
-                    "CELL LIFESPAN",end_time,self.opt.max_cycles, 
-                    self.opt.select_time)
+                             filename + "cell_lines_alpha",
+                             "CELL LIFESPAN", end_time, self.opt.max_cycles,
+                             self.opt.select_time)
 
             """
             #cell lines graph  - [(self.s_time,self.d_time)]
             make_subpop_life_mut(self.subpop.tree_to_list("cell_line_time_mut"),
                     filename+"cell_lines_muta",
-                    "CELL LIFESPAN",end_time,self.opt.max_cycles, 
+                    "CELL LIFESPAN",end_time,self.opt.max_cycles,
                     self.opt.select_time,self.opt.mut,self.tumoursize)
             """
 
 
-        """ Print at mid and end of simulation """       
+        # Print at mid and end of simulation #
 
         #PRINT END HISTOGRAM IF POPULATION STILL ALIVE
-        if (self.tumoursize > 0):
+        if self.tumoursize > 0:
             #PROLIFERATION HISTOGRAM
             # [(self.proliferation-self.prolif_adj,self.size)]
 
@@ -473,12 +489,12 @@ class Population(object):
 
             make_hist(pro_hist,
                       filename+"proliferation_hist",
-                      "PROLIFERATION RATES",25) 
+                      "PROLIFERATION RATES", 25)
             #MUTATION HISTOGRAM
             # [self.mutation]
             make_hist(mut_hist,
                       filename+"mutation_hist",
-                      "MUTATION RATES",25) 
+                      "MUTATION RATES", 25)
             #POPULATION HISTOGRAM
             # [self.size]
 
@@ -486,40 +502,47 @@ class Population(object):
 
             make_hist(pop_hist,
                       filename+"population_hist",
-                      "POPULATION DIVISION",25)
+                      "POPULATION DIVISION", 25)
             #ALLELE FREQ
             # just_allele_freq z = z + [i/float(tumoursize)]
             norm, r, just_allele_freq = \
                     self.subpop.freq_of_mutation(self.tumoursize)
             make_hist(just_allele_freq,
-                    filename+"allele", "ALLELE FREQ",self.analytics_base.subpopulation[-1]) #bins equal to number of sub pops
+                      filename + "allele",
+                      "ALLELE FREQ",
+                      #bins equal to number of sub pops
+                      self.analytics_base.subpopulation[-1])
             #CELL CIRCLE MUT V PRO RATES
             # if size > 0 [(self.mutation,self.proliferation,self.size)]
-            mutation_v_proliferation(self.subpop.tree_to_list("circles"), \
-                    filename+"circles", \
-                    "MUTATION V PROLIFERATION RATES",\
-                    self.opt.scale)
+            mutation_v_proliferation(self.subpop.tree_to_list("circles"),
+                                     filename + "circles",
+                                     "MUTATION V PROLIFERATION RATES",
+                                     self.opt.scale)
 
             # [(self.mutation,self.proliferation,self.size)]
-            mutation_v_proliferation(self.subpop.tree_to_list("circles_all"), \
-                    filename+"circles_all", \
-                    "MUTATION V PROLIFERATION RATES",\
-                    self.opt.scale)
+            mutation_v_proliferation(self.subpop.tree_to_list("circles_all"),
+                                     filename + "circles_all",
+                                     "MUTATION V PROLIFERATION RATES",
+                                     self.opt.scale)
 
             #MAKE CIRCLES ACROSS ALL GRAPHS BY WRITING TO 1 FILE
             # if size > 0 [(self.mutation,self.proliferation,self.size)]
-            mutation_v_proliferation_dat(self.subpop.tree_to_list("circles"), \
-                    self.opt.maintestdir+'/'+self.opt.param_set+"-circles.dat", \
-                    "MUTATION V PROLIFERATION RATES",\
-                    self.opt.scale)
+            fpath = "{0}/{1}/{1}-circles.dat".format(self.opt.test_group_dir,
+                                                     self.opt.param_set)
+            mutation_v_proliferation_dat(self.subpop.tree_to_list("circles"),
+                                         fpath,
+                                         "MUTATION V PROLIFERATION RATES",
+                                         self.opt.scale)
             # [(self.mutation,self.proliferation,self.size)]
-            mutation_v_proliferation_dat(self.subpop.tree_to_list("circles_all"), \
-                    self.opt.maintestdir+'/'+self.opt.param_set+"-circles_all.dat", \
-                    "MUTATION V PROLIFERATION RATES",\
-                    self.opt.scale)
+            fpath = "{0}/{1}/{1}-circles_all.dat".format(self.opt.test_group_dir,
+                                                         self.opt.param_set)
+            mutation_v_proliferation_dat(self.subpop.tree_to_list("circles_all"),
+                                         fpath,
+                                         "MUTATION V PROLIFERATION RATES",
+                                         self.opt.scale)
 
 
-    def print_plots(self,when,end_time):
+    def print_plots(self, when, end_time):
         """ Print all results to plots / file
 
 
@@ -538,14 +561,13 @@ class Population(object):
                     mutation_v_proliferation, mutation_v_proliferation_dat
         else:
             from plotdata import make_plot, make_subpop_life, make_hist, \
-                    mutation_v_proliferation, mutation_v_proliferation_dat,\
-                    mutation_distribution,  mutation_crash, make_subpop_life_mut, \
-                    make_dual_hist, make_dual_box
+                    mutation_v_proliferation, mutation_v_proliferation_dat, \
+                    mutation_distribution, mutation_crash, \
+                    make_subpop_life_mut, make_dual_hist, make_dual_box
 
-        """ Proliferation Histogram """
+        # Proliferation Histogram #
 
-        if (self.tumoursize > 0):
-
+        if self.tumoursize > 0:
             end_proliferation = self.subpop.tree_to_list("proliferation_size")
             end_mutation = self.subpop.tree_to_list("mutation_rate")
 
@@ -555,12 +577,12 @@ class Population(object):
             end_proliferation.sort()
             self.mid_proliferation.sort()
             make_dual_hist(end_proliferation, self.mid_proliferation,
-                        filename+"prolif_hist", "Proliferation Rates")
-            
+                           filename + "prolif_hist", "Proliferation Rates")
+
             end_mutation.sort()
             self.mid_mutation.sort()
             make_dual_hist(end_mutation, self.mid_mutation,
-                        filename+"mutation_hist", "Mutation Rates")
-            
+                           filename + "mutation_hist", "Mutation Rates")
+
             make_dual_box(end_mutation, self.mid_mutation,
-                        filename+"mutation_box", "Mutation Rate Box")
+                          filename + "mutation_box", "Mutation Rate Box")
