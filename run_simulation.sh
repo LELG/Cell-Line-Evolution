@@ -86,8 +86,8 @@ fi
 runpadding=${#runs_per_param_set}
 
 # TODO check whether these files are still necessary
-touch $test_group_dir/"middropdata.dat"
-touch $test_group_dir/"enddropdata.dat"
+touch $test_group_dir/"middropdata.csv"
+touch $test_group_dir/"enddropdata.csv"
 
 # the following code assumes multiple mutation values and multiple tests
 # TODO delegate this looping to PBS script
