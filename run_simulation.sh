@@ -74,17 +74,16 @@ else
   echo "Reading parameters from config file "$2" ..."
   source $2
   echo "Done"
+  if [ ! -f $test_group_dir/$2 ]; then
+    echo "Copying config file to results directory ..."
+    cp $2 $test_group_dir
+    echo "Done"
+  fi
 fi
 
 # get appropriate padding for run_dir
-get_padding () {
-  log_b_ten=$(echo 'l('"$1"')/l(10)' | bc -l)
-  log_truncated=${log_b_ten:0:1}
-  local padding=$((log_truncated+1))
-  echo "$padding"
-}
-
-runpadding=$(get_padding $runs_per_param_set)
+# (this just finds the length of runs_per_param_set as a string)
+runpadding=${#runs_per_param_set}
 
 # TODO check whether these files are still necessary
 touch $test_group_dir/"middropdata.dat"
