@@ -21,9 +21,6 @@ class Analytics(object):
     """
     Simple class for recording analytics on population.
 
-    Should either be replaced with a 'dict', or given
-    more functionality.
-
     population
         population size at each point in time
     subpopulation
@@ -47,6 +44,19 @@ class Analytics(object):
         self.proliferation = []
         self.subpop_mutation = []
         self.subpop_proliferation = []
+
+    def update(self, population, t, avg_mut_rate, avg_pro_rate):
+        self.population.append(population.tumoursize)
+        self.subpopulation.append(population.clonecount)
+        self.time.append(t)
+
+        #EFFECTIVE PROLIFERATION
+        if self.time[-1] > population.opt.select_time:
+            self.proliferation.append(avg_pro_rate - population.opt.select_pressure)
+        else:
+            self.proliferation.append(avg_pro_rate)
+
+        self.mutation.append(avg_mut_rate)
 
 
 class Population(object):
@@ -273,7 +283,7 @@ class Population(object):
             if self.tumoursize > 0:
                 avg_mut_rate = avg_mut / float(self.tumoursize)
                 avg_pro_rate = avg_pro / float(self.tumoursize)
-            self.update_analytics(avg_mut_rate, avg_pro_rate)
+            analytics_base.update(self, i, avg_mut_rate, avg_pro_rate)
             if self.opt.A: #auto dynamic restriction of size
                 if self.analytics_base.proliferation[-1] > self.opt.pro:
                     #if avg pro higher than normal, use it as top
@@ -357,20 +367,6 @@ class Population(object):
         self.mid_proliferation = self.subpop.tree_to_list("proliferation_size")
         self.mid_mutation = self.subpop.tree_to_list("mutation_rate")
 
-    def update_analytics(self, avg_mut_rate, avg_pro_rate):
-        #print("analytics")
-        sub = self.clonecount
-        self.analytics_base.population.append(self.tumoursize)
-        self.analytics_base.subpopulation.append(sub)
-
-        #EFFECTIVE PROLIFERATION
-        if self.analytics_base.time[-1] > self.opt.select_time:
-            self.analytics_base.proliferation.append(avg_pro_rate
-                                                     - self.opt.select_pressure)
-        else:
-            self.analytics_base.proliferation.append(avg_pro_rate)
-
-        self.analytics_base.mutation.append(avg_mut_rate)
 
     def print_results(self, when, end_time):
         """ Print all results to plots / file
