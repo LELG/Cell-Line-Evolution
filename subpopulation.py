@@ -19,7 +19,8 @@ class Subpopulation():
         self.size = 1
         self.precrash_size = 0
         self.max_size_lim = opt["max_size_lim"]
-        self.prolif_lim = opt["prolif_lim"]
+        #self.prolif_lim = opt["prolif_lim"]
+        # initialise prolif_adj to maximum amount
         self.prolif_adj = opt["prolif_lim"]
         self.nodes = []
         self.depth = depth

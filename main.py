@@ -206,9 +206,6 @@ def main():
     parser.add_argument('-d', '--die', type=float)
     parser.add_argument('-m', '--mut', type=float)
 
-    # TODO deprecate prolif_lim
-    parser.add_argument('-i', '--prolif_lim', type=float, default=0.0)
-
     parser.add_argument('-t', '--select_time', type=int, default=400000)
     parser.add_argument('-s', '--select_pressure', type=float, default=0.01)
     parser.add_argument('-u', '--mutagenic_pressure', type=float, default=0.0)
@@ -233,6 +230,9 @@ def main():
     parser.add_argument('--A', action="store_true", default=False)
 
     opt = parser.parse_args()
+    
+    # calculate proliferation limit and store in parameter set
+    opt.prolif_lim = opt.pro - opt.die
 
     # create results files, if they don't already exist
     test_group_results_fpath = "{0}/{1}_results.csv".format(opt.test_group_dir,

@@ -74,8 +74,7 @@ class Population(object):
         self.tumoursize = opt.init_size
         self.clonecount = 1
         self.max_size_lim = opt.max_size_lim
-        self.prolif_lim = self.opt.pro - self.opt.die #could rebase this
-        self.opt.prolif_lim = self.opt.pro - self.opt.die
+        self.prolif_lim = self.opt.prolif_lim
         depth = 0
         time = 0
         mut_type = 'n'
@@ -272,7 +271,7 @@ class Population(object):
 
             #CYCLE SHOULD RETURN POP COUNT
             #HAVE cycle return tumoursize
-            self.tumoursize, self.clonecount, avg_mut, avg_pro \
+            self.tumoursize, self.clonecount, agg_mut, agg_pro \
                                  = self.subpop.cycle(self.tumoursize,
                                                      self.select_pressure,
                                                      self.mutagenic_pressure, i,
@@ -281,9 +280,11 @@ class Population(object):
             avg_mut_rate = 0
             avg_pro_rate = 0
             if self.tumoursize > 0:
-                avg_mut_rate = avg_mut / float(self.tumoursize)
-                avg_pro_rate = avg_pro / float(self.tumoursize)
+                avg_mut_rate = agg_mut / float(self.tumoursize)
+                avg_pro_rate = agg_pro / float(self.tumoursize)
+
             analytics_base.update(self, i, avg_mut_rate, avg_pro_rate)
+
             if self.opt.A: #auto dynamic restriction of size
                 if self.analytics_base.proliferation[-1] > self.opt.pro:
                     #if avg pro higher than normal, use it as top
