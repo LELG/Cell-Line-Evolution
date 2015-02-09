@@ -226,17 +226,17 @@ class Population(object):
         print("Parameter Set: ", self.opt)
 
     def cycle(self, opt):
-        self.selective_pressure_applied = False
-        extra_lim = self.max_size_lim * 0.05 #EXTRA LIM NOW 5%
-        """ Iteratively cycle through discrete time model
+        """
+        Iteratively cycle through discrete time model
 
         Recaculate ratio of population size
         Call analytics
         Call subpopulation cycle for each subpopulation
         (Calculate 1 discrete time step for each subpopulation)
         i in loops is TIME
-
         """
+        self.selective_pressure_applied = False
+        extra_lim = self.max_size_lim * 0.05 #EXTRA LIM NOW 5%
 
         recovered = False
 
