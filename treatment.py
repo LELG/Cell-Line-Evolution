@@ -20,6 +20,7 @@ Change log
 ----------
 """
 import tree_to_xml
+import plotdata
 import dropdata
 
 class Treatment(object):
@@ -52,7 +53,7 @@ class Treatment(object):
         popn.mid_proliferation = popn.subpop.tree_to_list("proliferation_size")
         popn.mid_mutation = popn.subpop.tree_to_list("mutation_rate")
         if not popn.opt.NP:
-            popn.print_results("mid", t)
+            plotdata.print_results(popn, "mid", t)
         tree_to_xml.tree_parse(popn.subpop, popn.tumoursize,
                                t, "mid0")
         if popn.opt.init_diversity:

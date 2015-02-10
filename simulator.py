@@ -28,6 +28,7 @@ import treatment
 import analytics
 from utilities import secs_to_hms
 import tree_to_xml
+import plotdata
 import dropdata
 
 POP_TOO_LARGE = "Population exceeded size limit."
@@ -126,7 +127,7 @@ class Simulator(object):
                 self.popn.subpop.set_precrash_size()
                 self.treatmt.introduce(self.popn, t)
                 if not self.NP:
-                    self.popn.print_results("mid", t)
+                    plotdata.print_results(self.popn, "mid", t)
                 tree_to_xml.tree_parse(self.popn.subpop, self.popn.tumoursize,
                                        t, "mid0")
                 if self.init_diversity:
@@ -141,7 +142,7 @@ class Simulator(object):
                     self.popn.subpop.set_precrash_size()
                     self.treatmt.introduce(self.popn, t)
                     if not self.NP:
-                        self.popn.print_results("mid", t)
+                        plotdata.print_results(self.popn, "mid", t)
                     tree_to_xml.tree_parse(self.popn.subpop,
                                            self.popn.tumoursize,
                                            t, "mid")
@@ -165,8 +166,8 @@ class Simulator(object):
                            self.total_cycles, self.runtime,
                            self.popn_recovered)
         if not self.NP:
-            self.popn.print_results("end", self.total_cycles)
-            self.popn.print_plots("new", self.total_cycles)
+            plotdata.print_results(self.popn, "end", self.total_cycles)
+            plotdata.print_plots(self.popn, "new")
         fname = ""
         tree_to_xml.tree_parse(self.popn.subpop, self.popn.tumoursize, self.total_cycles, fname)
         if self.init_diversity:

@@ -5,17 +5,20 @@ Simulate growth of and mutation of cancer cells
 and introduction of selective pressure
 
 """
-
 from __future__ import print_function
+
+# Force matplotlib not to use any Xwindows backend
+# to avoid error on the PMCI cluster. Note that
+# this import and call to matplotlib.use() must
+# appear before any other matplotlib import
+import matplotlib
+matplotlib.use('Agg')
+
 import argparse
 import os
 import csv
 import simulator
-import population
-
-import matplotlib
-# Force matplotlib to not use any Xwindows backend.
-matplotlib.use('Agg')
+# import population
 
 
 def main():
@@ -226,7 +229,7 @@ def initialise_results(filepath):
     results_writer.writerow(columns)
     results_file.close()
 
-
+'''
 def run_simulation(opt):
     """
     Run simulation.
@@ -261,7 +264,7 @@ def run_simulation(opt):
         population_base = population.Population(opt)
         population_base.info()
         print("restarting simulation - did not grow")
-
+'''
 
 if __name__ == '__main__':
     main()
