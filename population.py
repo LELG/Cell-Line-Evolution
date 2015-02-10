@@ -234,125 +234,28 @@ class Population(object):
     def info(self):
         print("Parameter Set: ", self.opt)
 
-    def cycle(self, opt):
+    def cycle(self, t):
         """
-        Iteratively cycle through discrete time model
-
         Recaculate ratio of population size
         Call analytics
         Call subpopulation cycle for each subpopulation
         (Calculate 1 discrete time step for each subpopulation)
-        i in loops is TIME
         """
-        self.selective_pressure_applied = False
-        extra_lim = self.max_size_lim * 0.05 #EXTRA LIM NOW 5%
+        ratio = self.tumoursize / float(self.max_size_lim)
+        prolif_adj = ratio * float(self.prolif_lim)
 
-        recovered = False
+        subpop_results = self.subpop.cycle(self.tumoursize,
+                                           self.select_pressure,
+                                           self.mutagenic_pressure,
+                                           t, prolif_adj)
+        self.tumoursize, self.clonecount, agg_mut, agg_pro = subpop_results
+        avg_mut_rate = 0
+        avg_pro_rate = 0
+        if self.tumoursize > 0:
+            avg_mut_rate = agg_mut / float(self.tumoursize)
+            avg_pro_rate = agg_pro / float(self.tumoursize)
 
-        start_time = time.time() # start timing simulation
-
-        for i in range(0, self.opt.max_cycles):
-            ratio = float(self.tumoursize) / float(self.max_size_lim)
-            #beta(alpha=3,beta=1)
-            """ NEW BEGIN """
-            """
-            
-            a = 3
-            b = 1
-            ratio = (ratio**(a-1) * (1-ratio)**(b-1))
-            #scale growth non-linearly
-           
-            """
-            """ NEW END """
-            prolif_adj = ratio * float(self.prolif_lim)
-
-            #self.subpop.init_prolif(prolif_adj) #PUSHED TO CYCLE
-
-            #CYCLE SHOULD RETURN POP COUNT
-            #HAVE cycle return tumoursize
-            self.tumoursize, self.clonecount, agg_mut, agg_pro \
-                                 = self.subpop.cycle(self.tumoursize,
-                                                     self.select_pressure,
-                                                     self.mutagenic_pressure, i,
-                                                     prolif_adj)
-            #return 'changes' / number of cells instead of counting each time
-            avg_mut_rate = 0
-            avg_pro_rate = 0
-            if self.tumoursize > 0:
-                avg_mut_rate = agg_mut / float(self.tumoursize)
-                avg_pro_rate = agg_pro / float(self.tumoursize)
-
-            self.analytics_base.update(self, i, avg_mut_rate, avg_pro_rate)
-
-            if not self.selective_pressure_applied:
-                if i == self.opt.select_time:
-                    self.subpop.set_precrash_size()
-                    self.selective_pressure()
-                    if not self.opt.NP:
-                        self.print_results("mid", i)
-                    tree_to_xml.tree_parse(self.subpop, self.tumoursize,
-                                           i, "mid0")
-                    if opt.init_diversity:
-                        dropdata.drop(self.subpop, self.tumoursize,
-                                      i, "mid0")
-                    self.selective_pressure_applied = True
-                    #PRINT RESULTS with diff filename
-
-                #If maxsize flag is set auto start selective pressure
-                #at size lim
-                else:
-                    if self.opt.M:
-                        if self.tumoursize > self.max_size_lim:
-                            self.subpop.set_precrash_size()
-                            self.selective_pressure()
-                            if not self.opt.NP:
-                                self.print_results("mid", i)
-                            tree_to_xml.tree_parse(self.subpop, self.tumoursize,
-                                                   i, "mid")
-                            if opt.init_diversity:
-                                dropdata.drop(self.subpop, self.tumoursize,
-                                              i, "mid")
-                            #update time when sel press introduced
-                            self.opt.select_time = i
-                            self.selective_pressure_applied = True
-                            #PRINT RESULTS with diff filename
-
-
-            #PRINT INFO EVERY 100 LOOPS?
-            if i % 1000 == 0:
-                os.system('clear')
-                print(i, " out of", self.opt.max_cycles, " tumour size: ", \
-                    self.tumoursize)
-            if self.tumoursize == 0:
-                if not self.selective_pressure_applied:
-                    return 0
-                break
-            if self.tumoursize > (self.max_size_lim + extra_lim):
-                #IF TOO BIG BUT HASNT CRASHED, LET NEXT CYCLE CRASH IT
-                if self.selective_pressure_applied:
-                    print("TUMOUR IS TOO BIG")
-                    recovered = True
-                    break
-
-            #self.s.info()
-
-        print("cycle done")
-        end_time = time.time() # finish timing simulation
-        elapsed_time = end_time - start_time
-        self.write_population_summary(i, elapsed_time, recovered)
-
-        if not self.opt.NP:
-            self.print_results("end",i)
-            self.print_plots("new",i)
-
-        #ALWAYS PLOT TREE
-        fname = ""
-        tree_to_xml.tree_parse(self.subpop, self.tumoursize, i, fname)
-        if opt.init_diversity:
-            dropdata.drop(self.subpop, self.tumoursize, i, "end")
-            print("printing the DROP")
-        return 1
-        #print(self.analytics_base.population)
+        self.analytics_base.update(self, t, avg_mut_rate, avg_pro_rate)
 
     def selective_pressure(self):
         self.select_pressure = self.opt.select_pressure
