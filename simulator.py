@@ -24,6 +24,7 @@ import time
 import os
 import csv
 import population
+import treatment
 import analytics
 from utilities import secs_to_hms
 import tree_to_xml
@@ -78,6 +79,8 @@ class Simulator(object):
 
         # create a Population object
         self.popn = population.Population(parameters)
+        # create a Treatment object
+        self.treatmt = treatment.Treatment(parameters)
 
 
     def run(self):
@@ -92,13 +95,13 @@ class Simulator(object):
         end_condition = MAX_CYCLES
         for t in xrange(self.max_cycles):
             self.update(t)
-            if self.population_too_big(self.popn, tolerance=0.05):
-                if self.treatment_introduced:
+            if self.popn.exceeds_size_limit(self.max_size_lim, tolerance=0.05):
+                if self.treatmt.is_introduced:
                     end_condition = POP_TOO_LARGE
                     self.total_cycles = t
                     self.popn_recovered = True
                     break
-            if self.population_died_out(self.popn):
+            if self.popn.is_dead():
                 end_condition = POP_DIED_OUT
                 self.total_cycles = t
                 break
@@ -113,13 +116,15 @@ class Simulator(object):
         """
         Simulate a single time step.
         """
-        self.popn.cycle(t)
+        self.treatmt.update(self.popn, t)
+        self.popn.update(self.treatmt, t)
         self.popn.analytics_base.update(self, self.popn, t)
 
-        if not self.treatment_introduced:
+        """
+        if not self.treatmt.is_introduced:
             if t == self.select_time:
                 self.popn.subpop.set_precrash_size()
-                self.selective_pressure(self.popn)
+                self.treatmt.introduce(self.popn, t)
                 if not self.NP:
                     self.popn.print_results("mid", t)
                 tree_to_xml.tree_parse(self.popn.subpop, self.popn.tumoursize,
@@ -127,13 +132,14 @@ class Simulator(object):
                 if self.init_diversity:
                     dropdata.drop(self.popn.subpop, self.popn.tumoursize,
                                   t, "mid0")
+                # TODO deprecate these flags; should be unnecessary
                 self.treatment_introduced = True
                 self.popn.selective_pressure_applied = True
-            elif self.M:
+            elif self.treatmt.M:
                 # auto introduction of treatment
-                if self.population_too_big(self.popn):
+                if population_too_big(self.popn, self.max_size_lim):
                     self.popn.subpop.set_precrash_size()
-                    self.selective_pressure(self.popn)
+                    self.treatmt.introduce(self.popn, t)
                     if not self.NP:
                         self.popn.print_results("mid", t)
                     tree_to_xml.tree_parse(self.popn.subpop,
@@ -144,15 +150,20 @@ class Simulator(object):
                                       t, "mid")
                     #update time when sel press introduced
                     self.select_time = t
+
+                    # TODO deprecate these, as above
                     self.treatment_introduced = True
                     self.popn.selective_pressure_applied = True
+        """
         # print status message
         if t % 1000 == 0:
             self.print_status_update(t)
 
     def finish(self, end_condition):
         print("SIMULATION ENDED: {}".format(end_condition))
-        self.write_population_summary(self.popn, self.total_cycles, self.runtime, self.popn_recovered)
+        self.write_summary(self.popn, self.treatmt,
+                           self.total_cycles, self.runtime,
+                           self.popn_recovered)
         if not self.NP:
             self.popn.print_results("end", self.total_cycles)
             self.popn.print_plots("new", self.total_cycles)
@@ -162,15 +173,11 @@ class Simulator(object):
             print("Printing drop data")
             dropdata.drop(self.popn.subpop, self.popn.tumoursize, self.total_cycles, "end")
 
-    def population_too_big(self, popn, tolerance=0.0):
-        size_limit = self.max_size_lim * (1 + tolerance)
-        return popn.tumoursize > size_limit
+        self.is_running = False
 
-    def population_died_out(self, popn):
-        return popn.tumoursize <= 0
 
     def print_status_update(self, t):
-        os.system('clear')
+        #os.system('clear')
         status_msg = """
 Tumour Evolution Simulation
 ---------------------------
@@ -182,7 +189,7 @@ Tumour size: {2}
 """
         print(status_msg.format(t, self.max_cycles, self.popn.tumoursize))
 
-    def write_population_summary(self, popn, num_cycles, elapsed_time, recovered):
+    def write_summary(self, popn, treatmt, num_cycles, elapsed_time, recovered):
         """
         Write simulation summary to file(s).
 
@@ -226,7 +233,7 @@ Tumour size: {2}
                         went_through_crash,
                         recover, recover_type, recover_percent,
                         popn.opt.pro, popn.opt.die, popn.opt.mut,
-                        self.select_time, self.select_pressure,
+                        treatmt.select_time, treatmt.select_pressure,
                         popn.opt.prob_mut_pos, popn.opt.prob_mut_neg,
                         popn.opt.prob_inc_mut, popn.opt.prob_dec_mut,
                         popn.analytics_base.population[-1],    # pop_size
@@ -245,8 +252,10 @@ Tumour size: {2}
         tg_results_file.close()
         ps_results_file.close()
 
+"""
     def selective_pressure(self, popn):
         popn.select_pressure = self.select_pressure
         popn.mutagenic_pressure = self.mutagenic_pressure
         popn.mid_proliferation = popn.subpop.tree_to_list("proliferation_size")
         popn.mid_mutation = popn.subpop.tree_to_list("mutation_rate")
+"""

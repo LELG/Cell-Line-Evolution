@@ -61,24 +61,43 @@ class Population(object):
     def info(self):
         print("Parameter Set: ", self.opt)
 
-    def cycle(self, t):
+    def update(self, treatmt, t):
         """
         Recaculate ratio of population size
         Call analytics
         Call subpopulation cycle for each subpopulation
         (Calculate 1 discrete time step for each subpopulation)
         """
+        if treatmt.is_introduced:
+            # update amount of selective and mutagenic pressure
+            self.select_pressure = treatmt.select_pressure
+            self.mutagenic_pressure = treatmt.mutagenic_pressure
+
+        # determine proliferation adjustment due to
+        # population size
         ratio = self.tumoursize / float(self.max_size_lim)
         prolif_adj = ratio * float(self.prolif_lim)
 
+        # update subpopulations, getting back
+        # tumour size, clone count, and aggregated
+        # mutation and proliferation rates
         subpop_results = self.subpop.cycle(self.tumoursize,
                                            self.select_pressure,
                                            self.mutagenic_pressure,
                                            t, prolif_adj)
         self.tumoursize, self.clonecount, agg_mut, agg_pro = subpop_results
-        if self.tumoursize > 0:
+
+        if not self.is_dead():
             self.avg_mut_rate = agg_mut / float(self.tumoursize)
             self.avg_pro_rate = agg_pro / float(self.tumoursize)
+
+    def is_dead(self):
+        return self.tumoursize <= 0
+
+    def exceeds_size_limit(self, max_size_lim, tolerance=0.0):
+        """Determine whether this population has exceeded a certain size."""
+        size_limit = max_size_lim * (1 + tolerance)
+        return self.tumoursize > size_limit
 
     def print_results(self, when, end_time):
         """ Print all results to plots / file
@@ -160,7 +179,7 @@ class Population(object):
                                   self.opt.scale)
 
             # Mutation
-            if self.tumoursize > 0:
+            if not self.is_dead():
                 mut_distro = self.subpop.tree_to_list("mutation_distribution_1")
                 mutation_crash(mut_distro,
                                filename + "mutation_distribution_1",
@@ -185,7 +204,7 @@ class Population(object):
         # Print at mid and end of simulation #
 
         #PRINT END HISTOGRAM IF POPULATION STILL ALIVE
-        if self.tumoursize > 0:
+        if not self.is_dead():
             #PROLIFERATION HISTOGRAM
             # [(self.proliferation-self.prolif_adj,self.size)]
 
@@ -274,7 +293,7 @@ class Population(object):
 
         # Proliferation Histogram #
 
-        if self.tumoursize > 0:
+        if not self.is_dead():
             end_proliferation = self.subpop.tree_to_list("proliferation_size")
             end_mutation = self.subpop.tree_to_list("mutation_rate")
 
