@@ -1,79 +1,98 @@
+"""
+Functions for plotting simulation data.
+
+Authors
+-------
+Andrew Bakshi : andrew.bakshi@gmail.com
+Yoshua Wakeham : yoshwakeham@gmail.com
+"""
+
 from __future__ import print_function
-import os
-import math
+# import os
+# import math
 from matplotlib import pyplot as plt
 
-def make_popsub(X1, Y1, X2, Y2, filename, title1, title2):
-
+def make_dual_plot(xdata, y1data, y2data, filename, title1, title2):
+    """Plot two dependent vars against the same independent var."""
     fig, ax1 = plt.subplots()
-    ax1.plot(X1, Y1, color='b', alpha=0.5, linewidth=2)
+    ax1.plot(xdata, y1data, color='b', alpha=0.5, linewidth=2)
     ax1.set_xlabel('Discrete Time Intervals', fontsize=9) #color='grey')
     ax1.set_ylabel(title1, fontsize=9, color='b')
-    for tl in ax1.get_yticklabels():
-        tl.set_color('b')
-        tl.set_fontsize(9)
-    for tl in ax1.get_xticklabels():
-        #tl.set_color('grey')
-        tl.set_fontsize(9)
+    for label in ax1.get_yticklabels():
+        label.set_color('b')
+        label.set_fontsize(9)
+    for label in ax1.get_xticklabels():
+        #label.set_color('grey')
+        label.set_fontsize(9)
 
     #plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 
     ax2 = ax1.twinx()
-    ax2.plot(X2, Y2, color='r', alpha=0.5, linewidth=2)
+    ax2.plot(xdata, y2data, color='r', alpha=0.5, linewidth=2)
     ax2.set_ylabel(title2, fontsize=9, color='r')
-    for tl in ax2.get_yticklabels():
-        tl.set_color('r')
-        tl.set_fontsize(9)
+    for label in ax2.get_yticklabels():
+        label.set_color('r')
+        label.set_fontsize(9)
 
+    print("SAVING PLOT: " + filename)
     plt.savefig(filename)
     print("done")
     plt.clf()
 
-def make_plot(X, Y, filename, title):
+def make_plot(xdata, ydata, filename, title):
+    """Plot a single independent variable."""
     #        global DETAILS
     fig, ax1 = plt.subplots()
-    ax1.plot(X, Y, color='b', alpha=0.5, linewidth=2)
+    ax1.plot(xdata, ydata, color='b', alpha=0.5, linewidth=2)
     ax1.set_xlabel('Discrete Time Intervals', fontsize=9) #color='grey')
     ax1.set_ylabel(title, fontsize=9, color='b')
-    for tl in ax1.get_yticklabels():
-        tl.set_color('b')
-        tl.set_fontsize(9)
-    for tl in ax1.get_xticklabels():
-        #tl.set_color('grey')
-        tl.set_fontsize(9)
+    for label in ax1.get_yticklabels():
+        label.set_color('b')
+        label.set_fontsize(9)
+    for label in ax1.get_xticklabels():
+        #label.set_color('grey')
+        label.set_fontsize(9)
     #plt.plot( X, Y, '-' )
     #plt.title(title)
     #plt.xlabel( 'Discrete Time Intervals' )
     #plt.ylabel( 'Tumour Size' )
-    print("****", filename)
+    print("SAVING PLOT:" + filename)
     plt.savefig(filename)
     print("plot done")
     plt.clf()
 
-def make_hist(X, filename, title, bins):
-    plt.hist(X, bins, log=True)
+def make_hist(xdata, filename, title, bins):
+    """Plot a histogram."""
+    plt.hist(xdata, bins, log=True)
     plt.title(title)
+    print("SAVING HISTOGRAM: " + filename)
     plt.savefig(filename)
     print("plot done")
     plt.clf()
 
-def make_dual_hist(X1, X2, filename, title):
-    X1s = []
-    X2s = []
+def make_dual_hist(x1freqs, x2freqs, filename, title):
+    """Plot two histograms on the same axes."""
+    x1data = []
+    x2data = []
+
     #append for each 'cell'
-    for p in X1:
-        for i in range(0, p[1]):
-            X1s.append(p[0])
-    for p in X2:
-        for i in range(0, p[1]):
-            X2s.append(p[0])
+    for x1var, freq in x1freqs:
+        for _ in range(freq):
+            x1data.append(x1var)
+    for x2var, freq in x2freqs:
+        for _ in range(freq):
+            x2data.append(x2var)
 
-    b = 20
+    num_bins = 20
 
-    #plt.hist(X1s, X2s, normed =1, alpha = 0.35, log=True, color=['g','b'])
-    plt.hist(X1s, bins=b, alpha=0.45, log=True, linewidth=1)#, normed=1)
-    plt.hist(X2s, bins=b, alpha=0.45, log=True, linewidth=1)#, normed=1)
+    #plt.hist(x1data, x2data,
+    #         normed =1, alpha = 0.35, log=True, color=['g','b'])
+    plt.hist(x1data, bins=num_bins,
+             alpha=0.45, log=True, linewidth=1)#, normed=1)
+    plt.hist(x2data, bins=num_bins,
+             alpha=0.45, log=True, linewidth=1)#, normed=1)
     plt.title(title)
+    print("SAVING HISTOGRAM: " + filename)
     plt.savefig(filename)
     print("plot done")
     plt.clf()
@@ -317,10 +336,12 @@ def print_results(popn, when, end_time):
 
     """
 
-    filename = "{0}/{1}/{2}/{3}".format(popn.opt.test_group_dir,
-                                        popn.opt.param_set,
-                                        popn.opt.run_number,
-                                        when)
+    filename = "{0}/{1}/{2}/{3}_".format(popn.opt.test_group_dir,
+                                         popn.opt.param_set,
+                                         popn.opt.run_number,
+                                         when)
+
+    anlt = popn.analytics_base
 
     """
     if popn.opt.R:
@@ -328,61 +349,47 @@ def print_results(popn, when, end_time):
                 mutation_v_proliferation, mutation_v_proliferation_dat
     """
 
-    # Print only once at end of simulation #
-
-    if popn.selective_pressure_applied: #ONLY PRINT AT END OF SIM
-        #POPULATION
-        make_plot(popn.analytics_base.time,
-                  popn.analytics_base.population,
+    # Only make these plots at the end of the sim
+    if popn.selective_pressure_applied:
+        # Population vs Time
+        make_plot(anlt.time, anlt.population,
                   filename + "population_graph", "Population Size")
-        #SUBPOPULATION
-        make_plot(popn.analytics_base.time,
-                  popn.analytics_base.subpopulation,
+        # Clone count vs Time
+        make_plot(anlt.time, anlt.subpopulation,
                   filename + "subpop_graph", "No. of Clones")
+        # Effective Proliferation Rate
+        make_plot(anlt.time, anlt.proliferation,
+                  filename + "effect_prolif", "Effective Proliferation Rate")
+        # Avg Mutation Rate
+        make_plot(anlt.time, anlt.mutation,
+                  filename + "mutation_avg", "Average Mutation Rate")
 
-        #POPULATION + SUBPOPULATION
-        make_popsub(popn.analytics_base.time,
-                    popn.analytics_base.population,
-                    popn.analytics_base.time,
-                    popn.analytics_base.subpopulation,
-                    filename + "popsubpop", 'Tumour Size', 'No. of Clones')
-        #MUTATION RATE BUT SUBPOPULATION
-        make_popsub(popn.analytics_base.time,
-                    popn.analytics_base.mutation,
-                    popn.analytics_base.time,
-                    popn.analytics_base.subpopulation,
-                    filename + "mutsubpop", 'Average Mutation Rate',
-                    'No. of Clones')
-
-        #PROLIFERATION RATE + MUTATION RATE
-        make_popsub(popn.analytics_base.time,
-                    popn.analytics_base.mutation,
-                    popn.analytics_base.time,
-                    popn.analytics_base.proliferation,
-                    filename + "prolifmut", 'Mutation Rate',
-                    'Proliferation Rate')
-        #PROLIFERATION RATE + POPULATION
-        make_popsub(popn.analytics_base.time,
-                    popn.analytics_base.population,
-                    popn.analytics_base.time,
-                    popn.analytics_base.proliferation,
-                    filename + "prolifandpop", 'Tumour Size',
-                    'Proliferation Rate')
-
-        #EFFECTIVE PROLIFERATION RATE
-        make_plot(popn.analytics_base.time,
-                  popn.analytics_base.proliferation,
-                  filename + "effect_prolif", "EFFECT PROLIFERATION")
-        #MUTATION RATE AVG
-        make_plot(popn.analytics_base.time,
-                  popn.analytics_base.mutation,
-                  filename + "mutation_avg", "MUTATION AVG")
+        # Population vs Clone count
+        make_dual_plot(anlt.time,
+                       anlt.population, anlt.subpopulation,
+                       filename + "popsubpop",
+                       'Tumour Size', 'No. of Clones')
+        # Mutation rate vs Clone count
+        make_dual_plot(anlt.time,
+                       anlt.mutation, anlt.subpopulation,
+                       filename + "mutsubpop",
+                       'Average Mutation Rate', 'No. of Clones')
+        # Proliferation Rate vs Mutation Rate
+        make_dual_plot(anlt.time,
+                       anlt.mutation, anlt.proliferation,
+                       filename + "prolifmut",
+                       'Mutation Rate', 'Proliferation Rate')
+        # Proliferation Rate vs Population
+        make_dual_plot(anlt.time,
+                       anlt.population, anlt.proliferation,
+                       filename + "prolifandpop",
+                       'Tumour Size', 'Proliferation Rate')
 
         # Mutation...
         mut_distro = popn.subpop.tree_to_list("mutation_distribution")
         mutation_distribution(mut_distro,
                               filename + "mutation_distribution",
-                              "MUTATION V TIME - PRE/POST CRASH",
+                              "Mutation vs Time - Pre/Post Crash",
                               popn.opt.scale)
 
         # Mutation
@@ -390,27 +397,16 @@ def print_results(popn, when, end_time):
             mut_distro = popn.subpop.tree_to_list("mutation_distribution_1")
             mutation_crash(mut_distro,
                            filename + "mutation_distribution_1",
-                           "MUTATION V TIME - PRE/POST CRASH",
+                           "Mutation vs Time - Pre/Post Crash",
                            popn.opt.scale)
 
         #cell lines graph  - [(popn.s_time,popn.d_time)]
         make_subpop_life(popn.subpop.tree_to_list("cell_line_time"),
                          filename + "cell_lines_alpha",
-                         "CELL LIFESPAN", end_time, popn.opt.max_cycles,
+                         "Cell Lifespan", end_time, popn.opt.max_cycles,
                          popn.opt.select_time)
 
-        """
-        #cell lines graph  - [(popn.s_time,popn.d_time)]
-        make_subpop_life_mut(popn.subpop.tree_to_list("cell_line_time_mut"),
-                filename+"cell_lines_muta",
-                "CELL LIFESPAN",end_time,popn.opt.max_cycles,
-                popn.opt.select_time,popn.opt.mut,popn.tumoursize)
-        """
-
-
-    # Print at mid and end of simulation #
-
-    #PRINT END HISTOGRAM IF POPULATION STILL ALIVE
+    # Print these plots both at the crash, and at the end of sim
     if not popn.is_dead():
         #PROLIFERATION HISTOGRAM
         # [(popn.proliferation-popn.prolif_adj,popn.size)]
@@ -422,12 +418,12 @@ def print_results(popn, when, end_time):
 
         make_hist(pro_hist,
                   filename+"proliferation_hist",
-                  "PROLIFERATION RATES", 25)
+                  "Proliferation Rates", 25)
         #MUTATION HISTOGRAM
         # [popn.mutation]
         make_hist(mut_hist,
                   filename+"mutation_hist",
-                  "MUTATION RATES", 25)
+                  "Mutation Rates", 25)
         #POPULATION HISTOGRAM
         # [popn.size]
 
@@ -435,27 +431,27 @@ def print_results(popn, when, end_time):
 
         make_hist(pop_hist,
                   filename+"population_hist",
-                  "POPULATION DIVISION", 25)
+                  "Population Division", 25)
         #ALLELE FREQ
         # just_allele_freq z = z + [i/float(tumoursize)]
         norm, r, just_allele_freq = \
                 popn.subpop.freq_of_mutation(popn.tumoursize)
         make_hist(just_allele_freq,
                   filename + "allele",
-                  "ALLELE FREQ",
+                  "Allele Freq",
                   #bins equal to number of sub pops
-                  popn.analytics_base.subpopulation[-1])
+                  anlt.subpopulation[-1])
         #CELL CIRCLE MUT V PRO RATES
         # if size > 0 [(popn.mutation,popn.proliferation,popn.size)]
         mutation_v_proliferation(popn.subpop.tree_to_list("circles"),
                                  filename + "circles",
-                                 "MUTATION V PROLIFERATION RATES",
+                                 "Mutation vs Proliferation Rates",
                                  popn.opt.scale)
 
         # [(popn.mutation,popn.proliferation,popn.size)]
         mutation_v_proliferation(popn.subpop.tree_to_list("circles_all"),
                                  filename + "circles_all",
-                                 "MUTATION V PROLIFERATION RATES",
+                                 "Mutation vs Proliferation Rates",
                                  popn.opt.scale)
 
         #MAKE CIRCLES ACROSS ALL GRAPHS BY WRITING TO 1 FILE
@@ -464,14 +460,14 @@ def print_results(popn, when, end_time):
                                                  popn.opt.param_set)
         mutation_v_proliferation_dat(popn.subpop.tree_to_list("circles"),
                                      fpath,
-                                     "MUTATION V PROLIFERATION RATES",
+                                     "Mutation vs Proliferation Rates",
                                      popn.opt.scale)
         # [(popn.mutation,popn.proliferation,popn.size)]
         fpath = "{0}/{1}/{1}-circles_all.dat".format(popn.opt.test_group_dir,
                                                      popn.opt.param_set)
         mutation_v_proliferation_dat(popn.subpop.tree_to_list("circles_all"),
                                      fpath,
-                                     "MUTATION V PROLIFERATION RATES",
+                                     "Mutation vs Proliferation Rates",
                                      popn.opt.scale)
 
 
@@ -482,10 +478,10 @@ def print_plots(popn, when):
     If --R option parsed print raw output to file
     """
 
-    filename = "{0}/{1}/{2}/{3}".format(popn.opt.test_group_dir,
-                                        popn.opt.param_set,
-                                        popn.opt.run_number,
-                                        when)
+    filename = "{0}/{1}/{2}/{3}_".format(popn.opt.test_group_dir,
+                                         popn.opt.param_set,
+                                         popn.opt.run_number,
+                                         when)
 
     """
     if popn.opt.R:
