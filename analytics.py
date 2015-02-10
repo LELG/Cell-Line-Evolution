@@ -43,10 +43,10 @@ class Analytics(object):
         self.time = []
         self.mutation = []
         self.proliferation = []
-        self.subpop_mutation = []
-        self.subpop_proliferation = []
+        #self.subpop_mutation = []
+        #self.subpop_proliferation = []
 
-    def update(self, sim, popn, t):
+    def update(self, popn, treatmt, t):
         """
         Update analytics for a single time step.
         """
@@ -55,8 +55,9 @@ class Analytics(object):
         self.time.append(t)
 
         # append effective proliferation
-        if sim.treatment_introduced:
-            self.proliferation.append(popn.avg_pro_rate - sim.select_pressure)
+        if treatmt.is_introduced:
+            eff_prolif = popn.avg_pro_rate - treatmt.select_pressure
+            self.proliferation.append(eff_prolif)
         else:
             self.proliferation.append(popn.avg_pro_rate)
 

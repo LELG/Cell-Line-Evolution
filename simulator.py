@@ -119,7 +119,7 @@ class Simulator(object):
         """
         self.treatmt.update(self.popn, t)
         self.popn.update(self.treatmt, t)
-        self.popn.analytics_base.update(self, self.popn, t)
+        self.popn.analytics_base.update(self.treatmt, self.popn, t)
 
         """
         if not self.treatmt.is_introduced:
