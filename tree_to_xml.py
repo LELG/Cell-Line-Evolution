@@ -36,6 +36,8 @@ def print_clade(clade, min_size, time, phylo_filepath):  #'clade' is subpop
     if 1: #len(clade.idnt) > 0:
         if clade.size > min_size or clade.depth == 0:
             phylo_file = open(phylo_filepath, 'a')
+            if time == 0:
+                time = 1
             clade_hdr = '<clade branch_length="{0}">\n'.format(clade.branch_length/time)
             clade_name = "<name> p:{} m:{} s:{} r:{} </name>\n"
             clade_name = clade_name.format(str(clade.proliferation)[0:6],
