@@ -252,7 +252,6 @@ class Population(object):
         start_time = time.time() # start timing simulation
 
         for i in range(0, self.opt.max_cycles):
-            self.analytics_base.time.append(i)
             ratio = float(self.tumoursize) / float(self.max_size_lim)
             #beta(alpha=3,beta=1)
             """ NEW BEGIN """
@@ -283,14 +282,7 @@ class Population(object):
                 avg_mut_rate = agg_mut / float(self.tumoursize)
                 avg_pro_rate = agg_pro / float(self.tumoursize)
 
-            analytics_base.update(self, i, avg_mut_rate, avg_pro_rate)
-
-            if self.opt.A: #auto dynamic restriction of size
-                if self.analytics_base.proliferation[-1] > self.opt.pro:
-                    #if avg pro higher than normal, use it as top
-                    self.prolif_lim = self.analytics_base.proliferation[-1] - self.opt.die
-                else:
-                    self.prolif_lim = self.opt.pro
+            self.analytics_base.update(self, i, avg_mut_rate, avg_pro_rate)
 
             if not self.selective_pressure_applied:
                 if i == self.opt.select_time:

@@ -178,8 +178,6 @@ def main():
         Prune tree while running for larger executions
     --NP: bool
         Don't print plots for this simulation
-    --A : bool
-        Broken parameter (do not use)
 
     Returns
     -------
@@ -226,11 +224,9 @@ def main():
     parser.add_argument('--M', action="store_true", default=False)
     parser.add_argument('--Z', action="store_true", default=False)
     parser.add_argument('--NP', action="store_true", default=False)
-    # TODO deprecate --A flag
-    parser.add_argument('--A', action="store_true", default=False)
 
     opt = parser.parse_args()
-    
+
     # calculate proliferation limit and store in parameter set
     opt.prolif_lim = opt.pro - opt.die
 
