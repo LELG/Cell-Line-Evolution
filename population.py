@@ -10,53 +10,12 @@ Yoshua Wakeham : yoshua.wakeham@petermac.org
 from __future__ import print_function
 import os
 import csv
+from analytics import Analytics
 from subpopulation import Subpopulation
 import tree_to_xml
 import time
 import dropdata
 from utilities import secs_to_hms
-
-
-class Analytics(object):
-    """
-    Simple class for recording analytics on population.
-
-    population
-        population size at each point in time
-    subpopulation
-        number of subpopulations (clones) at each time
-    time
-        list of time 1... 1000 for plot purposes
-    mutation
-        Store average mutation rate at each point in time
-    proliferation
-        Store average proliferation at each point in time
-    subpop_mutation
-        Store mutation rate for each subpopulation
-    subpop_proliferation
-        Store Proliferation rate for each subpopulation
-    """
-    def __init__(self):
-        self.population = []
-        self.subpopulation = []
-        self.time = []
-        self.mutation = []
-        self.proliferation = []
-        self.subpop_mutation = []
-        self.subpop_proliferation = []
-
-    def update(self, population, t, avg_mut_rate, avg_pro_rate):
-        self.population.append(population.tumoursize)
-        self.subpopulation.append(population.clonecount)
-        self.time.append(t)
-
-        #EFFECTIVE PROLIFERATION
-        if self.time[-1] > population.opt.select_time:
-            self.proliferation.append(avg_pro_rate - population.opt.select_pressure)
-        else:
-            self.proliferation.append(avg_pro_rate)
-
-        self.mutation.append(avg_mut_rate)
 
 
 class Population(object):
@@ -91,145 +50,13 @@ class Population(object):
         self.select_pressure = 0.0
         self.mutagenic_pressure = 0.0
         self.selective_pressure_applied = False
+        self.avg_pro_rate = self.opt.pro
+        self.avg_mut_rate = self.opt.mut
+        self.mid_proliferation = []
+        self.mid_mutation = []
         if opt.init_diversity:
             self.subpop.size = 0 #don't use init dummy popn if reading from file
             self.subpop.newsubpop_from_file(self.opt.sub_file)
-
-
-    def write_population_summary(self, num_cycles, elapsed_time, recovered):
-        """
-        Write simulation summary to file(s).
-
-        Write summary data about this simulation run
-        to two summary files, in CSV format:
-
-        'testgroup_results.csv' (master summary file for this test group)
-        'testgroup_paramset_results.csv' (summary for this param set only)
-        """
-
-        # localtime = time.asctime( time.localtime(time.time()) )
-
-        #Get min and max values pre crash
-        min_val, min_time, max_val, max_time = self.precrash_minmax()
-        cmin_val = cmin_time = cmax_val = cmax_time = 0
-
-        if self.went_through_crash():
-            #Get min and max values post crash
-            #if survived past the crash + buffer
-            cmin_val, cmin_time, cmax_val, cmax_time = self.postcrash_minmax()
-            #hasty fix for calculting max time
-            if cmax_time == 0 and recovered:
-                cmax_time = num_cycles
-
-        recover, recover_type, recover_percent = self.complete_status()
-
-        went_through_crash = 'N'
-        #size_from_precrash = 0
-        if self.went_through_crash():
-            went_through_crash = 'Y'
-            #pp = self.subpop.tree_to_list("two_side_size")
-            #print("pp",pp)
-            #for (pre, pos) in pp:
-            #    if pre > 0:
-            #        size_from_precrash += pos
-
-
-        #TRACE self.opt.pro
-
-        tg_res_fpath = "{0}/{1}_results.csv".format(self.opt.test_group_dir,
-                                                    self.opt.test_group)
-        ps_res_fpath = "{0}/{1}/{2}_{1}_results.csv".format(self.opt.test_group_dir,
-                                                            self.opt.param_set,
-                                                            self.opt.test_group)
-        tg_results_file = open(tg_res_fpath, 'a')
-        ps_results_file = open(ps_res_fpath, 'a')
-        tg_writer = csv.writer(tg_results_file)
-        ps_writer = csv.writer(ps_results_file)
-
-        # assemble values to write
-        summary_vals = (self.opt.param_set, self.opt.run_number,
-                        went_through_crash,
-                        recover, recover_type, recover_percent,
-                        self.opt.pro, self.opt.die, self.opt.mut,
-                        self.opt.select_time, self.opt.select_pressure,
-                        self.subpop.prob_mut_pos, self.subpop.prob_mut_neg,
-                        self.subpop.prob_inc_mut, self.subpop.prob_dec_mut,
-                        self.analytics_base.population[-1],    # pop_size
-                        self.analytics_base.subpopulation[-1], # num_clones
-                        self.analytics_base.mutation[-1],      # avg_mut_rate
-                        self.analytics_base.proliferation[-1], # avg_pro_rate
-                        secs_to_hms(elapsed_time),
-                        len(self.analytics_base.population),   # elapsed_cycles
-                        min_val, min_time,
-                        max_val, max_time,
-                        cmin_val, cmin_time,
-                        cmax_val, cmax_time)
-
-        tg_writer.writerow(summary_vals)
-        ps_writer.writerow(summary_vals)
-        tg_results_file.close()
-        ps_results_file.close()
-
-
-    def went_through_crash(self):
-        """Determine whether this population survived the crash."""
-        crash_buffer = 25 #check just past crash time
-        post_crash_time = self.opt.select_time + crash_buffer
-        return len(self.analytics_base.population) > post_crash_time
-
-
-    def complete_status(self):
-        """
-        Return recovery, full or partial,  percent
-
-        eg. 'N'
-        eg. 'Y'
-        """
-        recover = 'N'
-        recover_type = 'NONE'
-
-        if self.went_through_crash():
-            if self.tumoursize > (self.max_size_lim/2):
-                recover = 'Y'
-                recover_type = 'PART'
-                if self.tumoursize > self.max_size_lim * 0.75:
-                    # recovered population is > 75% of original size
-                    recover_type = 'FULL'
-        else: #didnt crash
-            if self.tumoursize > self.max_size_lim * 0.75:
-                recover_type = 'FULLNC'
-                recover = 'Y'
-
-        recover_percent = self.tumoursize / float(self.max_size_lim)
-
-        return recover, recover_type, recover_percent
-
-
-    def postcrash_minmax(self):
-        """Return data on max and min post-crash population size."""
-        post_crash_pop = self.analytics_base.population[self.opt.select_time:]
-        min_val = min(post_crash_pop) #VALIDATION - can return empty
-        min_val_index = post_crash_pop[post_crash_pop.index(min_val)]
-        #VALIDATION - can return empty
-        #maximum value after lowest point
-        max_val = 0
-        max_time = 0
-        if post_crash_pop[min_val_index:]:
-            max_val = max(post_crash_pop[min_val_index:])
-            max_time = post_crash_pop.index(max_val) + self.opt.select_time
-        #add back time that we cut out when filtering post crash
-        min_time = post_crash_pop.index(min_val) + self.opt.select_time
-        #max time after low point
-        return min_val, min_time, max_val, max_time
-
-    def precrash_minmax(self):
-        pre_crash_pop =\
-                self.analytics_base.population[:self.opt.select_time]
-        min_val = min(pre_crash_pop)
-        max_val = max(pre_crash_pop)
-        min_time = pre_crash_pop.index(min_val)
-        max_time = pre_crash_pop.index(max_val)
-        return min_val, min_time, max_val, max_time
 
     def info(self):
         print("Parameter Set: ", self.opt)
@@ -249,24 +76,12 @@ class Population(object):
                                            self.mutagenic_pressure,
                                            t, prolif_adj)
         self.tumoursize, self.clonecount, agg_mut, agg_pro = subpop_results
-        avg_mut_rate = 0
-        avg_pro_rate = 0
         if self.tumoursize > 0:
-            avg_mut_rate = agg_mut / float(self.tumoursize)
-            avg_pro_rate = agg_pro / float(self.tumoursize)
-
-        self.analytics_base.update(self, t, avg_mut_rate, avg_pro_rate)
-
-    def selective_pressure(self):
-        self.select_pressure = self.opt.select_pressure
-        self.mutagenic_pressure = self.opt.mutagenic_pressure
-        self.mid_proliferation = self.subpop.tree_to_list("proliferation_size")
-        self.mid_mutation = self.subpop.tree_to_list("mutation_rate")
-
+            self.avg_mut_rate = agg_mut / float(self.tumoursize)
+            self.avg_pro_rate = agg_pro / float(self.tumoursize)
 
     def print_results(self, when, end_time):
         """ Print all results to plots / file
-
 
         Print result to graphs using matplotlib
         If --R option parsed print raw output to file
