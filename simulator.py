@@ -37,7 +37,7 @@ class Simulator(object):
     The Simulator object controls all high-level
     aspects of the simulation, and co-ordinates
     interactions between the Population (tumour)
-    and treatment objects.
+    and Treatment objects.
     """
     def __init__(self, parameters):
         """
@@ -73,7 +73,10 @@ class Simulator(object):
         self.total_cycles = self.max_cycles
 
         # create a Population object
-        self.popn = population.Population(parameters)
+        if self.init_diversity:
+            self.popn = population.Population.init_from_subfile(parameters)
+        else:
+            self.popn = population.Population(parameters)
 
 
     def run(self):
@@ -145,7 +148,7 @@ class Simulator(object):
             self.print_status_update(t)
 
     def finish(self, end_condition):
-        print("Simulation complete: {}".format(end_condition))
+        print("SIMULATION ENDED: {}".format(end_condition))
         self.popn.write_population_summary(self.total_cycles, self.runtime, self.popn_recovered)
         if not self.NP:
             self.popn.print_results("end", self.total_cycles)
@@ -166,5 +169,13 @@ class Simulator(object):
 
     def print_status_update(self, t):
         os.system('clear')
-        print("Cycle {0} of {1}: Tumour size: {2}".format(t, self.max_cycles,
-                                                          self.popn.tumoursize))
+        status_msg = """
+Tumour Evolution Simulation
+---------------------------
+
+      ... running ...
+
+Cycle:       {0} of {1}
+Tumour size: {2}
+"""
+        print(status_msg.format(t, self.max_cycles, self.popn.tumoursize))
