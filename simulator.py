@@ -22,13 +22,13 @@ Change log
 import time
 import os
 import csv
-import popln.population as population
-import popln.treatment as treatment
-import popln.analytics as analytics
-from popln.utilities import secs_to_hms
-import popln.tree_to_xml as tree_to_xml
-import popln.plotdata as plotdata
-import popln.dropdata as dropdata
+import population
+import treatment
+import analytics
+from utilities import secs_to_hms
+import tree_to_xml
+import plotdata
+import dropdata
 
 END_POP_TOO_LARGE = "Population exceeded size limit."
 END_POP_DIED_OUT = "Population died out."

@@ -22,7 +22,7 @@ matplotlib.use('Agg')
 import argparse
 import os
 import csv
-import popln.simulator as simulator
+import simulator as simulator
 
 
 def main():
