@@ -221,7 +221,7 @@ Tumour size: {2}
         """Print information about this simulation."""
         print("Simulation Parameter Set")
         print("------------------------")
-        for attr, val in self.opt:
+        for attr, val in vars(self.opt).items():
             print("{}: {}".format(attr, val))
 
     def write_summary(self, popn, treatmt, num_cycles, elapsed_time, recovered):
