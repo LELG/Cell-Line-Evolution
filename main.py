@@ -1,14 +1,19 @@
 """
-Genomic Instability Simulation
+Parse command line arguments, and start the simulation.
 
-Simulate growth of and mutation of cancer cells
-and introduction of selective pressure
+Authors
+-------
+Andrew Bakshi : andrew.bakshi@gmail.com
+Yoshua Wakeham : yoshwakeham@gmail.com
 
+Date created
+------------
+01 April 2014
 """
 from __future__ import print_function
 
-# Force matplotlib not to use any Xwindows backend
-# to avoid error on the PMCI cluster. Note that
+# Force matplotlib not to use any Xwindows backend,
+# to avoid an error on the PMCI cluster. Note that
 # this import and call to matplotlib.use() must
 # appear before any other matplotlib import
 import matplotlib
@@ -17,35 +22,30 @@ matplotlib.use('Agg')
 import argparse
 import os
 import csv
-import simulator
-# import population
+import popln.simulator as simulator
 
 
 def main():
     """
-    Parse simulation parameters, create results file, and run simulation.
+    Create results files and run simulation with given params.
 
-    This function gets simulation parameters from the
-    command line; creates two new summary files (one for storing
-    all results from this group of tests, the other containing
-    only results from a single parameter set); and starts
-    the simulation with the given parameter set. The parameters
-    are as follows:
+    Get simulation parameters from the command line;
+    create summary files (one for storing all results
+    from this group of tests, the other only results
+    from this parameter set); run the simulation with
+    the given parameters.
+
+    Args
+    ----
+    None
 
     Returns
     -------
-    None.
-
-    See also
-    --------
-    parse_cmd_line_args : describes command line arguments
+    None
     """
     opt = parse_cmd_line_args()
 
-    # calculate proliferation limit and store in parameter set
-    opt.prolif_lim = opt.pro - opt.die
-
-    # create results files, if they don't already exist
+    # create results files, unless they already exist
     tgroup_summary_path = "{0}/{1}_results.csv".format(opt.test_group_dir,
                                                        opt.test_group)
     pset_summary_path = "{0}/{1}_{2}_results.csv".format(opt.param_set_dir,
@@ -56,19 +56,25 @@ def main():
     if not os.path.exists(pset_summary_path):
         initialise_results(pset_summary_path)
 
-    # finally, run simulation
+    # create and run simulation
     sim = simulator.Simulator(opt)
-    sim.popn.info()
+    # print initial sim information
+    sim.print_info()
     sim.run()
 
 
 def parse_cmd_line_args():
     """
-    Parse simulation parameters.
+    Parse simulation parameters from command line.
 
-    This function reads in simulation parameters from
-    command line arguments, storing them in a namespace object.
-    The parameters are as follows:
+    Read in simulation parameters from
+    command line arguments, storing them in a
+    namespace object.
+
+    Args
+    ----
+    None. The accepted command line arguments
+    are as follows:
 
     test_group : string
         Identifier for current group of simulations.
@@ -143,15 +149,14 @@ def parse_cmd_line_args():
 
     Returns
     -------
-    opt : an argparse.Namespace() object containing
-        the values of the above parameters.
+    An argparse.Namespace() containing the
+    supplied values of the above parameters.
     """
-
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-g', '--test_group', default='default_test_group')
-    parser.add_argument('--param_set', type=str, default='1')
-    parser.add_argument('--run_number', type=int, default=1)
+    parser.add_argument('-g', '--test_group')
+    parser.add_argument('--param_set')
+    parser.add_argument('--run_number', type=int)
 
     parser.add_argument('--test_group_dir')
     parser.add_argument('--param_set_dir')
@@ -164,53 +169,57 @@ def parse_cmd_line_args():
     parser.add_argument('-d', '--die', type=float)
     parser.add_argument('-m', '--mut', type=float)
 
-    parser.add_argument('-t', '--select_time', type=int, default=400000)
-    parser.add_argument('-s', '--select_pressure', type=float, default=0.01)
-    parser.add_argument('-u', '--mutagenic_pressure', type=float, default=0.0)
+    parser.add_argument('-t', '--select_time', type=int)
+    parser.add_argument('-s', '--select_pressure', type=float)
+    parser.add_argument('-u', '--mutagenic_pressure', type=float)
 
     parser.add_argument('--prob_mut_pos', type=float)
     parser.add_argument('--prob_mut_neg', type=float)
     parser.add_argument('--prob_inc_mut', type=float)
     parser.add_argument('--prob_dec_mut', type=float)
 
-    parser.add_argument('-z', '--init_size', type=int, default=25)
-    parser.add_argument('--init_diversity', type=int, default=0)
-    parser.add_argument('--sub_file', default='zero_inc.csv')
+    parser.add_argument('-z', '--init_size', type=int)
+    parser.add_argument('--init_diversity', type=int)
+    parser.add_argument('--sub_file')
 
-    parser.add_argument('-c', '--scale', type=float, default=1000.0)
-    parser.add_argument('-e', '--mscale', type=float, default=1000.0)
+    parser.add_argument('-c', '--scale', type=float)
+    parser.add_argument('-e', '--mscale', type=float)
 
     parser.add_argument('--R', action="store_true", default=False)
     parser.add_argument('--M', action="store_true", default=False)
     parser.add_argument('--Z', action="store_true", default=False)
     parser.add_argument('--NP', action="store_true", default=False)
 
-    opt = parser.parse_args()
-    return opt
+    return parser.parse_args()
 
 
 def initialise_results(filepath):
     """
-    Initialise results file for this simulation.
+    Create a results file.
 
-    Attempt to create a new summary file in the
-    specified directory, raising an exception if
-    the directory does not exist.
+    Attempt to create a new simulation summary
+    file in the specified directory, raising an
+    exception if the directory does not exist.
 
+    Note
+    ----
     This function specifies the column structure of the
     results file; at some later date, it might make
     sense to specify the structure elsewhere, and pass
     that as an argument to this function.
 
-    Parameters
-    ----------
+    Args
+    ----
     filepath : string
         Location of the results file to be created.
 
     Returns
     -------
-    None. Writes to file.
+    None
 
+    Raises
+    ------
+    IOError: If `filepath` is invalid.
     """
 
     columns = ('param_set', 'run_number',
@@ -237,42 +246,6 @@ def initialise_results(filepath):
     results_writer.writerow(columns)
     results_file.close()
 
-'''
-def run_simulation(opt):
-    """
-    Run simulation.
-
-    Create a new population (including associated
-    analytics object); print details of population
-    parameters to stdout; then begin simulation cycle.
-
-    If the population dies out prematurely, restart
-    the simulation.
-
-    Parameters
-    ----------
-    opt : argparse.Namespace object
-        Set of simulation parameters, originally
-        specified as command line arguments
-
-    Returns
-    -------
-    No return value. Creates several output files.
-
-    See Also
-    --------
-    population and subpopulation, for details
-    on output files.
-    """
-
-    population_base = population.Population(opt)
-    population_base.info()
-
-    while not population_base.cycle(opt):
-        population_base = population.Population(opt)
-        population_base.info()
-        print("restarting simulation - did not grow")
-'''
 
 if __name__ == '__main__':
     main()
