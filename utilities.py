@@ -31,7 +31,7 @@ def secs_to_hms(time_delta):
     """Convert a time delta in seconds to HH:MM:SS.S representation."""
     mins, secs = divmod(time_delta, 60)
     hours, mins = divmod(mins, 60)
-    return "{:02d}:{:02d}:{:.1f}".format(int(hours), int(mins), secs)
+    return "{:02d}:{:02d}:{:04.1f}".format(int(hours), int(mins), secs)
 
 
 def make_path_unless_exists(path):
