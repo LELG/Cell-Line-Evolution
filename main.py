@@ -171,7 +171,7 @@ def parse_cmd_line_args():
 
     parser.add_argument('-t', '--select_time', type=int)
     parser.add_argument('-s', '--select_pressure', type=float)
-    parser.add_argument('-u', '--mutagenic_pressure', type=float)
+    parser.add_argument('-u', '--mutagenic_pressure', type=float, default=0.0)
 
     parser.add_argument('--prob_mut_pos', type=float)
     parser.add_argument('--prob_mut_neg', type=float)
