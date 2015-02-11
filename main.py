@@ -46,15 +46,15 @@ def main():
     opt.prolif_lim = opt.pro - opt.die
 
     # create results files, if they don't already exist
-    tgroup_summ_path = "{0}/{1}_results.csv".format(opt.test_group_dir,
-                                                    opt.test_group)
-    pset_summ_path = "{0}/{1}/{2}_{1}_results.csv".format(opt.test_group_dir,
-                                                          opt.param_set,
-                                                          opt.test_group)
-    if not os.path.exists(tgroup_summ_path):
-        initialise_results(tgroup_summ_path)
-    if not os.path.exists(pset_summ_path):
-        initialise_results(pset_summ_path)
+    tgroup_summary_path = "{0}/{1}_results.csv".format(opt.test_group_dir,
+                                                       opt.test_group)
+    pset_summary_path = "{0}/{1}_{2}_results.csv".format(opt.param_set_dir,
+                                                         opt.test_group,
+                                                         opt.param_set)
+    if not os.path.exists(tgroup_summary_path):
+        initialise_results(tgroup_summary_path)
+    if not os.path.exists(pset_summary_path):
+        initialise_results(pset_summary_path)
 
     # finally, run simulation
     sim = simulator.Simulator(opt)
@@ -72,14 +72,19 @@ def parse_cmd_line_args():
 
     test_group : string
         Identifier for current group of simulations.
-    test_group_dir : string
-        Main directory for this group of simulations.
     param_set : string
         Identifier of a given parameter set.
     run_number : integer
         Counter that tracks how many times this
         particular parameter set has been run in
         this set of simulations.
+
+    test_group_dir : string
+        Main directory for this group of simulations.
+    param_set_dir : string
+        Directory for this particular parameter set.
+    run_dir : string
+        Directory for this specific replicate run.
 
     max_cycles : integer
         Maximum number of time steps in simulation
@@ -145,9 +150,12 @@ def parse_cmd_line_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('-g', '--test_group', default='default_test_group')
-    parser.add_argument('--test_group_dir')
     parser.add_argument('--param_set', type=str, default='1')
     parser.add_argument('--run_number', type=int, default=1)
+
+    parser.add_argument('--test_group_dir')
+    parser.add_argument('--param_set_dir')
+    parser.add_argument('--run_dir')
 
     parser.add_argument('-l', '--max_cycles', type=int)
     parser.add_argument('-x', '--max_size_lim', type=int)

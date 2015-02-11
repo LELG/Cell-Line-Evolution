@@ -336,10 +336,7 @@ def print_results(popn, when, end_time):
 
     """
 
-    filename = "{0}/{1}/{2}/{3}_".format(popn.opt.test_group_dir,
-                                         popn.opt.param_set,
-                                         popn.opt.run_number,
-                                         when)
+    filename = "{0}/{1}_".format(popn.opt.run_dir, when)
 
     anlt = popn.analytics_base
 
@@ -456,15 +453,15 @@ def print_results(popn, when, end_time):
 
         #MAKE CIRCLES ACROSS ALL GRAPHS BY WRITING TO 1 FILE
         # if size > 0 [(popn.mutation,popn.proliferation,popn.size)]
-        fpath = "{0}/{1}/{1}-circles.dat".format(popn.opt.test_group_dir,
-                                                 popn.opt.param_set)
+        fpath = "{0}/{1}-circles.dat".format(popn.opt.param_set_dir,
+                                             popn.opt.param_set)
         mutation_v_proliferation_dat(popn.subpop.tree_to_list("circles"),
                                      fpath,
                                      "Mutation vs Proliferation Rates",
                                      popn.opt.scale)
         # [(popn.mutation,popn.proliferation,popn.size)]
-        fpath = "{0}/{1}/{1}-circles_all.dat".format(popn.opt.test_group_dir,
-                                                     popn.opt.param_set)
+        fpath = "{0}/{1}-circles_all.dat".format(popn.opt.param_set_dir,
+                                                 popn.opt.param_set)
         mutation_v_proliferation_dat(popn.subpop.tree_to_list("circles_all"),
                                      fpath,
                                      "Mutation vs Proliferation Rates",
@@ -478,10 +475,7 @@ def print_plots(popn, when):
     If --R option parsed print raw output to file
     """
 
-    filename = "{0}/{1}/{2}/{3}_".format(popn.opt.test_group_dir,
-                                         popn.opt.param_set,
-                                         popn.opt.run_number,
-                                         when)
+    filename = "{0}/{1}_".format(popn.opt.run_dir, when)
 
     """
     if popn.opt.R:

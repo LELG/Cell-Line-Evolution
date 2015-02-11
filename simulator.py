@@ -49,9 +49,12 @@ class Simulator(object):
         Create new Simulator from command line parameters.
         """
         self.test_group = parameters.test_group
-        self.test_group_dir = parameters.test_group_dir
         self.param_set = parameters.param_set
         self.run_number = parameters.run_number
+
+        self.test_group_dir = parameters.test_group_dir
+        self.param_set_dir = parameters.param_set_dir
+        self.run_dir = parameters.run_dir
 
         self.max_cycles = parameters.max_cycles
         self.max_size_lim = parameters.max_size_lim
@@ -59,7 +62,7 @@ class Simulator(object):
         self.init_diversity = parameters.init_diversity
         self.sub_file = parameters.sub_file
 
-        # TODO shift these parameters to Treatment class
+        # TODO shift these parameters to Treatment class?
         self.select_time = parameters.select_time
         self.select_pressure = parameters.select_pressure
         self.mutagenic_pressure = parameters.mutagenic_pressure
@@ -166,9 +169,7 @@ class Simulator(object):
                            self.total_cycles, self.runtime,
                            self.popn_recovered)
         # test analytics dump function
-        fpath = "{0}/{1}/{2}/alldata.csv".format(self.test_group_dir,
-                                                 self.param_set,
-                                                 self.run_number)
+        fpath = "{0}/alldata.csv".format(self.run_dir)
         self.popn.analytics_base.write_to_file(fpath)
         if not self.NP:
             plotdata.print_results(self.popn, "end", self.total_cycles)
@@ -224,13 +225,13 @@ Tumour size: {2}
 
         recover, recover_type, recover_percent = analytics.completion_status(self, popn)
 
-        tg_res_fpath = "{0}/{1}_results.csv".format(self.test_group_dir,
-                                                    self.test_group)
-        ps_res_fpath = "{0}/{1}/{2}_{1}_results.csv".format(self.test_group_dir,
-                                                            self.param_set,
-                                                            self.test_group)
-        tg_results_file = open(tg_res_fpath, 'a')
-        ps_results_file = open(ps_res_fpath, 'a')
+        tg_summary_fpath = "{0}/{1}_results.csv".format(self.test_group_dir,
+                                                        self.test_group)
+        ps_summary_fpath = "{0}/{1}_{2}_results.csv".format(self.param_set_dir,
+                                                            self.test_group,
+                                                            self.param_set)
+        tg_results_file = open(tg_summary_fpath, 'a')
+        ps_results_file = open(ps_summary_fpath, 'a')
         tg_writer = csv.writer(tg_results_file)
         ps_writer = csv.writer(ps_results_file)
 

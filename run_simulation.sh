@@ -56,10 +56,10 @@ then
 else
   echo "Warning: results for test group "$test_group" already exist"
   i=1
-  while [ -d $test_group_dir-$i ] ; do
+  while [ -d "$test_group_dir($i)" ] ; do
     let i++
   done
-  test_group_dir="$test_group_dir-$i"
+  test_group_dir="$test_group_dir($i)"
   echo "Creating test group directory: "$test_group_dir" ..."
   mkdir -p $test_group_dir
   echo "Done"
@@ -114,8 +114,10 @@ for mutation_rate in $mutation_values; do
     echo "Run "$run_number" of "$runs_per_param_set
 
     # build up full list of parameters to main.py
-    sim_params="--test_group $test_group --test_group_dir $test_group_dir"
-    sim_params="$sim_params --param_set $param_set --run_number $run_number"
+    sim_params="--test_group $test_group --param_set $param_set --run_number $run_number"
+    sim_params="$sim_params --test_group_dir $test_group_dir"
+    sim_params="$sim_params --param_set_dir $param_set_dir"
+    sim_params="$sim_params --run_dir $run_dir"
     sim_params="$sim_params --max_cycles $max_cycles --max_size_lim $max_size_lim"
     sim_params="$sim_params -p $proliferation_rate -d $death_rate -m $mutation_rate"
     sim_params="$sim_params --select_time $select_time --select_pressure $selective_pressure"
