@@ -82,10 +82,10 @@ class Analytics(object):
         data_file.close()
 
 
-def went_through_crash(sim, popn):
+def went_through_crash(treatmt, popn):
     """Determine whether a population survived the crash."""
     CRASH_BUFFER = 25 #check just past crash time
-    post_crash_time = sim.select_time + CRASH_BUFFER
+    post_crash_time = treatmt.select_time + CRASH_BUFFER
     return len(popn.analytics_base.time) > post_crash_time
 
 
@@ -115,9 +115,9 @@ def completion_status(sim, popn):
     return recover, recover_type, recover_percent
 
 
-def postcrash_minmax(sim, popn):
+def postcrash_minmax(treatmt, popn):
     """Return data on max and min post-crash population size."""
-    post_crash_pop = popn.analytics_base.population[sim.select_time:]
+    post_crash_pop = popn.analytics_base.population[treatmt.select_time:]
     min_val = min(post_crash_pop) #VALIDATION - can return empty
     min_val_index = post_crash_pop[post_crash_pop.index(min_val)]
     #VALIDATION - can return empty
@@ -126,15 +126,15 @@ def postcrash_minmax(sim, popn):
     max_time = 0
     if post_crash_pop[min_val_index:]:
         max_val = max(post_crash_pop[min_val_index:])
-        max_time = post_crash_pop.index(max_val) + sim.select_time
+        max_time = post_crash_pop.index(max_val) + treatmt.select_time
     #add back time that we cut out when filtering post crash
-    min_time = post_crash_pop.index(min_val) + sim.select_time
+    min_time = post_crash_pop.index(min_val) + treatmt.select_time
     #max time after low point
     return min_val, min_time, max_val, max_time
 
 
-def precrash_minmax(sim, popn):
-    pre_crash_pop = popn.analytics_base.population[:sim.select_time]
+def precrash_minmax(treatmt, popn):
+    pre_crash_pop = popn.analytics_base.population[:treatmt.select_time]
     min_val = min(pre_crash_pop)
     max_val = max(pre_crash_pop)
     min_time = pre_crash_pop.index(min_val)

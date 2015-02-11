@@ -238,15 +238,15 @@ Tumour size: {2}
         # localtime = time.asctime( time.localtime(time.time()) )
 
         #Get min and max values pre crash
-        min_val, min_time, max_val, max_time = analytics.precrash_minmax(self, popn)
+        min_val, min_time, max_val, max_time = analytics.precrash_minmax(treatmt, popn)
         cmin_val = cmin_time = cmax_val = cmax_time = 0
 
         went_through_crash = 'N'
-        if analytics.went_through_crash(self, popn):
+        if analytics.went_through_crash(treatmt, popn):
             went_through_crash = 'Y'
             #Get min and max values post crash
             #if survived past the crash + buffer
-            cmin_val, cmin_time, cmax_val, cmax_time = analytics.postcrash_minmax(self, popn)
+            cmin_val, cmin_time, cmax_val, cmax_time = analytics.postcrash_minmax(treatmt, popn)
             #hasty fix for calculting max time
             if cmax_time == 0 and recovered:
                 cmax_time = num_cycles
