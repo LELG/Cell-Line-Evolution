@@ -119,7 +119,7 @@ class Simulator(object):
         """
         self.treatmt.update(self.popn, t)
         self.popn.update(self.treatmt, t)
-        self.popn.analytics_base.update(self.treatmt, self.popn, t)
+        self.popn.analytics_base.update(self.popn, self.treatmt, t)
 
         """
         if not self.treatmt.is_introduced:
@@ -165,6 +165,11 @@ class Simulator(object):
         self.write_summary(self.popn, self.treatmt,
                            self.total_cycles, self.runtime,
                            self.popn_recovered)
+        # test analytics dump function
+        fpath = "{0}/{1}/{2}/alldata.csv".format(self.test_group_dir,
+                                                 self.param_set,
+                                                 self.run_number)
+        self.popn.analytics_base.write_to_file(fpath)
         if not self.NP:
             plotdata.print_results(self.popn, "end", self.total_cycles)
             plotdata.print_plots(self.popn, "new")
@@ -178,7 +183,7 @@ class Simulator(object):
 
 
     def print_status_update(self, t):
-        #os.system('clear')
+        os.system('clear')
         status_msg = """
 Tumour Evolution Simulation
 ---------------------------

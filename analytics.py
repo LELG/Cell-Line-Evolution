@@ -16,7 +16,7 @@ Notes
 Change log
 ----------
 """
-
+import csv
 
 class Analytics(object):
     """
@@ -62,6 +62,24 @@ class Analytics(object):
             self.proliferation.append(popn.avg_pro_rate)
 
         self.mutation.append(popn.avg_mut_rate)
+
+    def write_to_file(self, filepath):
+        """
+        Write all analytics data to a CSV file.
+        """
+        data_file = open(filepath, 'w')
+        writer = csv.writer(data_file)
+
+        # get list of attributes
+        data_dict = vars(self)
+        # construct list of lists of the form
+        # ['name', val0, val1, ... , valN]
+        data_lists = [[varname] + data_dict[varname] for varname in data_dict]
+        # transpose data using * magic
+        data_transposed = zip(*data_lists)
+        # write transposed data to file
+        writer.writerows(data_transposed)
+        data_file.close()
 
 
 def went_through_crash(sim, popn):
