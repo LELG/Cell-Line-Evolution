@@ -287,7 +287,7 @@ class Simulator(object):
             #    cmax_time = tot_cycles
 
         # determine whether, when and how fully the population recovered
-        recovery_status = analytics.completion_status(self, popn)
+        recovery_status = analytics.completion_status(self, treatmt, popn)
         recovered, recover_type, recover_percent = recovery_status
 
         # open files (these should have been created already)

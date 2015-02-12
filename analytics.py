@@ -89,7 +89,7 @@ def went_through_crash(treatmt, popn):
     return len(popn.analytics_base.time) > post_crash_time
 
 
-def completion_status(sim, popn):
+def completion_status(sim, treatmt, popn):
     """
     Return recovery, full or partial,  percent
 
@@ -99,7 +99,7 @@ def completion_status(sim, popn):
     recovered = 'N'
     recover_type = 'NONE'
 
-    if went_through_crash(sim, popn):
+    if went_through_crash(treatmt, popn):
         if popn.tumoursize > sim.max_size_lim * 0.5:
             recovered = 'Y'
             recover_type = 'PART'
