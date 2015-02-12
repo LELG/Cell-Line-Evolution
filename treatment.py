@@ -29,8 +29,25 @@ class Treatment(object):
 
     This class determines when to introduce
     selective pressure; tracks the amount of
-    'drug' in the tumour; and determines if
+    selective pressure present in the tumour
+    at any given time step; and determines if
     and when to repeat a dose.
+
+    Attributes
+    ----------
+    select_time : time step to introduce selective
+        pressure, if other conditions have not already
+        caused it to be introduced
+    select_pressure : initial quantity of selective
+        pressure to be introduced
+    mutagenic_pressure : initial quantity of mutagenic
+        pressure to be introduced
+    M : whether or not to introduce treatment automatically
+        when population reaches a certain size
+    max_size_lim : tumour size at which to introduce
+        treatment automatically
+    is_introduced : boolean, whether or not
+        introduction has occurred
     """
     def __init__(self, opt):
         """Create a new Treatment object"""
@@ -42,7 +59,12 @@ class Treatment(object):
         self.is_introduced = False
 
     def introduce(self, popn, t):
-        """Introduce treatment into simulation."""
+        """
+        Introduce treatment into simulation.
+
+        Let the tumour know that the treatment
+        has been introduced, and produce some plots.
+        """
         self.is_introduced = True
         self.select_time = t
         # update population in various ways
@@ -57,7 +79,13 @@ class Treatment(object):
                           t, "mid0")
 
     def update(self, popn, t):
-        """Update treatment status."""
+        """
+        Update treatment status.
+
+        If treatment has not yet been introduced,
+        check whether (any of) the conditions for
+        introduction are now met.
+        """
         if not self.is_introduced:
             if t == self.select_time:
                 self.introduce(popn, t)
