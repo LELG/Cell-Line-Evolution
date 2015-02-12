@@ -32,7 +32,7 @@ def make_dual_plot(xdata, y1data, y2data, filename, title1, title2):
     print("SAVING PLOT: " + filename)
     plt.savefig(filename)
     print("done")
-    plt.clf()
+    plt.close()
 
 def make_plot(xdata, ydata, filename, title):
     """Plot a single independent variable."""
@@ -50,7 +50,7 @@ def make_plot(xdata, ydata, filename, title):
     print("SAVING PLOT:" + filename)
     plt.savefig(filename)
     print("plot done")
-    plt.clf()
+    plt.close()
 
 def make_hist(xdata, filename, title, bins):
     """Plot a histogram."""
@@ -59,7 +59,7 @@ def make_hist(xdata, filename, title, bins):
     print("SAVING HISTOGRAM: " + filename)
     plt.savefig(filename)
     print("plot done")
-    plt.clf()
+    plt.close()
 
 def make_dual_hist(x1freqs, x2freqs, filename, title):
     """Plot two histograms on the same axes."""
@@ -84,7 +84,7 @@ def make_dual_hist(x1freqs, x2freqs, filename, title):
     print("SAVING HISTOGRAM: " + filename)
     plt.savefig(filename)
     print("plot done")
-    plt.clf()
+    plt.close()
 
 def make_dual_box(end, mid, filename, title):
     X1s = []
@@ -113,7 +113,7 @@ def make_dual_box(end, mid, filename, title):
     plt.clf()
     plt.boxplot(X2s)
     plt.savefig(filename+"boxtest2")
-    plt.clf()
+    plt.close()
 
 def make_subpop_life(X, filename, title, end_time, loops, select_time):
     #could 'fatten' or repeat a line if reaches a certain size
@@ -142,7 +142,7 @@ def make_subpop_life(X, filename, title, end_time, loops, select_time):
     ax1.axes.get_yaxis().set_visible(False)
     plt.xlabel('Discrete Time Intervals')
     plt.savefig(filename)
-    plt.clf()
+    plt.close()
 
 
 def make_subpop_life_mut(X, filename, title, end_time, loops, select_time, mbase, tumoursize):
@@ -182,7 +182,7 @@ def make_subpop_life_mut(X, filename, title, end_time, loops, select_time, mbase
         plt.plot([x1, x2], [i, i], color=(mnorm, 1-mnorm, 0.1))
 
     plt.savefig(filename)
-    plt.clf()
+    plt.close()
 
 def mutation_distribution(md, filename, title, SCALE):
     #print("MD",md)
@@ -201,7 +201,7 @@ def mutation_distribution(md, filename, title, SCALE):
         plt.scatter(int(elem[1]), int(elem[2]))
 
     plt.savefig(filename+"all")
-    plt.clf()
+    plt.close()
 
 def mutation_v_proliferation(clones, filename, title, SCALE):
     plt.axes()
@@ -242,7 +242,7 @@ def mutation_v_proliferation(clones, filename, title, SCALE):
 
     plt.axis('scaled')
     plt.savefig(filename)
-    plt.clf()
+    plt.close()
 
 def mutation_v_proliferation_dat(clones, filename, title, SCALE):
 
@@ -314,7 +314,7 @@ def mutation_crash(clones, filename, title, SCALE):
 
     plt.axis('scaled')
     plt.savefig(filename)
-    plt.clf()
+    plt.close()
 
 
 def print_results(popn, when, end_time):
