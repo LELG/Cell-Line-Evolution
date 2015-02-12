@@ -8,24 +8,19 @@ Yoshua Wakeham : yoshwakeham@gmail.com
 """
 
 from __future__ import print_function
-# import os
-# import math
 from matplotlib import pyplot as plt
 
 def make_dual_plot(xdata, y1data, y2data, filename, title1, title2):
     """Plot two dependent vars against the same independent var."""
-    fig, ax1 = plt.subplots()
+    _fig, ax1 = plt.subplots()
     ax1.plot(xdata, y1data, color='b', alpha=0.5, linewidth=2)
-    ax1.set_xlabel('Discrete Time Intervals', fontsize=9) #color='grey')
+    ax1.set_xlabel('Discrete Time Intervals', fontsize=9)
     ax1.set_ylabel(title1, fontsize=9, color='b')
     for label in ax1.get_yticklabels():
         label.set_color('b')
         label.set_fontsize(9)
     for label in ax1.get_xticklabels():
-        #label.set_color('grey')
         label.set_fontsize(9)
-
-    #plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 
     ax2 = ax1.twinx()
     ax2.plot(xdata, y2data, color='r', alpha=0.5, linewidth=2)
@@ -42,9 +37,9 @@ def make_dual_plot(xdata, y1data, y2data, filename, title1, title2):
 def make_plot(xdata, ydata, filename, title):
     """Plot a single independent variable."""
     #        global DETAILS
-    fig, ax1 = plt.subplots()
+    _fig, ax1 = plt.subplots()
     ax1.plot(xdata, ydata, color='b', alpha=0.5, linewidth=2)
-    ax1.set_xlabel('Discrete Time Intervals', fontsize=9) #color='grey')
+    ax1.set_xlabel('Discrete Time Intervals', fontsize=9)
     ax1.set_ylabel(title, fontsize=9, color='b')
     for label in ax1.get_yticklabels():
         label.set_color('b')
@@ -52,10 +47,6 @@ def make_plot(xdata, ydata, filename, title):
     for label in ax1.get_xticklabels():
         #label.set_color('grey')
         label.set_fontsize(9)
-    #plt.plot( X, Y, '-' )
-    #plt.title(title)
-    #plt.xlabel( 'Discrete Time Intervals' )
-    #plt.ylabel( 'Tumour Size' )
     print("SAVING PLOT:" + filename)
     plt.savefig(filename)
     print("plot done")
@@ -85,12 +76,10 @@ def make_dual_hist(x1freqs, x2freqs, filename, title):
 
     num_bins = 20
 
-    #plt.hist(x1data, x2data,
-    #         normed =1, alpha = 0.35, log=True, color=['g','b'])
     plt.hist(x1data, bins=num_bins,
-             alpha=0.45, log=True, linewidth=1)#, normed=1)
+             alpha=0.45, log=True, linewidth=1)
     plt.hist(x2data, bins=num_bins,
-             alpha=0.45, log=True, linewidth=1)#, normed=1)
+             alpha=0.45, log=True, linewidth=1)
     plt.title(title)
     print("SAVING HISTOGRAM: " + filename)
     plt.savefig(filename)
