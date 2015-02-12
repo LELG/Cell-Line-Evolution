@@ -6,6 +6,7 @@
 # if we're on the cluster, make sure correct PYTHONPATH is exported
 if [[ ! -z $PBS_SERVER ]] && [[ $PBS_SERVER == "bioinf-head.petermac.org.au" ]]; then
   export PYTHONPATH=/usr/local/cluster/all_arch/python_libraries/production/lib/python2.7/site-packages
+  export TERM=xterm
 fi
 
 # check for correct invocation
