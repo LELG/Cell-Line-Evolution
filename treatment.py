@@ -23,6 +23,7 @@ import tree_to_xml
 import plotdata
 import dropdata
 import math
+from functools import partial
 
 class Treatment(object):
     """
@@ -130,28 +131,23 @@ class Treatment(object):
 
 
 def get_decay_func(decay_type, decay_rate, init_qty, t_init):
-    if decay_type == 'linear':
-        return get_linear_decay(decay_rate, init_qty, t_init)
-    elif decay_type == 'constant':
-        return get_constant_decay(init_qty)
+    if decay_type == 'constant':
+        return partial(constant_decay, init_qty)
+    elif decay_type == 'linear':
+        return partial(linear_decay, init_qty, decay_rate, t_init)
     elif decay_type == 'exp':
-        return get_exp_decay(decay_rate, init_qty, t_init)
+        return partial(exp_decay, init_qty, decay_rate, t_init)
 
 
-def get_linear_decay(decay_rate, init_qty, t_init):
-    """Return a linear decay function."""
-    def linear_decay_func(t_curr):
-        return init_qty - decay_rate * (t_curr - t_init)
-    return linear_decay_func
+def constant_decay(init_qty, t_curr):
+    return init_qty
 
 
-def get_constant_decay(initial_qty):
-    """Return a constant decay (i.e. no decay) function."""
-    return lambda t_curr: initial_qty
+def linear_decay(init_qty, decay_rate, t_init, t_curr):
+    t_delta = t_curr - t_init
+    return init_qty - decay_rate * t_delta
 
 
-def get_exp_decay(decay_rate, init_qty, t_init):
-    """Return an exponential decay function."""
-    def exp_decay_func(t_curr):
-        return init_qty * math.exp(-1 * decay_rate * (t_curr - t_init))
-    return exp_decay_func
+def exp_decay(init_qty, decay_rate, t_init, t_curr):
+    t_delta = t_curr - t_init
+    return init_qty * math.exp(-1 * decay_rate * t_delta)
