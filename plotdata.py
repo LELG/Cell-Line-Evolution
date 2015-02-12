@@ -349,36 +349,36 @@ def print_results(popn, when, end_time):
     # Only make these plots at the end of the sim
     if popn.selective_pressure_applied:
         # Population vs Time
-        make_plot(anlt.time, anlt.population,
+        make_plot(anlt.time, anlt.tumoursize,
                   filename + "population_graph", "Population Size")
         # Clone count vs Time
-        make_plot(anlt.time, anlt.subpopulation,
+        make_plot(anlt.time, anlt.clonecount,
                   filename + "subpop_graph", "No. of Clones")
         # Effective Proliferation Rate
-        make_plot(anlt.time, anlt.proliferation,
+        make_plot(anlt.time, anlt.avg_proliferation,
                   filename + "effect_prolif", "Effective Proliferation Rate")
         # Avg Mutation Rate
-        make_plot(anlt.time, anlt.mutation,
+        make_plot(anlt.time, anlt.avg_mutation,
                   filename + "mutation_avg", "Average Mutation Rate")
 
         # Population vs Clone count
         make_dual_plot(anlt.time,
-                       anlt.population, anlt.subpopulation,
+                       anlt.tumoursize, anlt.clonecount,
                        filename + "popsubpop",
                        'Tumour Size', 'No. of Clones')
         # Mutation rate vs Clone count
         make_dual_plot(anlt.time,
-                       anlt.mutation, anlt.subpopulation,
+                       anlt.avg_mutation, anlt.clonecount,
                        filename + "mutsubpop",
                        'Average Mutation Rate', 'No. of Clones')
         # Proliferation Rate vs Mutation Rate
         make_dual_plot(anlt.time,
-                       anlt.mutation, anlt.proliferation,
+                       anlt.avg_mutation, anlt.avg_proliferation,
                        filename + "prolifmut",
                        'Mutation Rate', 'Proliferation Rate')
         # Proliferation Rate vs Population
         make_dual_plot(anlt.time,
-                       anlt.population, anlt.proliferation,
+                       anlt.tumoursize, anlt.avg_proliferation,
                        filename + "prolifandpop",
                        'Tumour Size', 'Proliferation Rate')
 
@@ -437,7 +437,7 @@ def print_results(popn, when, end_time):
                   filename + "allele",
                   "Allele Freq",
                   #bins equal to number of sub pops
-                  anlt.subpopulation[-1])
+                  anlt.clonecount[-1])
         #CELL CIRCLE MUT V PRO RATES
         # if size > 0 [(popn.mutation,popn.proliferation,popn.size)]
         mutation_v_proliferation(popn.subpop.tree_to_list("circles"),

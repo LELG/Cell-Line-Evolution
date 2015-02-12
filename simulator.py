@@ -308,10 +308,10 @@ class Simulator(object):
                         treatmt.select_time, treatmt.select_pressure,
                         popn.opt.prob_mut_pos, popn.opt.prob_mut_neg,
                         popn.opt.prob_inc_mut, popn.opt.prob_dec_mut,
-                        popn.analytics_base.population[-1],    # pop_size
-                        popn.analytics_base.subpopulation[-1], # num_clones
-                        popn.analytics_base.mutation[-1],      # avg_mut_rate
-                        popn.analytics_base.proliferation[-1], # avg_pro_rate
+                        popn.analytics_base.tumoursize[-1],
+                        popn.analytics_base.clonecount[-1],
+                        popn.analytics_base.avg_mutation[-1],
+                        popn.analytics_base.avg_proliferation[-1],
                         secs_to_hms(elapsed_time), tot_cycles,
                         min_val, min_time, max_val, max_time,
                         cmin_val, cmin_time, cmax_val, cmax_time)
