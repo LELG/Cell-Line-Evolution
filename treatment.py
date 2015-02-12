@@ -22,6 +22,7 @@ Change log
 import tree_to_xml
 import plotdata
 import dropdata
+import math
 
 class Treatment(object):
     """
@@ -69,9 +70,11 @@ class Treatment(object):
 
         self.is_introduced = False
 
-        self.decay_type = 'constant'
+        #self.decay_type = 'constant'
         #self.decay_type = 'linear'
-        self.decay_rate = 0.00002
+        #self.decay_rate = 0.00002
+        self.decay_type = 'exp'
+        self.decay_rate = 0.001
         self.decay_func = None
 
     def introduce(self, popn, t):
@@ -131,6 +134,8 @@ def get_decay_func(decay_type, decay_rate, init_qty, t_init):
         return get_linear_decay(decay_rate, init_qty, t_init)
     elif decay_type == 'constant':
         return get_constant_decay(init_qty)
+    elif decay_type == 'exp':
+        return get_exp_decay(decay_rate, init_qty, t_init)
 
 
 def get_linear_decay(decay_rate, init_qty, t_init):
@@ -143,3 +148,10 @@ def get_linear_decay(decay_rate, init_qty, t_init):
 def get_constant_decay(initial_qty):
     """Return a constant decay (i.e. no decay) function."""
     return lambda t_curr: initial_qty
+
+
+def get_exp_decay(decay_rate, init_qty, t_init):
+    """Return an exponential decay function."""
+    def exp_decay_func(t_curr):
+        return init_qty * math.exp(-1 * decay_rate * (t_curr - t_init))
+    return exp_decay_func
