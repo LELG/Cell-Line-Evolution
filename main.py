@@ -22,7 +22,7 @@ matplotlib.use('Agg')
 import argparse
 import os
 import csv
-import simulator as simulator
+import simulator
 
 
 def main():
@@ -45,6 +45,7 @@ def main():
     """
     opt = parse_cmd_line_args()
 
+    # TODO move this initialisation to simulator?
     # create results files, unless they already exist
     tgroup_summary_path = "{0}/{1}_results.csv".format(opt.test_group_dir,
                                                        opt.test_group)
