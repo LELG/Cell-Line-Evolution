@@ -103,3 +103,12 @@ class Population(object):
         """Determine whether this population has exceeded a certain size."""
         size_limit = max_size_lim * (1 + tolerance)
         return self.tumoursize > size_limit
+
+    def record_treatment_introduction(self, treatmt):
+        """Set and note certain variables at time of crash."""
+        self.select_pressure = treatmt.select_pressure
+        self.mutagenic_pressure = treatmt.mutagenic_pressure
+        self.selective_pressure_applied = True
+        self.subpop.set_precrash_size()
+        self.mid_proliferation = self.subpop.tree_to_list("proliferation_size")
+        self.mid_mutation = self.subpop.tree_to_list("mutation_rate")

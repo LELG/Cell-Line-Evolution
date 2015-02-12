@@ -44,14 +44,10 @@ class Treatment(object):
     def introduce(self, popn, t):
         """Introduce treatment into simulation."""
         self.is_introduced = True
-        # note the time that treatment was introduced
         self.select_time = t
         # update population in various ways
-        popn.select_pressure = self.select_pressure
-        popn.mutagenic_pressure = self.mutagenic_pressure
-        popn.subpop.set_precrash_size()
-        popn.mid_proliferation = popn.subpop.tree_to_list("proliferation_size")
-        popn.mid_mutation = popn.subpop.tree_to_list("mutation_rate")
+        popn.record_treatment_introduction(self)
+        # TODO move this plotting elsewhere
         if not popn.opt.NP:
             plotdata.print_results(popn, "mid", t)
         tree_to_xml.tree_parse(popn.subpop, popn.tumoursize,
@@ -59,7 +55,6 @@ class Treatment(object):
         if popn.opt.init_diversity:
             dropdata.drop(popn.subpop, popn.tumoursize,
                           t, "mid0")
-        popn.selective_pressure_applied = True
 
     def update(self, popn, t):
         """Update treatment status."""
