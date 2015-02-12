@@ -66,7 +66,12 @@ class Treatment(object):
         self.curr_mut_pressure = 0.0
         self.M = opt.M
         self.max_size_lim = opt.max_size_lim
+
         self.is_introduced = False
+
+        self.decay_type = 'constant'
+        #self.decay_type = 'linear'
+        self.decay_rate = 0.00002
         self.decay_func = None
 
     def introduce(self, popn, t):
@@ -80,9 +85,11 @@ class Treatment(object):
         self.select_time = t
         self.curr_select_pressure = self.init_select_pressure
         self.curr_mut_pressure = self.init_mut_pressure
-        self.decay_func = get_constant_decay(self.init_select_pressure)
-        #self.decay_func = get_linear_decay(self.init_select_pressure,
-        #                                   t, decay_rate=0.00002)
+        # set decay function
+        self.decay_func = get_decay_func(self.decay_type,
+                                         self.decay_rate,
+                                         self.init_select_pressure,
+                                         t)
         # let population know that treatment has
         # been introduced
         popn.record_treatment_introduction(self)
@@ -119,12 +126,20 @@ class Treatment(object):
         return self.curr_select_pressure > 0.0
 
 
-def get_linear_decay(initial_quantity, t_init, decay_rate):
+def get_decay_func(decay_type, decay_rate, init_qty, t_init):
+    if decay_type == 'linear':
+        return get_linear_decay(decay_rate, init_qty, t_init)
+    elif decay_type == 'constant':
+        return get_constant_decay(init_qty)
+
+
+def get_linear_decay(decay_rate, init_qty, t_init):
     """Return a linear decay function."""
     def linear_decay_func(t_curr):
-        return initial_quantity - decay_rate * (t_curr - t_init)
+        return init_qty - decay_rate * (t_curr - t_init)
     return linear_decay_func
 
-def get_constant_decay(initial_quantity):
+
+def get_constant_decay(initial_qty):
     """Return a constant decay (i.e. no decay) function."""
-    return lambda t: initial_quantity
+    return lambda t_curr: initial_qty
