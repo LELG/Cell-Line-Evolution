@@ -109,11 +109,19 @@ def parse_cmd_line_args():
     init_size : integer
         Initial tumour size (homogeneous population)
 
+    treatment_type : string
+        Treatment regime (e.g. single dose, metronomic, adaptive)
+    decay_type : string
+        Function for specifying shape of selective pressure
+        decay (e.g. constant, linear, exponential)
+    decay_rate : float
+        Constant controlling speed of treatment decay
     select_time : integer
-        Time step to introduce selective pressure,
-        if it has not already been automatically triggered.
+        Time step to introduce treatment, if it has
+        not already been automatically triggered
     select_pressure : float
-        Amount of Selective Pressure
+        Initial quantity of selective pressure
+        introduced by treatment
     mutagenic_pressure : float
         Change in mutation rate during selection event
 
@@ -170,6 +178,9 @@ def parse_cmd_line_args():
     parser.add_argument('-d', '--die', type=float)
     parser.add_argument('-m', '--mut', type=float)
 
+    parser.add_argument('--treatment_type', default='single_dose')
+    parser.add_argument('--decay_type', default='constant')
+    parser.add_argument('--decay_rate', type=float, default=0.0)
     parser.add_argument('-t', '--select_time', type=int)
     parser.add_argument('-s', '--select_pressure', type=float)
     parser.add_argument('-u', '--mutagenic_pressure', type=float, default=0.0)

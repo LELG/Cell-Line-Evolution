@@ -121,6 +121,8 @@ for mutation_rate in $mutation_values; do
     sim_params="$sim_params --run_dir $run_dir"
     sim_params="$sim_params --max_cycles $max_cycles --max_size_lim $max_size_lim"
     sim_params="$sim_params -p $proliferation_rate -d $death_rate -m $mutation_rate"
+    sim_params="$sim_params --treatment_type $treatment_type"
+    sim_params="$sim_params --decay_type $decay_type --decay_rate $decay_rate"
     sim_params="$sim_params --select_time $select_time --select_pressure $selective_pressure"
     sim_params="$sim_params --prob_mut_pos $prob_mut_pos --prob_mut_neg $prob_mut_neg"
     sim_params="$sim_params --prob_inc_mut $prob_inc_mut --prob_dec_mut $prob_dec_mut"

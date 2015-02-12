@@ -59,24 +59,25 @@ class Treatment(object):
     """
     def __init__(self, opt):
         """Create a new Treatment object"""
+        # adopt relevant command line parameters
+        self.treatment_type = opt.treatment_type
+        self.decay_type = opt.decay_type
+        self.decay_rate = opt.decay_rate
+        self.decay_func = None
         self.select_time = opt.select_time
         self.init_select_pressure = opt.select_pressure
         self.init_mut_pressure = opt.mutagenic_pressure
+
+        self.M = opt.M
+        self.max_size_lim = opt.max_size_lim
+
         # this assumes that all simulations
         # will start with no drug introduced
         self.curr_select_pressure = 0.0
         self.curr_mut_pressure = 0.0
-        self.M = opt.M
-        self.max_size_lim = opt.max_size_lim
 
         self.is_introduced = False
 
-        #self.decay_type = 'constant'
-        #self.decay_type = 'linear'
-        #self.decay_rate = 0.00002
-        self.decay_type = 'exp'
-        self.decay_rate = 0.001
-        self.decay_func = None
 
     def introduce(self, popn, t):
         """
