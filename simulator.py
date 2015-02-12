@@ -22,6 +22,7 @@ Change log
 import time
 import os
 import csv
+from textwrap import dedent
 import population
 import treatment
 import analytics
@@ -49,8 +50,6 @@ class Simulator(object):
     is_running : bool, record whether the sim
         is currently running.
     runtime : simulation runtime.
-    popn_recovered : whether the population has
-        survived a treament-induced crash.
     total_cycles : total number of time steps
         elapsed in simulation.
     popn : the tumour
@@ -104,7 +103,6 @@ class Simulator(object):
         self.is_running = False
         self.treatment_introduced = False
         self.runtime = None
-        self.popn_recovered = False
         self.total_cycles = self.max_cycles
 
         # create the Population
@@ -144,7 +142,6 @@ class Simulator(object):
                 if self.treatmt.is_introduced:
                     end_condition = END_POP_TOO_LARGE
                     self.total_cycles = t
-                    self.popn_recovered = True
                     break
             if self.popn.is_dead():
                 end_condition = END_POP_DIED_OUT
@@ -154,6 +151,8 @@ class Simulator(object):
         # finish timing
         end_time = time.time()
         self.runtime = end_time - start_time
+
+        self.is_running = False
 
         # end simulation
         self.finish(end_condition)
@@ -185,46 +184,71 @@ class Simulator(object):
             self.print_status_update(t)
 
     def finish(self, end_condition):
+        """
+        Complete the simulation.
+
+        Write summary files and print plots
+        to complete this sim run.
+
+        Args
+        ----
+        end_condition : a human-readable message
+            describing why this simulation ended
+
+        Returns
+        -------
+        None.
+        """
         print("SIMULATION ENDED: {}".format(end_condition))
+        # write to summary file
         self.write_summary(self.popn, self.treatmt,
-                           self.total_cycles, self.runtime,
-                           self.popn_recovered)
-        # test analytics dump function
-        fpath = "{0}/alldata.csv".format(self.run_dir)
-        self.popn.analytics_base.write_to_file(fpath)
+                           self.total_cycles, self.runtime)
+        # dump all run data to CSV file
+        data_dump_fpath = "{0}/{1}_{2}_{3}_alldata.csv".format(self.run_dir,
+                                                               self.test_group,
+                                                               self.param_set,
+                                                               self.run_number)
+        self.popn.analytics_base.write_to_file(data_dump_fpath)
+        # make plots
         if not self.NP:
             plotdata.print_results(self.popn, "end", self.total_cycles)
             plotdata.print_plots(self.popn, "new")
         fname = ""
-        tree_to_xml.tree_parse(self.popn.subpop, self.popn.tumoursize, self.total_cycles, fname)
+        # write phylogenetic tree to XML file
+        tree_to_xml.tree_parse(self.popn.subpop, self.popn.tumoursize,
+                               self.total_cycles, fname)
+        # if heterogeneous initial pop, output drop data
         if self.init_diversity:
             print("Printing drop data")
-            dropdata.drop(self.popn.subpop, self.popn.tumoursize, self.total_cycles, "end")
-
-        self.is_running = False
+            dropdata.drop(self.popn.subpop, self.popn.tumoursize,
+                          self.total_cycles, "end")
 
 
     def print_status_update(self, t):
+        """ Print current time step and tumour size for running sim."""
         os.system('clear')
-        status_msg = """
-Tumour Evolution Simulation
----------------------------
+        status_msg = dedent("""\
+            Tumour Evolution Simulation
+            ---------------------------
 
-      ... running ...
+                  ... running ...
 
-Cycle:       {0} of {1}
-Tumour size: {2}
-"""
+            Cycle:       {0} of {1}
+            Tumour size: {2}
+            """)
         print(status_msg.format(t, self.max_cycles, self.popn.tumoursize))
 
     def print_info(self):
-        """Print information about this simulation."""
-        print("Simulation Parameter Set")
-        print("------------------------")
+        """Print simulation's initial parameter set."""
+        hdr = dedent("""\
+            Simulation Parameter Set
+            ------------------------
+            """)
+        print(hdr)
         for attr, val in vars(self.opt).items():
             print("{}: {}".format(attr, val))
 
-    def write_summary(self, popn, treatmt, num_cycles, elapsed_time, recovered):
+    def write_summary(self, popn, treatmt, tot_cycles, elapsed_time):
         """
         Write simulation summary to file(s).
 
@@ -233,26 +257,40 @@ Tumour size: {2}
 
         'testgroup_results.csv' (master summary file for this test group)
         'testgroup_paramset_results.csv' (summary for this param set only)
+
+        Args
+        ----
+        popn : a tumour population
+        treatmt : a treatment regime
+        tot_cycles : total number of cycles for this simulation
+        elapsed_time : simulation runtime in seconds
+
+        Returns
+        -------
+        None
         """
+        # Get pre-crash min and max population size, and
+        # the times at which they occurred
+        precrash_minmax_data = analytics.precrash_minmax(treatmt, popn)
+        min_val, min_time, max_val, max_time = precrash_minmax_data
 
-        # localtime = time.asctime( time.localtime(time.time()) )
-
-        #Get min and max values pre crash
-        min_val, min_time, max_val, max_time = analytics.precrash_minmax(treatmt, popn)
         cmin_val = cmin_time = cmax_val = cmax_time = 0
 
         went_through_crash = 'N'
         if analytics.went_through_crash(treatmt, popn):
             went_through_crash = 'Y'
-            #Get min and max values post crash
-            #if survived past the crash + buffer
-            cmin_val, cmin_time, cmax_val, cmax_time = analytics.postcrash_minmax(treatmt, popn)
-            #hasty fix for calculting max time
-            if cmax_time == 0 and recovered:
-                cmax_time = num_cycles
+            #Get post-crash min and max values
+            postcrash_minmax_data = analytics.postcrash_minmax(treatmt, popn)
+            cmin_val, cmin_time, cmax_val, cmax_time = postcrash_minmax_data
+            #hasty fix for calculating max time
+            # if cmax_time == 0 and recovered:
+            #    cmax_time = tot_cycles
 
-        recover, recover_type, recover_percent = analytics.completion_status(self, popn)
+        # determine whether, when and how fully the population recovered
+        recovery_status = analytics.completion_status(self, popn)
+        recovered, recover_type, recover_percent = recovery_status
 
+        # open files (these should have been created already)
         tg_summary_fpath = "{0}/{1}_results.csv".format(self.test_group_dir,
                                                         self.test_group)
         ps_summary_fpath = "{0}/{1}_{2}_results.csv".format(self.param_set_dir,
@@ -264,9 +302,8 @@ Tumour size: {2}
         ps_writer = csv.writer(ps_results_file)
 
         # assemble values to write
-        summary_vals = (self.param_set, self.run_number,
-                        went_through_crash,
-                        recover, recover_type, recover_percent,
+        summary_vals = (self.param_set, self.run_number, went_through_crash,
+                        recovered, recover_type, recover_percent,
                         popn.opt.pro, popn.opt.die, popn.opt.mut,
                         treatmt.select_time, treatmt.select_pressure,
                         popn.opt.prob_mut_pos, popn.opt.prob_mut_neg,
@@ -275,22 +312,11 @@ Tumour size: {2}
                         popn.analytics_base.subpopulation[-1], # num_clones
                         popn.analytics_base.mutation[-1],      # avg_mut_rate
                         popn.analytics_base.proliferation[-1], # avg_pro_rate
-                        secs_to_hms(elapsed_time),
-                        num_cycles,
-                        min_val, min_time,
-                        max_val, max_time,
-                        cmin_val, cmin_time,
-                        cmax_val, cmax_time)
+                        secs_to_hms(elapsed_time), tot_cycles,
+                        min_val, min_time, max_val, max_time,
+                        cmin_val, cmin_time, cmax_val, cmax_time)
 
         tg_writer.writerow(summary_vals)
         ps_writer.writerow(summary_vals)
         tg_results_file.close()
         ps_results_file.close()
-
-"""
-    def selective_pressure(self, popn):
-        popn.select_pressure = self.select_pressure
-        popn.mutagenic_pressure = self.mutagenic_pressure
-        popn.mid_proliferation = popn.subpop.tree_to_list("proliferation_size")
-        popn.mid_mutation = popn.subpop.tree_to_list("mutation_rate")
-"""

@@ -96,40 +96,38 @@ def completion_status(sim, popn):
     eg. 'N'
     eg. 'Y'
     """
-    recover = 'N'
+    recovered = 'N'
     recover_type = 'NONE'
 
     if went_through_crash(sim, popn):
         if popn.tumoursize > sim.max_size_lim * 0.5:
-            recover = 'Y'
+            recovered = 'Y'
             recover_type = 'PART'
             if popn.tumoursize > sim.max_size_lim * 0.75:
                 # recovered population is > 75% of original size
                 recover_type = 'FULL'
     else: #didnt crash
         if popn.tumoursize > sim.max_size_lim * 0.75:
+            recovered = 'Y'
             recover_type = 'FULLNC'
-            recover = 'Y'
 
     recover_percent = popn.tumoursize / float(sim.max_size_lim)
-    return recover, recover_type, recover_percent
+    return recovered, recover_type, recover_percent
 
 
 def postcrash_minmax(treatmt, popn):
     """Return data on max and min post-crash population size."""
     post_crash_pop = popn.analytics_base.population[treatmt.select_time:]
     min_val = min(post_crash_pop) #VALIDATION - can return empty
-    min_val_index = post_crash_pop[post_crash_pop.index(min_val)]
+    min_time = post_crash_pop.index(min_val) + treatmt.select_time
     #VALIDATION - can return empty
     #maximum value after lowest point
     max_val = 0
     max_time = 0
-    if post_crash_pop[min_val_index:]:
-        max_val = max(post_crash_pop[min_val_index:])
+    recovering_pop = post_crash_pop[min_time:]
+    if recovering_pop:
+        max_val = max(recovering_pop)
         max_time = post_crash_pop.index(max_val) + treatmt.select_time
-    #add back time that we cut out when filtering post crash
-    min_time = post_crash_pop.index(min_val) + treatmt.select_time
-    #max time after low point
     return min_val, min_time, max_val, max_time
 
 
