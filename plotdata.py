@@ -349,6 +349,9 @@ def print_results(popn, when, end_time):
         # Avg Mutation Rate
         make_plot(anlt.time, anlt.avg_mutation,
                   filename + "mutation_avg", "Average Mutation Rate")
+        # Selective pressure
+        make_plot(anlt.time, anlt.select_pressure,
+                  filename + "select_pressure", "Qty of Selective Pressure")
 
         # Population vs Clone count
         make_dual_plot(anlt.time,
@@ -370,6 +373,11 @@ def print_results(popn, when, end_time):
                        anlt.tumoursize, anlt.avg_proliferation,
                        filename + "prolifandpop",
                        'Tumour Size', 'Proliferation Rate')
+        # Selective pressure vs Population
+        make_dual_plot(anlt.time,
+                       anlt.tumoursize, anlt.select_pressure,
+                       filename + "pop_v_select_pressure",
+                       'Tumour Size', 'Selective Pressure')
 
         # Mutation...
         mut_distro = popn.subpop.tree_to_list("mutation_distribution")

@@ -37,6 +37,7 @@ class Analytics(object):
         self.time = []
         self.avg_mutation = []
         self.avg_proliferation = []
+        self.select_pressure = []
 
     def update(self, popn, treatmt, t):
         """
@@ -48,10 +49,11 @@ class Analytics(object):
         self.tumoursize.append(popn.tumoursize)
         self.clonecount.append(popn.clonecount)
         self.time.append(t)
+        self.select_pressure.append(treatmt.curr_select_pressure)
 
         # append effective proliferation
         if treatmt.is_introduced:
-            eff_avg_prolif = popn.avg_pro_rate - treatmt.select_pressure
+            eff_avg_prolif = popn.avg_pro_rate - treatmt.curr_select_pressure
             self.avg_proliferation.append(eff_avg_prolif)
         else:
             self.avg_proliferation.append(popn.avg_pro_rate)

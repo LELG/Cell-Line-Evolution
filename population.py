@@ -74,8 +74,8 @@ class Population(object):
         """
         if treatmt.is_introduced:
             # update amount of selective and mutagenic pressure
-            self.select_pressure = treatmt.select_pressure
-            self.mutagenic_pressure = treatmt.mutagenic_pressure
+            self.select_pressure = treatmt.curr_select_pressure
+            self.mutagenic_pressure = treatmt.curr_mut_pressure
 
         # determine proliferation adjustment due to
         # population size
@@ -106,8 +106,8 @@ class Population(object):
 
     def record_treatment_introduction(self, treatmt):
         """Set and note certain variables at time of crash."""
-        self.select_pressure = treatmt.select_pressure
-        self.mutagenic_pressure = treatmt.mutagenic_pressure
+        self.select_pressure = treatmt.curr_select_pressure
+        self.mutagenic_pressure = treatmt.curr_mut_pressure
         self.selective_pressure_applied = True
         self.subpop.set_precrash_size()
         self.mid_proliferation = self.subpop.tree_to_list("proliferation_size")
