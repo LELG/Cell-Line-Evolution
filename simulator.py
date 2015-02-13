@@ -104,7 +104,8 @@ class Simulator(object):
         # create the Population
         self.popn = population.Population(self.opt)
         # create the Treatment
-        self.treatmt = treatment.Treatment(self.opt)
+        # self.treatmt = treatment.Treatment(self.opt)
+        self.treatmt = treatment.MetronomicTreatment(self.opt)
 
 
     def run(self):
