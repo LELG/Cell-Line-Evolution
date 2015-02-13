@@ -29,9 +29,8 @@ def make_dual_plot(xdata, y1data, y2data, filename, title1, title2):
         label.set_color('r')
         label.set_fontsize(9)
 
-    print("SAVING PLOT: " + filename)
     plt.savefig(filename)
-    print("done")
+    print("PLOT CREATED: " + filename)
     plt.close()
 
 def make_plot(xdata, ydata, filename, title):
@@ -47,18 +46,16 @@ def make_plot(xdata, ydata, filename, title):
     for label in ax1.get_xticklabels():
         #label.set_color('grey')
         label.set_fontsize(9)
-    print("SAVING PLOT:" + filename)
     plt.savefig(filename)
-    print("plot done")
+    print("PLOT CREATED: " + filename)
     plt.close()
 
 def make_hist(xdata, filename, title, bins):
     """Plot a histogram."""
     plt.hist(xdata, bins, log=True)
     plt.title(title)
-    print("SAVING HISTOGRAM: " + filename)
     plt.savefig(filename)
-    print("plot done")
+    print("HISTOGRAM CREATED: " + filename)
     plt.close()
 
 def make_dual_hist(x1freqs, x2freqs, filename, title):
@@ -81,9 +78,8 @@ def make_dual_hist(x1freqs, x2freqs, filename, title):
     plt.hist(x2data, bins=num_bins,
              alpha=0.45, log=True, linewidth=1)
     plt.title(title)
-    print("SAVING HISTOGRAM: " + filename)
     plt.savefig(filename)
-    print("plot done")
+    print("HISTOGRAM CREATED: " + filename)
     plt.close()
 
 def make_dual_box(end, mid, filename, title):
@@ -119,7 +115,6 @@ def make_subpop_life(X, filename, title, end_time, loops, select_time):
     #could 'fatten' or repeat a line if reaches a certain size
     #or colour
     X.sort()
-    print("subpop man", filename)
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
     i = 0
@@ -142,14 +137,13 @@ def make_subpop_life(X, filename, title, end_time, loops, select_time):
     ax1.axes.get_yaxis().set_visible(False)
     plt.xlabel('Discrete Time Intervals')
     plt.savefig(filename)
+    print("PLOT CREATED: ", filename)
     plt.close()
 
 
 def make_subpop_life_mut(X, filename, title, end_time, loops, select_time, mbase, tumoursize):
     #use mutation rate to give colour
     #normalise
-    print("subpop man", filename)
-    print("base mut rate ", mbase)
     i = 0
 
 
@@ -182,6 +176,8 @@ def make_subpop_life_mut(X, filename, title, end_time, loops, select_time, mbase
         plt.plot([x1, x2], [i, i], color=(mnorm, 1-mnorm, 0.1))
 
     plt.savefig(filename)
+    print("PLOT CREATED: ", filename)
+    print("base mut rate ", mbase)
     plt.close()
 
 def mutation_distribution(md, filename, title, SCALE):
@@ -201,6 +197,7 @@ def mutation_distribution(md, filename, title, SCALE):
         plt.scatter(int(elem[1]), int(elem[2]))
 
     plt.savefig(filename+"all")
+    print("PLOT CREATED: " + filename + "all")
     plt.close()
 
 def mutation_v_proliferation(clones, filename, title, SCALE):
@@ -242,6 +239,7 @@ def mutation_v_proliferation(clones, filename, title, SCALE):
 
     plt.axis('scaled')
     plt.savefig(filename)
+    print("PLOT CREATED: ", filename)
     plt.close()
 
 def mutation_v_proliferation_dat(clones, filename, title, SCALE):
@@ -271,7 +269,6 @@ def mutation_v_proliferation_dat(clones, filename, title, SCALE):
 
 def mutation_crash(clones, filename, title, SCALE):
     """ mutation distribution """
-    print("mut crash",filename)
     plt.axes()
     c2 = 0
 
@@ -314,6 +311,7 @@ def mutation_crash(clones, filename, title, SCALE):
 
     plt.axis('scaled')
     plt.savefig(filename)
+    print("PLOT CREATED: ", filename)
     plt.close()
 
 
