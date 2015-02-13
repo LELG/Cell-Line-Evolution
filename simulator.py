@@ -91,9 +91,6 @@ class Simulator(object):
         self.select_pressure = opt.select_pressure
         self.mutagenic_pressure = opt.mutagenic_pressure
 
-        self.scale = opt.scale
-        self.mscale = opt.mscale
-
         self.r_output = opt.r_output
         self.auto_treatment = opt.auto_treatment
         self.prune_clones = opt.prune_clones

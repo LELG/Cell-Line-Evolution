@@ -38,7 +38,7 @@ class Population(object):
                                     pmn=opt.prob_mut_neg,
                                     pim=opt.prob_inc_mut,
                                     pdm=opt.prob_dec_mut,
-                                    msc=opt.mscale, prev_time=0)
+                                    prev_time=0)
         if opt.init_diversity:
             self.subpop.size = 0 #don't use init dummy popn if reading from file
             self.subpop.newsubpop_from_file(self.opt.sub_file)
