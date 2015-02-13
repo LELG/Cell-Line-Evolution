@@ -43,23 +43,14 @@ def main():
     -------
     None
     """
+    # get parameters
     opt = parse_cmd_line_args()
 
     # TODO move this initialisation to simulator?
-    # create results files, unless they already exist
-    tgroup_summary_path = "{0}/{1}_results.csv".format(opt.test_group_dir,
-                                                       opt.test_group)
-    pset_summary_path = "{0}/{1}_{2}_results.csv".format(opt.param_set_dir,
-                                                         opt.test_group,
-                                                         opt.param_set)
-    if not os.path.exists(tgroup_summary_path):
-        initialise_results(tgroup_summary_path)
-    if not os.path.exists(pset_summary_path):
-        initialise_results(pset_summary_path)
+    initialise_results(opt)
 
     # create and run simulation
     sim = simulator.Simulator(opt)
-    # print initial sim information
     sim.print_info()
     sim.run()
 
@@ -209,7 +200,20 @@ def parse_cmd_line_args():
     return parser.parse_args()
 
 
-def initialise_results(filepath):
+def initialise_results(opt):
+    """Create summary files, unless they already exist."""
+    tgroup_summary_path = "{0}/{1}_results.csv".format(opt.test_group_dir,
+                                                       opt.test_group)
+    pset_summary_path = "{0}/{1}_{2}_results.csv".format(opt.param_set_dir,
+                                                         opt.test_group,
+                                                         opt.param_set)
+    if not os.path.exists(tgroup_summary_path):
+        create_results_file(tgroup_summary_path)
+    if not os.path.exists(pset_summary_path):
+        create_results_file(pset_summary_path)
+
+
+def create_results_file(filepath):
     """
     Create a results file.
 
