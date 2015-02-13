@@ -23,7 +23,7 @@ def drop(subpop, tumoursize, time, label):
     for col, size in cols_sizes:
         col_totals[colours.index(col)] += size
 
-    drop_fpath = "{0}/{1}dropdata.csv".format(subpop.opt["test_group_dir"],
+    drop_fpath = "{0}/{1}dropdata.csv".format(subpop.opt.test_group_dir,
                                               label)
     drop_file = open(drop_fpath, 'a')
     drop_writer = csv.writer(drop_file)
