@@ -71,8 +71,8 @@ class Treatment(object):
         self.auto_treatment = opt.auto_treatment
         self.max_size_lim = opt.max_size_lim
 
-        # this assumes that all simulations
-        # will start with no drug introduced
+        # assume that all simulations will start
+        # with no selective pressure introduced
         self.curr_select_pressure = 0.0
         self.curr_mut_pressure = 0.0
 
@@ -116,8 +116,7 @@ class Treatment(object):
         introduction are now met.
         """
         if self.is_introduced:
-            if self.sel_pressure_remaining():
-                self.curr_select_pressure = self.decay_func(t)
+            self.decay(t)
         else:
             # not yet introduced
             if t == self.select_time:
@@ -127,11 +126,19 @@ class Treatment(object):
                 if popn.exceeds_size_limit(self.max_size_lim):
                     self.introduce(popn, t)
 
+    def decay(self, t_curr):
+        """Model selective pressure decay for this time step."""
+        if self.sel_pressure_remaining():
+            self.curr_select_pressure = self.decay_func(t_curr)
+
+
     def sel_pressure_remaining(self):
+        """Determine if any pressure remains in the tumour."""
         return self.curr_select_pressure > 0.0
 
 
 def get_decay_func(decay_type, decay_rate, init_qty, t_init):
+    """Return a partially-applied decay function that will take a single time parameter."""
     if decay_type == 'constant':
         return partial(constant_decay, init_qty)
     elif decay_type == 'linear':
@@ -141,14 +148,17 @@ def get_decay_func(decay_type, decay_rate, init_qty, t_init):
 
 
 def constant_decay(init_qty, t_curr):
+    """Model a constant (non-decaying) quantity."""
     return init_qty
 
 
 def linear_decay(init_qty, decay_rate, t_init, t_curr):
+    """Model a linearly decaying quantity."""
     t_delta = t_curr - t_init
     return init_qty - decay_rate * t_delta
 
 
 def exp_decay(init_qty, decay_rate, t_init, t_curr):
+    """Model an exponentially decaying quantity."""
     t_delta = t_curr - t_init
     return init_qty * math.exp(-1 * decay_rate * t_delta)
