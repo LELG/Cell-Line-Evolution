@@ -131,7 +131,7 @@ def postcrash_minmax(treatmt, popn):
     #maximum value after lowest point
     max_val = 0
     max_time = 0
-    recovering_pop = post_crash_pop[min_time:]
+    recovering_pop = popn.analytics_base.tumoursize[min_time:]
     if recovering_pop:
         max_val = max(recovering_pop)
         max_time = post_crash_pop.index(max_val) + treatmt.select_time
