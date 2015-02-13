@@ -30,7 +30,7 @@ class Population(object):
         self.clonecount = 1
         self.max_size_lim = opt.max_size_lim
         self.prolif_lim = self.opt.prolif_lim
-        self.subpop = Subpopulation(opt=vars(opt),
+        self.subpop = Subpopulation(opt=opt,
                                     p=opt.pro, m=opt.mut,
                                     depth=0, time=0,
                                     mut_type='n', col='n',
@@ -85,10 +85,10 @@ class Population(object):
         # update subpopulations, getting back
         # tumour size, clone count, and aggregate
         # mutation and proliferation rates
-        subpop_results = self.subpop.cycle(self.tumoursize,
-                                           self.select_pressure,
-                                           self.mutagenic_pressure,
-                                           t, prolif_adj)
+        subpop_results = self.subpop.update(self.tumoursize,
+                                            self.select_pressure,
+                                            self.mutagenic_pressure,
+                                            t, prolif_adj)
         self.tumoursize, self.clonecount, agg_mut, agg_pro = subpop_results
 
         if not self.is_dead():

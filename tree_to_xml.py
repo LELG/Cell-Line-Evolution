@@ -8,7 +8,7 @@ import subpopulation
 def tree_parse(subpopulation, tumoursize, time, fname):
     min_size = 1 # 1% min
 
-    fpath = "{0}/{1}_phylo.xml".format(subpopulation.opt["run_dir"], fname)
+    fpath = "{0}/{1}_phylo.xml".format(subpopulation.opt.run_dir, fname)
 
     xml_header = '''<?xml version="1.0" encoding="UTF-8"?>\n'''
     xml_header += '''<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instancei" '''
