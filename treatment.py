@@ -68,7 +68,7 @@ class Treatment(object):
         self.init_select_pressure = opt.select_pressure
         self.init_mut_pressure = opt.mutagenic_pressure
 
-        self.M = opt.M
+        self.auto_treatment = opt.auto_treatment
         self.max_size_lim = opt.max_size_lim
 
         # this assumes that all simulations
@@ -99,7 +99,7 @@ class Treatment(object):
         # been introduced
         popn.record_treatment_introduction(self)
         # TODO move this plotting elsewhere
-        if not popn.opt.NP:
+        if not popn.opt.no_plots:
             plotdata.print_results(popn, "mid", t)
         tree_to_xml.tree_parse(popn.subpop, popn.tumoursize,
                                t, "mid0")
@@ -122,7 +122,7 @@ class Treatment(object):
             # not yet introduced
             if t == self.select_time:
                 self.introduce(popn, t)
-            elif self.M:
+            elif self.auto_treatment:
                 # auto introduction of treatment
                 if popn.exceeds_size_limit(self.max_size_lim):
                     self.introduce(popn, t)

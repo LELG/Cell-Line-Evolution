@@ -321,7 +321,7 @@ def print_results(popn, when, end_time):
     """ Print all results to plots / file
 
     Print result to graphs using matplotlib
-    If --R option parsed print raw output to file
+    If --r_output option parsed print raw output to file
 
     """
 
@@ -330,7 +330,7 @@ def print_results(popn, when, end_time):
     anlt = popn.analytics_base
 
     """
-    if popn.opt.R:
+    if popn.opt.r_output:
         from outputdata import make_plot, make_subpop_life, make_hist, \
                 mutation_v_proliferation, mutation_v_proliferation_dat
     """
@@ -469,13 +469,13 @@ def print_plots(popn, when):
     """ Print all results to plots / file
 
     Print result to graphs using matplotlib
-    If --R option parsed print raw output to file
+    If --r_output option parsed print raw output to file
     """
 
     filename = "{0}/{1}_".format(popn.opt.run_dir, when)
 
     """
-    if popn.opt.R:
+    if popn.opt.r_output:
         from outputdata import make_plot, make_subpop_life, make_hist, \
                 mutation_v_proliferation, mutation_v_proliferation_dat
     """

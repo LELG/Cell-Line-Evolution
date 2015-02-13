@@ -94,11 +94,10 @@ class Simulator(object):
         self.scale = opt.scale
         self.mscale = opt.mscale
 
-        # TODO rename these options to something more meaningful
-        self.R = opt.R
-        self.M = opt.M
-        self.Z = opt.Z
-        self.NP = opt.NP
+        self.r_output = opt.r_output
+        self.auto_treatment = opt.auto_treatment
+        self.prune_clones = opt.prune_clones
+        self.no_plots = opt.no_plots
 
         self.is_running = False
         self.treatment_introduced = False
@@ -210,7 +209,7 @@ class Simulator(object):
                                                                self.run_number)
         self.popn.analytics_base.write_to_file(data_dump_fpath)
         # make plots
-        if not self.NP:
+        if not self.no_plots:
             plotdata.print_results(self.popn, "end", self.total_cycles)
             plotdata.print_plots(self.popn, "new")
         fname = ""

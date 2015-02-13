@@ -197,10 +197,14 @@ def parse_cmd_line_args():
     parser.add_argument('-c', '--scale', type=float)
     parser.add_argument('-e', '--mscale', type=float)
 
-    parser.add_argument('--R', action="store_true", default=False)
-    parser.add_argument('--M', action="store_true", default=False)
-    parser.add_argument('--Z', action="store_true", default=False)
-    parser.add_argument('--NP', action="store_true", default=False)
+    parser.add_argument('--r_output', '--R',
+                        action="store_true", default=False)
+    parser.add_argument('--auto_treatment', '--M',
+                        action="store_true", default=False)
+    parser.add_argument('--prune_clones', '--Z',
+                        action="store_true", default=False)
+    parser.add_argument('--no_plots', '--NP',
+                        action="store_true", default=False)
 
     return parser.parse_args()
 

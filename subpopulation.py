@@ -79,7 +79,7 @@ class Subpopulation():
                 self.d_time = time
 
         else:
-            if self.opt["Z"]: #if running large dataset
+            if self.opt["prune_clones"]: #if running large dataset
             # MIGHT BE QUICKER TO FILTER ALL END NODES
             # ONE CALL PER 10 RUNS / 2 RUNS 
             # remove 0 nodes
