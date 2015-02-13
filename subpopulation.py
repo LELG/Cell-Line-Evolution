@@ -1,15 +1,28 @@
+"""
+Module for classes and functions related to
+individual clones.
+
+Authors
+-------
+Andrew Bakshi : andrew.bakshi@gmail.com
+Yoshua Wakeham : yoshwakeham@gmail.com
+"""
 from __future__ import print_function
 import random
-import os
+#import os
 import csv
-import math
-import sys
-import tree_to_xml
-import numpy.random
+#import math
+#import sys
+#import tree_to_xml
+import numpy as np
 #import tree_to_xml_screen
 
-class Subpopulation():
+class Subpopulation(object):
+    """
+    Individual cancer clone.
+    """
     def __init__(self,opt,p,m,depth,time,mut_type,col,pmp,pmn,pim,pdm,msc,prev_time):
+        """Create new clone."""
         self.opt = opt #convert opt to dictionary
         self.proliferation = p
         self.mutation = m
@@ -105,15 +118,15 @@ class Subpopulation():
                 new_m = self.mutation * self.mutagenic_pressure
             else:
                 new_m = self.mutation
-            cells_dead = numpy.random.binomial(self.size, self.death)
+            cells_dead = np.random.binomial(self.size, self.death)
             cells_new = 0
             if new_p > 0:
-                cells_new = numpy.random.binomial(self.size, new_p) #IF THIS SMALL?? shouldnt get neg
+                cells_new = np.random.binomial(self.size, new_p) #IF THIS SMALL?? shouldnt get neg
             #else:
             #    print("IT HAPPENDED AGAIN")
             cells_mut = 0
             if cells_new > 0 and new_m > 0:
-                cells_mut = numpy.random.binomial(cells_new, new_m)
+                cells_mut = np.random.binomial(cells_new, new_m)
 
             self.size = self.size + cells_new - cells_mut - cells_dead
 
@@ -212,7 +225,7 @@ class Subpopulation():
         beta = 3
         SCALE = self.opt["scale"] * self.opt["pro"] 
         new_proliferation_delta =\
-                numpy.random.beta(alpha,beta,size=1)[0]*SCALE
+                np.random.beta(alpha,beta,size=1)[0]*SCALE
         p = self.proliferation + new_proliferation_delta
         #print("CHANGE PRO ",self.proliferation," to ",p, " using ", new_proliferation_delta, " with scale ",SCALE)
         if p > 1:
@@ -231,7 +244,7 @@ class Subpopulation():
         beta = 3
         SCALE = self.opt["scale"] * self.opt["pro"] 
         new_proliferation_delta =\
-                numpy.random.beta(alpha,beta,size=1)[0]*SCALE
+                np.random.beta(alpha,beta,size=1)[0]*SCALE
         p = self.proliferation - new_proliferation_delta
         if p < 0:
             p = SCALE / 10000.0
@@ -244,7 +257,7 @@ class Subpopulation():
         #SCALE = 100000000
         #print("SCALE",self.opt["mscale"]," and ",self.opt["mut"])
         SCALE = self.mscale * self.mutation
-        new_mutation_delta = numpy.random.beta(alpha,beta,size=1)[0]*SCALE
+        new_mutation_delta = np.random.beta(alpha,beta,size=1)[0]*SCALE
         m = self.mutation + new_mutation_delta
         #print("CHANGE ",self.mutation," to ",m, " using ", new_mutation_delta, " with scale ",SCALE)
         if m > 1:
@@ -257,7 +270,7 @@ class Subpopulation():
         #SCALE = 10000 
         #SCALE = 100000000
         SCALE = self.mscale * self.mutation
-        new_mutation_delta = numpy.random.beta(alpha,beta,size=1)[0]*SCALE
+        new_mutation_delta = np.random.beta(alpha,beta,size=1)[0]*SCALE
         m = self.mutation - new_mutation_delta
         if m < 0:
             m = SCALE / 10000.0
