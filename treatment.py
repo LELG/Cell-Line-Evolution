@@ -79,7 +79,7 @@ class Treatment(object):
         self.is_introduced = False
 
 
-    def introduce(self, popn, t):
+    def introduce(self, popn, t_curr):
         """
         Introduce treatment into simulation.
 
@@ -87,27 +87,27 @@ class Treatment(object):
         has been introduced, and produce some plots.
         """
         self.is_introduced = True
-        self.select_time = t
+        self.select_time = t_curr
         self.curr_select_pressure = self.init_select_pressure
         self.curr_mut_pressure = self.init_mut_pressure
         # set decay function
         self.decay_func = get_decay_func(self.decay_type,
                                          self.decay_rate,
                                          self.init_select_pressure,
-                                         t)
+                                         t_curr)
         # let population know that treatment has
         # been introduced
         popn.record_treatment_introduction(self)
         # TODO move this plotting elsewhere
         if not popn.opt.no_plots:
-            plotdata.print_results(popn, "mid", t)
+            plotdata.print_results(popn, "mid", t_curr)
         tree_to_xml.tree_parse(popn.subpop, popn.tumoursize,
-                               t, "mid0")
+                               t_curr, "mid0")
         if popn.opt.init_diversity:
             dropdata.drop(popn.subpop, popn.tumoursize,
-                          t, "mid0")
+                          t_curr, "mid0")
 
-    def update(self, popn, t):
+    def update(self, popn, t_curr):
         """
         Update treatment status.
 
@@ -116,25 +116,55 @@ class Treatment(object):
         introduction are now met.
         """
         if self.is_introduced:
-            self.decay(t)
+            self.decay(t_curr)
+            if self.reintroduction_conditions_met(popn, t_curr):
+                self.reintroduce(popn, t_curr)
         else:
             # not yet introduced
-            if t == self.select_time:
-                self.introduce(popn, t)
+            if t_curr == self.select_time:
+                self.introduce(popn, t_curr)
             elif self.auto_treatment:
-                # auto introduction of treatment
                 if popn.exceeds_size_limit(self.max_size_lim):
-                    self.introduce(popn, t)
+                    self.introduce(popn, t_curr)
 
     def decay(self, t_curr):
         """Model selective pressure decay for this time step."""
         if self.sel_pressure_remaining():
             self.curr_select_pressure = self.decay_func(t_curr)
 
-
     def sel_pressure_remaining(self):
         """Determine if any pressure remains in the tumour."""
         return self.curr_select_pressure > 0.0
+
+    def reintroduction_conditions_met(self, popn, t_curr):
+        pass
+
+    def reintroduce(self, popn, t_curr):
+        pass
+
+
+class MetronomicTreatment(Treatment):
+    """Model metronomic treatment, that is, small doses at frequent, regular intervals."""
+    def __init__(self, opt):
+        super(MetronomicTreatment, self).__init__(opt)
+        self.cycles_per_dose = 100
+        # scale down the treatment to model metronomic treatment
+        # self.init_select_pressure *= 0.5
+        # self.init_mut_pressure *= 0.5
+
+    def reintroduction_conditions_met(self, popn, t_curr):
+        t_delta = t_curr - self.select_time
+        return t_delta >= self.cycles_per_dose
+
+    def reintroduce(self, popn, t_curr):
+        self.curr_select_pressure += self.init_select_pressure
+        self.curr_mut_pressure += self.init_mut_pressure
+        self.select_time = t_curr
+        # reset decay function
+        self.decay_func = get_decay_func(self.decay_type,
+                                         self.decay_rate,
+                                         self.curr_select_pressure,
+                                         t_curr)
 
 
 def get_decay_func(decay_type, decay_rate, init_qty, t_init):
