@@ -104,8 +104,14 @@ class Simulator(object):
         # create the Population
         self.popn = population.Population(self.opt)
         # create the Treatment
-        # self.treatmt = treatment.Treatment(self.opt)
-        self.treatmt = treatment.MetronomicTreatment(self.opt)
+        if opt.treatment_type == 'single_dose':
+            self.treatmt = treatment.Treatment(self.opt)
+        elif opt.treatment_type == 'metronomic':
+            self.treatmt = treatment.MetronomicTreatment(self.opt)
+        elif opt.treatment_type == 'adaptive':
+            self.treatmt = treatment.AdaptiveTreatment(self.opt)
+        else:
+            raise ValueError("Bad value for treatment type parameter")
 
 
     def run(self):

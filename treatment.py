@@ -144,7 +144,12 @@ class Treatment(object):
 
 
 class MetronomicTreatment(Treatment):
-    """Model metronomic treatment, that is, small doses at frequent, regular intervals."""
+    """
+    Model a course of metronomic treatment.
+
+    A course of metronomic treatment; that is,
+    small doses of treatment at frequent, regular intervals.
+    """
     def __init__(self, opt):
         super(MetronomicTreatment, self).__init__(opt)
         self.cycles_per_dose = 100
@@ -165,6 +170,58 @@ class MetronomicTreatment(Treatment):
                                          self.decay_rate,
                                          self.curr_select_pressure,
                                          t_curr)
+
+
+class AdaptiveTreatment(Treatment):
+    """
+    Model course of adaptive treatment.
+
+    A course of adaptive treatment; that is, treatment
+    which is adjusted in response to increases or
+    decreases in tumour size.
+    """
+    def __init__(self, opt):
+        super(AdaptiveTreatment, self).__init__(opt)
+        self.cycles_per_dose = 50
+        self.dose_increment = self.init_select_pressure * 0.1
+        self.prev_dose = self.init_select_pressure
+        self.size_t_minus_one = None
+        self.size_t_minus_two = None
+
+    def introduce(self, popn, t_curr):
+        super(AdaptiveTreatment, self).introduce(popn, t_curr)
+        self.size_t_minus_one = popn.tumoursize
+        self.size_t_minus_two = popn.tumoursize
+
+    def reintroduction_conditions_met(self, popn, t_curr):
+        t_delta = t_curr - self.select_time
+        return t_delta >= self.cycles_per_dose
+
+    def reintroduce(self, popn, t_curr):
+        size_change_one = self.size_t_minus_one / float(self.size_t_minus_two)
+        size_change_two = popn.tumoursize / float(self.size_t_minus_one)
+        this_dose = self.dose_change(size_change_one, size_change_two)
+        self.curr_select_pressure += this_dose
+        self.prev_dose = this_dose
+        self.size_t_minus_two = self.size_t_minus_one
+        self.size_t_minus_one = popn.tumoursize
+        #self.curr_mut_pressure += self.init_mut_pressure
+        self.select_time = t_curr
+        # reset decay function
+        self.decay_func = get_decay_func(self.decay_type,
+                                         self.decay_rate,
+                                         self.curr_select_pressure,
+                                         t_curr)
+
+    def dose_change(self, size_change_one, size_change_two):
+        INCREASE = 1.025
+        DECREASE = 0.975
+        if ((size_change_one < DECREASE) and (size_change_two < DECREASE)):
+            return max(0, self.prev_dose - self.dose_increment)
+        elif ((size_change_one > INCREASE) and (size_change_two > INCREASE)):
+            return self.prev_dose + self.dose_increment
+        else:
+            return self.prev_dose
 
 
 def get_decay_func(decay_type, decay_rate, init_qty, t_init):
