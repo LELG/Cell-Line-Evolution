@@ -137,9 +137,11 @@ class Treatment(object):
         return self.curr_select_pressure > 0.0
 
     def reintroduction_conditions_met(self, popn, t_curr):
+        """Determine whether to reintroduce treatment."""
         pass
 
     def reintroduce(self, popn, t_curr):
+        """Reintroduce treatment."""
         pass
 
 
@@ -152,10 +154,8 @@ class MetronomicTreatment(Treatment):
     """
     def __init__(self, opt):
         super(MetronomicTreatment, self).__init__(opt)
+        # TODO make this cmd line param?
         self.cycles_per_dose = 100
-        # scale down the treatment to model metronomic treatment
-        # self.init_select_pressure *= 0.5
-        # self.init_mut_pressure *= 0.5
 
     def reintroduction_conditions_met(self, popn, t_curr):
         t_delta = t_curr - self.select_time
@@ -176,35 +176,52 @@ class AdaptiveTreatment(Treatment):
     """
     Model course of adaptive treatment.
 
-    A course of adaptive treatment; that is, treatment
+    Simulate a course of adaptive treatment; that is, treatment
     which is adjusted in response to increases or
     decreases in tumour size.
+
+    The model is based on the description in
+    the paper "Adaptive Therapy" (2009), by
+    Gatenby et. al.
+
+    This is a complicated treatment model, as
+    it needs to know:
+
+    - how frequently to check the population size
+    - how big the last dose was
+    - how big the tumour was the last two times
+        its size was measured
+    - what increment to change the dosage by
+        in response to tumour increasing/decreasing in size
     """
     def __init__(self, opt):
+        # initialise a Treatment object
         super(AdaptiveTreatment, self).__init__(opt)
+        # TODO Make at least some of these cmd line parameters
         self.cycles_per_dose = 50
         self.dose_increment = self.init_select_pressure * 0.1
         self.prev_dose = self.init_select_pressure
-        self.size_t_minus_one = None
-        self.size_t_minus_two = None
+        self.tumoursize_minus2 = None
+        self.tumoursize_minus1 = None
 
     def introduce(self, popn, t_curr):
         super(AdaptiveTreatment, self).introduce(popn, t_curr)
-        self.size_t_minus_one = popn.tumoursize
-        self.size_t_minus_two = popn.tumoursize
+        self.tumoursize_minus2 = popn.tumoursize
+        self.tumoursize_minus1 = popn.tumoursize
 
     def reintroduction_conditions_met(self, popn, t_curr):
         t_delta = t_curr - self.select_time
         return t_delta >= self.cycles_per_dose
 
     def reintroduce(self, popn, t_curr):
-        size_change_one = self.size_t_minus_one / float(self.size_t_minus_two)
-        size_change_two = popn.tumoursize / float(self.size_t_minus_one)
-        this_dose = self.dose_change(size_change_one, size_change_two)
-        self.curr_select_pressure += this_dose
-        self.prev_dose = this_dose
-        self.size_t_minus_two = self.size_t_minus_one
-        self.size_t_minus_one = popn.tumoursize
+        """Reintroduce adaptive treatment, adjusting dose size if necessary."""
+        size_delta1 = self.tumoursize_minus1 / float(self.tumoursize_minus2)
+        size_delta2 = popn.tumoursize / float(self.tumoursize_minus1)
+        curr_dose = self.dose_change(size_delta1, size_delta2)
+        self.curr_select_pressure += curr_dose
+        self.prev_dose = curr_dose
+        self.tumoursize_minus2 = self.tumoursize_minus1
+        self.tumoursize_minus1 = popn.tumoursize
         #self.curr_mut_pressure += self.init_mut_pressure
         self.select_time = t_curr
         # reset decay function
@@ -213,12 +230,13 @@ class AdaptiveTreatment(Treatment):
                                          self.curr_select_pressure,
                                          t_curr)
 
-    def dose_change(self, size_change_one, size_change_two):
+    def dose_change(self, size_delta1, size_delta2):
+        """Determine whether to change size of dose."""
         INCREASE = 1.025
         DECREASE = 0.975
-        if ((size_change_one < DECREASE) and (size_change_two < DECREASE)):
+        if size_delta1 < DECREASE and size_delta2 < DECREASE:
             return max(0, self.prev_dose - self.dose_increment)
-        elif ((size_change_one > INCREASE) and (size_change_two > INCREASE)):
+        elif size_delta1 > INCREASE and size_delta2 > INCREASE:
             return self.prev_dose + self.dose_increment
         else:
             return self.prev_dose
