@@ -181,7 +181,7 @@ def parse_cmd_line_args():
     parser.add_argument('--prob_inc_mut', type=float)
     parser.add_argument('--prob_dec_mut', type=float)
 
-    parser.add_argument('-z', '--init_size', type=int)
+    parser.add_argument('-z', '--init_size', type=int, default=25)
     parser.add_argument('--init_diversity', type=int)
     parser.add_argument('--sub_file')
 

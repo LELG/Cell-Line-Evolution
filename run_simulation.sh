@@ -126,7 +126,7 @@ for mutation_rate in $mutation_values; do
     sim_params="$sim_params --select_time $select_time --select_pressure $selective_pressure"
     sim_params="$sim_params --prob_mut_pos $prob_mut_pos --prob_mut_neg $prob_mut_neg"
     sim_params="$sim_params --prob_inc_mut $prob_inc_mut --prob_dec_mut $prob_dec_mut"
-    sim_params="$sim_params $init_size"
+    sim_params="$sim_params --init_size $init_size"
     sim_params="$sim_params $init_diversity $sub_file"
     sim_params="$sim_params --scale $scale --mscale $mscale"
     sim_params="$sim_params $r_flag $m_flag $z_flag $np_flag"
