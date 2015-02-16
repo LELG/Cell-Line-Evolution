@@ -12,7 +12,7 @@ def drop(subpop, tumoursize, time, label):
     cols_sizes.sort()
 
     colours = ['LightGray', 'Gray', 'LightSkyBlue', 'RoyalBlue',
-               'LightSkyGreen', 'MediumSeaGreen', 'Khaki', 'Goldenrod',
+               'LightSeaGreen', 'MediumSeaGreen', 'Khaki', 'Goldenrod',
                'Tomato', 'PaleVioletRed', 'DarkViolet']
 
     col_totals = [0 for col in colours]
