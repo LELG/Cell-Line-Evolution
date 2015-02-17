@@ -250,6 +250,7 @@ class Simulator(object):
         print(hdr)
         for attr, val in vars(self.opt).items():
             print("{}: {}".format(attr, val))
+        print('\n')
 
     def write_summary(self, popn, treatmt, tot_cycles, elapsed_time):
         """
