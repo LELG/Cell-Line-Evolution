@@ -82,13 +82,13 @@ else
   fi
 fi
 
-# get appropriate padding for run_dir
-# (this just finds the length of runs_per_param_set as a string)
-runpadding=${#runs_per_param_set}
-
 # TODO check whether these files are still necessary
 touch $test_group_dir/"middropdata.csv"
 touch $test_group_dir/"enddropdata.csv"
+
+# get appropriate padding for run_dir
+# (this just finds the length of runs_per_param_set as a string)
+runpadding=${#runs_per_param_set}
 
 # the following code assumes multiple mutation values and multiple tests
 # TODO delegate this looping to PBS script
@@ -111,7 +111,7 @@ for mutation_rate in $mutation_values; do
     fi
 
     echo "TEST GROUP: "$test_group
-    echo "Parameter set: "$param_set
+    echo "Parameter set: "$param_set" of "$num_param_sets
     echo "Run "$run_number" of "$runs_per_param_set
 
     # build up full list of parameters to main.py
