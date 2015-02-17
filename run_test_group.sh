@@ -71,6 +71,12 @@ fi
 touch $test_group_dir/"middropdata.csv"
 touch $test_group_dir/"enddropdata.csv"
 
+if [ ! -f $test_group_dir/$3 ]; then
+  echo "Copying config file to test group directory ..."
+  cp $3 $test_group_dir
+  echo "Done"
+fi
+
 # strip comments from config file
 file_no_comments=$(sed '/^#/'d $3)
 
