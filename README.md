@@ -54,7 +54,7 @@ The following parameters can be changed in the shell script:
         --die - Death rate
         --pro - Proliferation rate
         --mut - Mutation rate
-        --maxsize_lim - Maximum Tumour Size
+        --max_size_lim - Maximum Tumour Size
         --prolif_lim  - Proliferation Limit #not used
         --init_size   - Initial Tumour Size
         --select_time - Selective Pressure Time
@@ -117,9 +117,9 @@ The plots produced by a single run are:
 
 ### 4. Compile results from multiple runs
 
-There are several options for compiling results. The script `compact.py` reads the combined output from the results.dat file found in the top level of a test. The results are for all the runs under one `parameter.sh` file.
+There are several options for compiling results. The script `compact.py` reads the combined output from the results.csv file found in the top level of a test. The results are for all the runs under one `parameter.sh` file.
 
-    ./TEST_NAME/results.dat
+    ./TEST_NAME/results.csv
 
 Running `compact.py` groups this, so instead of x * n rows, there are only x rows, which summarise n runs each. It also has lateoutput format `--latex` and a headerless `--plot` argument. Normal execution is:
 

@@ -1,4 +1,4 @@
-cat $1/results.dat | grep FULL | awk '{ print $3 }' > mut_recovered.dat 
+cat $1/results.csv | grep FULL | awk '{ print $3 }' > mut_recovered.dat 
 
 echo "" > blank_win.txt
 rm blank_win.txt
