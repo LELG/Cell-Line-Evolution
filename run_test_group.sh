@@ -30,10 +30,8 @@ fi
 
 # check that supplied testname will make a valid directory name
 # i.e., that it does not contain slash or backslash
-E_INVALID_FNAME=60
 if [[ "$1" == *\/* ]] || [[ "$1" == *\\* ]]; then
-  echo "Error: test group name cannot contain slash/backslash"
-  exit $E_INVALID_FNAME
+  usage-exit "Test group name cannot contain slash/backslash"
 else
   test_group=$1
 fi
@@ -44,6 +42,7 @@ today_dir="results/$today"
 
 if [ ! -d "$today_dir" ]
 then
+  echo "================================================================================"
   echo "Creating results directory for "$today" ..."
   mkdir -p "$today_dir"
   echo "Done"
@@ -51,6 +50,7 @@ fi
 
 # make main directory for this test group
 test_group_dir="$today_dir/$test_group"
+  echo "================================================================================"
 if [ ! -d $test_group_dir ]
 then
   echo "Creating main directory for test group "$test_group" ..."
@@ -71,25 +71,33 @@ fi
 touch $test_group_dir/"middropdata.csv"
 touch $test_group_dir/"enddropdata.csv"
 
+# strip comments from config file
+file_no_comments=$(sed '/^#/'d $3)
+
 # get param names from header row of config file,
-# and save them to an array (in order)
-param_names=($(awk 'NR==1 && /^[^#]/' $3))
+# and save them to an array
+param_names=($(echo "$file_no_comments" | awk 'NR==1'))
 
 num_params=${#param_names[@]}
 
 # get number of non-header lines in param file
-# sed strips the header; xargs trims whitespace from return value of wc
-num_param_sets=$(sed 1d $3 | wc -l | xargs)
+# sed strips header; xargs trims whitespace
+# from return value of wc
+num_param_sets=$(echo "$file_no_comments" | sed 1d | wc -l | xargs)
+
 param_set_padding=${#num_param_sets}
 
-# main loop - run the simulation once for each line in file
+# main loop; run the simulation once for each param set
 param_set=1
-sed 1d $3 | while read -r line; do
+echo "$file_no_comments" | sed 1d | while read -r line; do
   # pad directories to ensure proper ordering
   param_set_dir=$(printf "%s/%0*d" $test_group_dir $param_set_padding $param_set)
 
   if [ ! -d $param_set_dir ]; then
+  echo "================================================================================"
+    echo "Creating param set directory: "$param_set_dir" ..."
     mkdir -p $param_set_dir
+    echo "Done"
   fi
 
   # each parameter set will get stored to its own file
@@ -99,6 +107,8 @@ sed 1d $3 | while read -r line; do
   # save this set of parameter values to an array
   vals=($(echo $line))
 
+  echo "================================================================================"
+  echo "Writing parameter set to config file ..."
   i=0
   while [ $i -lt $num_params ]; do
     # construct var=val pair and write it to file
@@ -115,6 +125,7 @@ sed 1d $3 | while read -r line; do
   echo "param_set_dir='$param_set_dir'" >> $param_set_config_file
   echo "num_param_sets=$num_param_sets" >> $param_set_config_file
   echo "runs_per_param_set=$runs_per_param_set" >> $param_set_config_file
+  echo "Done"
 
   ./run_param_set.sh $param_set_config_file
 done

@@ -22,7 +22,8 @@ if [ $# -ne $num_expected_args ]; then
 fi
 
 # read parameters from config file
-echo "Reading parameters from config file "$1" ..."
+echo "================================================================================"
+echo "Reading parameters from config file ..."
 source $1
 echo "Done"
 
@@ -39,9 +40,16 @@ while [ $run_number -le $runs_per_param_set ]; do
     mkdir -p $run_dir
   fi
 
-  echo "TEST GROUP: "$test_group
-  echo "Parameter set: "$param_set" of "$num_param_sets
-  echo "Run "$run_number" of "$runs_per_param_set
+  echo "------------------------------------------"
+  echo
+  echo "Starting simulation ..."
+  echo
+  echo "SIMULATION TEST GROUP: "$test_group
+  echo "PARAMETER SET: "$param_set" of "$num_param_sets
+  echo "RUN: "$run_number" of "$runs_per_param_set
+  echo
+  echo "------------------------------------------"
+  echo
 
   # build up full list of parameters to main.py
   sim_params="--test_group $test_group --param_set $param_set --run_number $run_number"
