@@ -107,7 +107,7 @@ def parse_cmd_line_args():
         decay (e.g. constant, linear, exponential)
     decay_rate : float
         Constant controlling speed of treatment decay
-    treatment_frequency : int
+    treatment_freq : int
         Number of cycles between doses for (regular) multi-dose treatments
     adaptive_increment : float
         Amount to increase/decrease dosage by in adaptive treatment
@@ -179,7 +179,7 @@ def parse_cmd_line_args():
     parser.add_argument('--treatment_type', default='single_dose')
     parser.add_argument('--decay_type', default='constant')
     parser.add_argument('--decay_rate', type=float, default=0.0)
-    parser.add_argument('--treatment_frequency', type=int, default=100)
+    parser.add_argument('--treatment_freq', type=int, default=100)
     parser.add_argument('--adaptive_increment', type=float, default=0.001)
     parser.add_argument('--adaptive_threshold', type=float, default=0.025)
     parser.add_argument('-t', '--select_time', type=int)

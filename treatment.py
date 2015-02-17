@@ -154,11 +154,11 @@ class MetronomicTreatment(Treatment):
     """
     def __init__(self, opt):
         super(MetronomicTreatment, self).__init__(opt)
-        self.treatment_frequency = opt.treatment_frequency
+        self.treatment_freq = opt.treatment_freq
 
     def reintroduction_conditions_met(self, popn, t_curr):
         t_delta = t_curr - self.select_time
-        return t_delta >= self.treatment_frequency
+        return t_delta >= self.treatment_freq
 
     def reintroduce(self, popn, t_curr):
         self.curr_select_pressure += self.init_select_pressure
@@ -199,7 +199,7 @@ class AdaptiveTreatment(Treatment):
     def __init__(self, opt):
         # initialise a Treatment object
         super(AdaptiveTreatment, self).__init__(opt)
-        self.treatment_frequency = opt.treatment_frequency
+        self.treatment_freq = opt.treatment_freq
         self.increment = opt.adaptive_increment
         self.growth_threshold = opt.adaptive_threshold
         self.prev_dose = self.init_select_pressure
@@ -213,7 +213,7 @@ class AdaptiveTreatment(Treatment):
 
     def reintroduction_conditions_met(self, popn, t_curr):
         t_delta = t_curr - self.select_time
-        return t_delta >= self.treatment_frequency
+        return t_delta >= self.treatment_freq
 
     def reintroduce(self, popn, t_curr):
         """Reintroduce adaptive treatment, adjusting dose size if necessary."""
