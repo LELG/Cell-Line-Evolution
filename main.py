@@ -107,6 +107,13 @@ def parse_cmd_line_args():
         decay (e.g. constant, linear, exponential)
     decay_rate : float
         Constant controlling speed of treatment decay
+    treatment_frequency : int
+        Number of cycles between doses for (regular) multi-dose treatments
+    adaptive_increment : float
+        Amount to increase/decrease dosage by in adaptive treatment
+    adaptive_threshold : float
+        Percentage change in tumour size that will trigger change
+        in adaptive treatment dose
     select_time : integer
         Time step to introduce treatment, if it has
         not already been automatically triggered
@@ -172,6 +179,9 @@ def parse_cmd_line_args():
     parser.add_argument('--treatment_type', default='single_dose')
     parser.add_argument('--decay_type', default='constant')
     parser.add_argument('--decay_rate', type=float, default=0.0)
+    parser.add_argument('--treatment_frequency', type=int, default=100)
+    parser.add_argument('--adaptive_increment', type=float, default=0.001)
+    parser.add_argument('--adaptive_threshold', type=float, default=0.025)
     parser.add_argument('-t', '--select_time', type=int)
     parser.add_argument('-s', '--select_pressure', type=float)
     parser.add_argument('-u', '--mutagenic_pressure', type=float, default=0.0)
