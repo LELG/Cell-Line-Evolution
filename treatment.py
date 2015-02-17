@@ -154,12 +154,11 @@ class MetronomicTreatment(Treatment):
     """
     def __init__(self, opt):
         super(MetronomicTreatment, self).__init__(opt)
-        # TODO make this cmd line param?
-        self.cycles_per_dose = 100
+        self.treatment_frequency = opt.treatment_frequency
 
     def reintroduction_conditions_met(self, popn, t_curr):
         t_delta = t_curr - self.select_time
-        return t_delta >= self.cycles_per_dose
+        return t_delta >= self.treatment_frequency
 
     def reintroduce(self, popn, t_curr):
         self.curr_select_pressure += self.init_select_pressure
@@ -193,13 +192,16 @@ class AdaptiveTreatment(Treatment):
         its size was measured
     - what increment to change the dosage by
         in response to tumour increasing/decreasing in size
+
+    NOTE: This model currently does not allow for
+          mutagenic pressure.
     """
     def __init__(self, opt):
         # initialise a Treatment object
         super(AdaptiveTreatment, self).__init__(opt)
-        # TODO Make at least some of these cmd line parameters
-        self.cycles_per_dose = 50
-        self.dose_increment = self.init_select_pressure * 0.1
+        self.treatment_frequency = opt.treatment_frequency
+        self.increment = opt.adaptive_increment
+        self.growth_threshold = opt.adaptive_threshold
         self.prev_dose = self.init_select_pressure
         self.tumoursize_minus2 = None
         self.tumoursize_minus1 = None
@@ -211,7 +213,7 @@ class AdaptiveTreatment(Treatment):
 
     def reintroduction_conditions_met(self, popn, t_curr):
         t_delta = t_curr - self.select_time
-        return t_delta >= self.cycles_per_dose
+        return t_delta >= self.treatment_frequency
 
     def reintroduce(self, popn, t_curr):
         """Reintroduce adaptive treatment, adjusting dose size if necessary."""
@@ -232,12 +234,12 @@ class AdaptiveTreatment(Treatment):
 
     def dose_change(self, size_delta1, size_delta2):
         """Determine whether to change size of dose."""
-        INCREASE = 1.025
-        DECREASE = 0.975
-        if size_delta1 < DECREASE and size_delta2 < DECREASE:
-            return max(0, self.prev_dose - self.dose_increment)
-        elif size_delta1 > INCREASE and size_delta2 > INCREASE:
-            return self.prev_dose + self.dose_increment
+        inc_threshold = 1 + self.growth_threshold
+        dec_threshold = 1 - self.growth_threshold
+        if size_delta1 < dec_threshold and size_delta2 < dec_threshold:
+            return max(0, self.prev_dose - self.increment)
+        elif size_delta1 > inc_threshold and size_delta2 > inc_threshold:
+            return self.prev_dose + self.increment
         else:
             return self.prev_dose
 
