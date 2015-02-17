@@ -42,7 +42,7 @@ class Population():
         self.tumoursize = opt.init_size
         self.clonecount = 1
         self.maxsize_lim = opt.maxsize_lim
-        self.prolif_lim = self.opt.pro - self.opt.die #could rebase this ----> is this birth.rate - death.rate if not it should
+        self.prolif_lim = self.opt.pro - self.opt.die #could rebase this
         self.opt.prolif_lim = self.opt.pro - self.opt.die
         depth = 0
         time = 0
@@ -66,8 +66,8 @@ class Population():
         
         In comma delimited format 
         If master file header doesnt exist have bash write it 
-        """
         
+        """
 
         localtime = time.asctime( time.localtime(time.time()) )
         #Get min and max values pre crash 
@@ -101,45 +101,42 @@ class Population():
         #TRACE self.opt.pro
 
         #Run summary
-        print(#">", "," ,
-              #self.opt.filename,",", 
-              #went_crash, ",", 
-              #recover,",", 
-              #recover_type, ",", 
-              #recover_percent,",", 
-              #self.opt.pro,",",  #6
-              #self.opt.die,",", 
-              #self.opt.mut,",", #8
-              #self.opt.select_time,",", -------->
-              #self.opt.select_pressure,",", #10
-             # self.s.prob_mut_pos,",", 
-              #self.s.prob_mut_neg,",", 
-              #self.s.prob_inc_mut, ",", 
-              #self.s.prob_dec_mut, ",", 
-              #self.analytics_base.population[-1],",", #15
-              #self.analytics_base.subpopulation[-1],",", 
-              self.analytics_base.mutation[-1],
-              #self.analytics_base.proliferation[-1],",", 
-              #localtime,",",
-              #self.tumoursize,",", #20
-              #len(self.analytics_base.population),",", 
-              #min_val,",",
-              #min_time,",",
-              #max_val,",",
-              #max_time,",", #25        (26)
-              #cmin_val,",",           #(27)
-              #cmin_time,",",          #(28)
-              #cmax_val,",",           #(29)
-              #cmax_time,",",          #(30)
-              #self.opt.scale,",", #30
-              #self.opt.mscale,",",
-              #size_from_precrash,",",
+        print(">", "," ,
+              self.opt.filename,",", 
+              went_crash, ",", 
+              recover,",", 
+              recover_type, ",", 
+              recover_percent,",", 
+              self.opt.pro,",",  #6
+              self.opt.die,",", 
+              self.opt.mut,",", #8
+              self.opt.select_time,",", 
+              self.opt.select_pressure,",", #10
+              self.s.prob_mut_pos,",", 
+              self.s.prob_mut_neg,",", 
+              self.s.prob_inc_mut, ",", 
+              self.s.prob_dec_mut, ",", 
+              self.analytics_base.population[-1],",", #15
+              self.analytics_base.subpopulation[-1],",", 
+              self.analytics_base.mutation[-1],",",
+              self.analytics_base.proliferation[-1],",", 
+              localtime,",",
+              self.tumoursize,",", #20
+              len(self.analytics_base.population),",", 
+              min_val,",",
+              min_time,",",
+              max_val,",",
+              max_time,",", #25        (26)
+              cmin_val,",",           #(27)
+              cmin_time,",",          #(28)
+              cmax_val,",",           #(29)
+              cmax_time,",",          #(30)
+              self.opt.scale,",", #30
+              self.opt.mscale,",",
+              size_from_precrash,",",
               file = file_summary)
-            #difference betwen selct_time and cmax_time also look for max_time
 
         file_summary.close()
-        
-        
 
     def went_through_crash(self):
         crash_buffer = 25 #check just past crash time
@@ -201,8 +198,7 @@ class Population():
         return min_val, min_time, max_val, max_time
 
     def info(self):
-        pass
-        #print("Parameter Set: ", self.opt)
+        print("Parameter Set: ", self.opt)
 
     def cycle(self,opt):
         self.selective_pressure_applied = False
@@ -263,12 +259,10 @@ class Population():
                     self.s.set_precrash_size()
                     self.selective_pressure()
                     if not self.opt.NP:
-                        pass
-                        #self.print_results("mid",i)
-                    #tree_to_xml.tree_parse(self.s, self.tumoursize, i, "mid0")
+                        self.print_results("mid",i)
+                    tree_to_xml.tree_parse(self.s, self.tumoursize, i, "mid0")
                     if opt.init_diversity:
-                        pass
-                     #   dropdata.drop(self.s, self.tumoursize, i, "mid0")
+                        dropdata.drop(self.s, self.tumoursize, i, "mid0")
                     self.selective_pressure_applied = True
                     #PRINT RESULTS with diff filename
 
@@ -280,12 +274,10 @@ class Population():
                             self.s.set_precrash_size()
                             self.selective_pressure()
                             if not self.opt.NP:
-                                pass
-                                #self.print_results("mid",i)
-                            #tree_to_xml.tree_parse(self.s, self.tumoursize, i, "mid")
+                                self.print_results("mid",i)
+                            tree_to_xml.tree_parse(self.s, self.tumoursize, i, "mid")
                             if opt.init_diversity:
-                                pass
-                               # dropdata.drop(self.s, self.tumoursize, i, "mid")
+                                dropdata.drop(self.s, self.tumoursize, i, "mid")
                             self.opt.select_time = i #update time when sel press introduced
                             self.selective_pressure_applied = True
                             #PRINT RESULTS with diff filename
@@ -293,8 +285,9 @@ class Population():
 
             #PRINT INFO EVERY 100 LOOPS?
             if i % 1000 == 0:
-             #   os.system('clear')
-                print(i, " out of", self.opt.loops, " tumour size: ", self.tumoursize)
+                os.system('clear')
+                print(i, " out of", self.opt.loops, " tumour size: ", \
+                    self.tumoursize)
             if self.tumoursize == 0:
                 if not self.selective_pressure_applied:
                     return 0
@@ -302,28 +295,26 @@ class Population():
             if self.tumoursize > (self.maxsize_lim + extra_lim):
                 #IF TOO BIG BUT HASNT CRASHED, LET NEXT CYCLE CRASH IT
                 if self.selective_pressure_applied:
-               #     print("TUMOUR IS TOO BIG")
+                    print("TUMOUR IS TOO BIG")
                     recovered = True
                     break
 
             #self.s.info()
 
-        #print("cycle done")
-        #print('LE ->', self.analytics_base.mutation[-1])
-        #self.write_population_summary(i,recovered)
+        print("cycle done")
+        self.write_population_summary(i,recovered)
 
         if not self.opt.NP:
-            pass
-          #  self.print_results("end",i)
-           # self.print_plots("new",i)
+            self.print_results("end",i)
+            self.print_plots("new",i)
 
         #ALWAYS PLOT TREE
-        #fname=""
-        #tree_to_xml.tree_parse(self.s,self.tumoursize,i,fname)
-        #if opt.init_diversity:
-         #   dropdata.drop(self.s, self.tumoursize, i, "end")
-         #   print("printing the DROP")
-        return self.analytics_base.mutation[-1]
+        fname=""
+        tree_to_xml.tree_parse(self.s,self.tumoursize,i,fname)
+        if opt.init_diversity:
+            dropdata.drop(self.s, self.tumoursize, i, "end")
+            print("printing the DROP")
+        return 1
         #print(self.analytics_base.population)
 
     def selective_pressure(self):
