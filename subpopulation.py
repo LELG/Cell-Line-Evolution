@@ -21,11 +21,11 @@ class Subpopulation(object):
         """Create new clone."""
         self.proliferation = p
         self.mutation = m
-        self.mut_static = m #static for scale calution of new value
+        # self.mut_static = m #static for scale calution of new value
         self.death = opt.die
         self.size = 1
         self.precrash_size = 0
-        self.max_size_lim = opt.max_size_lim
+        # self.max_size_lim = opt.max_size_lim
         # initialise prolif_adj to maximum amount
         self.prolif_adj = opt.prolif_lim
         self.nodes = []
@@ -38,11 +38,12 @@ class Subpopulation(object):
         self.mut_type = mut_type  #b/d/n
         self.prob_inc_mut = pim #opt["prob_inc_mut"]
         self.prob_dec_mut = pdm #opt["prob_dec_mut"]
+        # TODO deprecate this instance variable
         self.mutagenic_pressure = 0
         self.col = col
         self.branch_length = time - prev_time
 
-    def newsubpop_from_file(self, opt, filename):
+    def new_subpop_from_file(self, opt, filename):
         """Load a heterogeneous starting population from a subfile."""
         subfile = open(filename)
         reader = csv.DictReader(subfile)

@@ -41,7 +41,7 @@ class Population(object):
                                     prev_time=0)
         if opt.init_diversity:
             self.subpop.size = 0 #don't use init dummy popn if reading from file
-            self.subpop.newsubpop_from_file(self.opt, self.opt.sub_file)
+            self.subpop.new_subpop_from_file(self.opt, self.opt.sub_file)
         else:
             self.subpop.size = opt.init_size
         self.analytics_base = Analytics()
