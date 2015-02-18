@@ -10,6 +10,7 @@ Yoshua Wakeham : yoshwakeham@gmail.com
 from __future__ import print_function
 import random
 import csv
+import json
 import numpy as np
 
 class Subpopulation(object):
@@ -369,3 +370,7 @@ class Subpopulation(object):
 
     def is_dead_end(self):
         return self.is_dead() and not self.has_children()
+
+    def to_JSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__,
+                          sort_keys=True, indent=4)
