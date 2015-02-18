@@ -82,7 +82,7 @@ class Subpopulation(object):
         for node in self.nodes:
             node.set_precrash_size()
 
-    def update(self, tumoursize, select_pressure, mutagenic_pressure, time, prolif_adj):
+    def update(self, select_pressure, mutagenic_pressure, time, prolif_adj):
         """Update this clone and its children for one time step."""
         self.mutagenic_pressure = mutagenic_pressure
         self.prolif_adj = prolif_adj
@@ -135,8 +135,7 @@ class Subpopulation(object):
             pro_agg = 0
 
         for node in self.nodes:
-            node_results = node.update(tumoursize,
-                                       select_pressure, mutagenic_pressure,
+            node_results = node.update(select_pressure, mutagenic_pressure,
                                        time, prolif_adj)
             ret_new_size, ret_sub_count, ret_mut_agg, ret_pro_agg = node_results
 
