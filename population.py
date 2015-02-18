@@ -85,10 +85,10 @@ class Population(object):
         # update subpopulations, getting back
         # tumour size, clone count, and aggregate
         # mutation and proliferation rates
-        subpop_results = self.subpop.update(self.tumoursize,
-                                            self.select_pressure,
+        subpop_results = self.subpop.update(self.select_pressure,
                                             self.mutagenic_pressure,
-                                            t, prolif_adj)
+                                            t, prolif_adj,
+                                            self.opt.prune_clones)
         self.tumoursize, self.clonecount, agg_mut, agg_pro = subpop_results
 
         if not self.is_dead():

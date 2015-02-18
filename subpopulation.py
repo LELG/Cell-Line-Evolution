@@ -82,7 +82,7 @@ class Subpopulation(object):
         for node in self.nodes:
             node.set_precrash_size()
 
-    def update(self, select_pressure, mutagenic_pressure, time, prolif_adj):
+    def update(self, select_pressure, mutagenic_pressure, time, prolif_adj, prune_clones=False):
         """Update this clone and its children for one time step."""
         self.mutagenic_pressure = mutagenic_pressure
         self.prolif_adj = prolif_adj
@@ -94,7 +94,7 @@ class Subpopulation(object):
             if not self.d_time:
                 self.d_time = time
         else:
-            if self.opt.prune_clones: #if running large dataset
+            if prune_clones: #if running large dataset
             # MIGHT BE QUICKER TO FILTER ALL END NODES
             # ONE CALL PER 10 RUNS / 2 RUNS
             # remove 0 nodes
