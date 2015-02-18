@@ -224,7 +224,7 @@ class Simulator(object):
         if self.init_diversity:
             print("Printing drop data")
             dropdata.drop(self.popn.subpop, self.popn.tumoursize,
-                          self.total_cycles, "end")
+                          self.total_cycles, self.test_group_dir, "end")
 
 
     def print_status_update(self, t):

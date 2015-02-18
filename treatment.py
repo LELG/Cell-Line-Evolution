@@ -105,7 +105,7 @@ class Treatment(object):
                                t_curr, "mid0")
         if popn.opt.init_diversity:
             dropdata.drop(popn.subpop, popn.tumoursize,
-                          t_curr, "mid0")
+                          t_curr, popn.opt.test_group_dir, "mid0")
         with open('testsubpop.json', 'w') as f:
             f.write(popn.subpop.to_JSON())
 
