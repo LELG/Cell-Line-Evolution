@@ -43,7 +43,7 @@ class Subpopulation(object):
         self.col = col
         self.branch_length = time - prev_time
 
-    def newsubpop_from_file(self, filename):
+    def newsubpop_from_file(self, filename, init_size):
         """Load a heterogeneous starting population from a subfile."""
         subfile = open(filename)
         reader = csv.DictReader(subfile)
@@ -64,7 +64,7 @@ class Subpopulation(object):
                                        pmp=pmp, pmn=pmn,
                                        pim=pim, pdm=pdm,
                                        prev_time=0)
-            new_subpop.size = self.opt.init_size
+            new_subpop.size = init_size
             self.nodes.append(new_subpop)
 
     def info(self):
