@@ -41,7 +41,7 @@ class Population(object):
                                     prev_time=0)
         if opt.init_diversity:
             self.subpop.size = 0 #don't use init dummy popn if reading from file
-            self.subpop.newsubpop_from_file(self.opt.sub_file, opt.init_size)
+            self.subpop.newsubpop_from_file(self.opt, self.opt.sub_file)
         else:
             self.subpop.size = opt.init_size
         self.analytics_base = Analytics()
@@ -85,10 +85,10 @@ class Population(object):
         # update subpopulations, getting back
         # tumour size, clone count, and aggregate
         # mutation and proliferation rates
-        subpop_results = self.subpop.update(self.select_pressure,
+        subpop_results = self.subpop.update(self.opt,
+                                            self.select_pressure,
                                             self.mutagenic_pressure,
-                                            t, prolif_adj,
-                                            self.opt.prune_clones)
+                                            t, prolif_adj)
         self.tumoursize, self.clonecount, agg_mut, agg_pro = subpop_results
 
         if not self.is_dead():

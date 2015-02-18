@@ -19,7 +19,6 @@ class Subpopulation(object):
     """
     def __init__(self, opt, p, m, depth, time, mut_type, col, pmp, pmn, pim, pdm, prev_time):
         """Create new clone."""
-        self.opt = opt
         self.proliferation = p
         self.mutation = m
         self.mut_static = m #static for scale calution of new value
@@ -43,7 +42,7 @@ class Subpopulation(object):
         self.col = col
         self.branch_length = time - prev_time
 
-    def newsubpop_from_file(self, filename, init_size):
+    def newsubpop_from_file(self, opt, filename):
         """Load a heterogeneous starting population from a subfile."""
         subfile = open(filename)
         reader = csv.DictReader(subfile)
@@ -57,20 +56,20 @@ class Subpopulation(object):
             col = line["col"]
 
             #add new subpopulation node
-            new_subpop = Subpopulation(opt=self.opt,
+            new_subpop = Subpopulation(opt=opt,
                                        p=self.proliferation,
                                        m=mut, depth=1, time=0,
                                        mut_type='n', col=col,
                                        pmp=pmp, pmn=pmn,
                                        pim=pim, pdm=pdm,
                                        prev_time=0)
-            new_subpop.size = init_size
+            new_subpop.size = opt.init_size
             self.nodes.append(new_subpop)
 
     def info(self):
         """Print info about this clone and all its children"""
         print("Clone Info")
-        print(self.opt)
+        print(self.__dict__)
         print("No. of nodes: ", len(self.nodes))
         print(self.proliferation, self.mutation)
         for node in self.nodes:
@@ -82,7 +81,7 @@ class Subpopulation(object):
         for node in self.nodes:
             node.set_precrash_size()
 
-    def update(self, select_pressure, mutagenic_pressure, time, prolif_adj, prune_clones=False):
+    def update(self, opt, select_pressure, mutagenic_pressure, time, prolif_adj):
         """Update this clone and its children for one time step."""
         self.mutagenic_pressure = mutagenic_pressure
         self.prolif_adj = prolif_adj
@@ -94,7 +93,7 @@ class Subpopulation(object):
             if not self.d_time:
                 self.d_time = time
         else:
-            if prune_clones: #if running large dataset
+            if opt.prune_clones: #if running large dataset
             # MIGHT BE QUICKER TO FILTER ALL END NODES
             # ONE CALL PER 10 RUNS / 2 RUNS
             # remove 0 nodes
@@ -146,7 +145,7 @@ class Subpopulation(object):
 
         # make new subpopulations after the fact
         for _ in range(0, cells_mut):
-            self.new_subpop(time)
+            self.new_child(time, opt)
 
         if self.size > 0:
             sub_count += 1
@@ -154,16 +153,16 @@ class Subpopulation(object):
 
         return new_pop_size, sub_count, mut_agg, pro_agg
 
-    def new_subpop(self, time):
+    def new_child(self, time, opt):
         """Spawn a new child clone."""
         # get child's proliferation rate
         prolif_mut_event = random.random()
 
         if prolif_mut_event <= self.prob_mut_pos:
-            new_prolif = self.mutation_beneficial()
+            new_prolif = self.mutation_beneficial(opt.scale, opt.pro)
             new_mut_type = 'b'
         elif prolif_mut_event <= self.prob_mut_pos + self.prob_mut_neg:
-            new_prolif = self.mutation_deleterious()
+            new_prolif = self.mutation_deleterious(opt.scale, opt.pro)
             new_mut_type = 'd'
         else:
             new_prolif = self.proliferation
@@ -173,24 +172,23 @@ class Subpopulation(object):
         mut_mut_event = random.random()
 
         if mut_mut_event <= self.prob_inc_mut:
-            new_mut = self.mutation_change_increase()
+            new_mut = self.mutation_change_increase(opt.mscale, self.mutation)
         elif mut_mut_event <= self.prob_inc_mut + self.prob_dec_mut:
-            new_mut = self.mutation_change_decrease()
+            new_mut = self.mutation_change_decrease(opt.mscale, self.mutation)
         else:
             new_mut = self.mutation
 
-        size = 1
         new_depth = self.depth + 1
-        new_child = Subpopulation(opt=self.opt,
-                                  p=new_prolif, m=new_mut,
-                                  depth=new_depth, time=time,
-                                  mut_type=new_mut_type, col=self.col,
-                                  pmp=self.prob_mut_pos, pmn=self.prob_mut_neg,
-                                  pim=self.prob_inc_mut, pdm=self.prob_dec_mut,
-                                  prev_time=self.s_time)
-        self.nodes.append(new_child)
+        child = Subpopulation(opt=opt,
+                              p=new_prolif, m=new_mut,
+                              depth=new_depth, time=time,
+                              mut_type=new_mut_type, col=self.col,
+                              pmp=self.prob_mut_pos, pmn=self.prob_mut_neg,
+                              pim=self.prob_inc_mut, pdm=self.prob_dec_mut,
+                              prev_time=self.s_time)
+        self.nodes.append(child)
 
-    def mutation_beneficial(self):
+    def mutation_beneficial(self, scale, prolif):
         """Gives random value between 0-1
 
         Scale the value down to a max of 0.001
@@ -199,14 +197,14 @@ class Subpopulation(object):
         """
         alpha = 1
         beta = 3
-        pro_scale = self.opt.scale * self.opt.pro
+        pro_scale = scale * prolif
         prolif_delta = np.random.beta(alpha, beta, size=1)[0] * pro_scale
         new_prolif = self.proliferation + prolif_delta
         if new_prolif > 1:
             new_prolif = 0.99
         return new_prolif
 
-    def mutation_deleterious(self):
+    def mutation_deleterious(self, scale, prolif):
         """ Gives random value between 0-1
 
         Scale the value down to a max of 0.001
@@ -215,27 +213,27 @@ class Subpopulation(object):
         """
         alpha = 1
         beta = 3
-        pro_scale = self.opt.scale * self.opt.pro
+        pro_scale = scale * prolif
         prolif_delta = np.random.beta(alpha, beta, size=1)[0] * pro_scale
         new_prolif = self.proliferation - prolif_delta
         if new_prolif < 0:
             new_prolif = pro_scale / 10000.0
         return new_prolif
 
-    def mutation_change_increase(self):
+    def mutation_change_increase(self, mscale, mut_rate):
         alpha = 1
         beta = 3
-        mut_scale = self.opt.mscale * self.mutation
+        mut_scale = mscale * mut_rate
         mut_delta = np.random.beta(alpha, beta, size=1)[0] * mut_scale
         new_mut = self.mutation + mut_delta
         if new_mut > 1:
             new_mut = 0.99
         return new_mut
 
-    def mutation_change_decrease(self):
+    def mutation_change_decrease(self, mscale, mut_rate):
         alpha = 1
         beta = 3
-        mut_scale = self.opt.mscale * self.mutation
+        mut_scale = mscale * mut_rate
         mut_delta = np.random.beta(alpha, beta, size=1)[0] * mut_scale
         new_mut = self.mutation - mut_delta
         if new_mut < 0:
