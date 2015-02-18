@@ -134,4 +134,6 @@ echo "$file_no_comments" | sed 1d | while read -r line; do
   echo "Done"
 
   ./run_param_set.sh $param_set_config_file
+
+  let param_set++
 done
