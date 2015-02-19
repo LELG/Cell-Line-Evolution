@@ -163,3 +163,5 @@ echo "Done"
 
 ./run_param_set.sh $param_set_config_file
 _endmsg
+
+qsub $pbs_script
