@@ -17,7 +17,7 @@ class Subpopulation(object):
     """
     Individual cancer clone.
     """
-    def __init__(self, opt, p, m, depth, time, mut_type, col, pmp, pmn, pim, pdm, prev_time):
+    def __init__(self, opt, p, m, depth, time, mut_type, col, prev_time):
         """Create new clone."""
         self.proliferation = p
         self.mutation = m
@@ -33,13 +33,7 @@ class Subpopulation(object):
         self.s_time = time
         self.d_time = None
         self.idnt = "" ##This gets created when we run freq through tree
-        self.prob_mut_pos = pmp #opt["prob_mut_pos"]
-        self.prob_mut_neg = pmn #opt["prob_mut_neg"]
         self.mut_type = mut_type  #b/d/n
-        self.prob_inc_mut = pim #opt["prob_inc_mut"]
-        self.prob_dec_mut = pdm #opt["prob_dec_mut"]
-        # TODO deprecate this instance variable
-        self.mutagenic_pressure = 0
         self.col = col
         self.branch_length = time - prev_time
 
@@ -49,11 +43,6 @@ class Subpopulation(object):
         reader = csv.DictReader(subfile)
         for line in reader:
             mut = float(line["#mut"])
-            pmp = float(line["pm+"])
-            pmn = float(line["pm-"])
-            pim = float(line["pim"])
-            pdm = float(line["pdm"])
-            msc = float(line["msc"])
             col = line["col"]
 
             #add new subpopulation node
@@ -61,8 +50,6 @@ class Subpopulation(object):
                                        p=self.proliferation,
                                        m=mut, depth=1, time=0,
                                        mut_type='n', col=col,
-                                       pmp=pmp, pmn=pmn,
-                                       pim=pim, pdm=pdm,
                                        prev_time=0)
             new_subpop.size = opt.init_size
             self.nodes.append(new_subpop)
@@ -84,7 +71,6 @@ class Subpopulation(object):
 
     def update(self, opt, select_pressure, mutagenic_pressure, time, prolif_adj):
         """Update this clone and its children for one time step."""
-        self.mutagenic_pressure = mutagenic_pressure
         cells_new = 0
         cells_mut = 0
 
@@ -108,8 +94,8 @@ class Subpopulation(object):
             effective_pro = self.proliferation - prolif_adj - select_pressure
 
             effective_mut = self.mutation
-            if self.mutagenic_pressure:
-                effective_mut *= self.mutagenic_pressure
+            if mutagenic_pressure:
+                effective_mut *= mutagenic_pressure
 
             # sample for number of dead cells
             cells_dead = np.random.binomial(self.size, self.death)
@@ -158,10 +144,10 @@ class Subpopulation(object):
         # get child's proliferation rate
         prolif_mut_event = random.random()
 
-        if prolif_mut_event <= self.prob_mut_pos:
+        if prolif_mut_event <= opt.prob_mut_pos:
             new_prolif = self.mutation_beneficial(opt.scale, opt.pro)
             new_mut_type = 'b'
-        elif prolif_mut_event <= self.prob_mut_pos + self.prob_mut_neg:
+        elif prolif_mut_event <= opt.prob_mut_pos + opt.prob_mut_neg:
             new_prolif = self.mutation_deleterious(opt.scale, opt.pro)
             new_mut_type = 'd'
         else:
@@ -171,9 +157,9 @@ class Subpopulation(object):
         # get child's mutation rate
         mut_mut_event = random.random()
 
-        if mut_mut_event <= self.prob_inc_mut:
+        if mut_mut_event <= opt.prob_inc_mut:
             new_mut = self.mutation_change_increase(opt.mscale, self.mutation)
-        elif mut_mut_event <= self.prob_inc_mut + self.prob_dec_mut:
+        elif mut_mut_event <= opt.prob_inc_mut + opt.prob_dec_mut:
             new_mut = self.mutation_change_decrease(opt.mscale, self.mutation)
         else:
             new_mut = self.mutation
@@ -183,8 +169,6 @@ class Subpopulation(object):
                               p=new_prolif, m=new_mut,
                               depth=new_depth, time=time,
                               mut_type=new_mut_type, col=self.col,
-                              pmp=self.prob_mut_pos, pmn=self.prob_mut_neg,
-                              pim=self.prob_inc_mut, pdm=self.prob_dec_mut,
                               prev_time=self.s_time)
         self.nodes.append(child)
 
@@ -311,10 +295,11 @@ class Subpopulation(object):
 
         if prm == "mutation":
             if self.size > 0:
-                if self.mutagenic_pressure > 0:
-                    self_node = [self.mutation * self.mutagenic_pressure]
-                else:
-                    self_node = [self.mutation]
+                self_node = [self.mutation]
+                #if self.mutagenic_pressure > 0:
+                #    self_node = [self.mutation * self.mutagenic_pressure]
+                #else:
+                #    self_node = [self.mutation]
                     #added mutagenic pressure
 
         #if prm == "effective_proliferation":
