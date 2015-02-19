@@ -95,7 +95,7 @@ param_set_padding=${#num_param_sets}
 
 #construct PBS script
 
-pbs_script="$test_group_dir/$test_group-PBS.sh"
+pbs_script="$test_group-PBS.sh"
 
 cat >> $pbs_script << _endmsg
 #!/bin/bash
@@ -162,4 +162,7 @@ echo "runs_per_param_set=$runs_per_param_set" >> $param_set_config_file
 echo "Done"
 
 ./run_param_set.sh $param_set_config_file
+
+# when run, this script should copy itself to the test group directory
+cp "$0" '$test_group_dir'
 _endmsg
