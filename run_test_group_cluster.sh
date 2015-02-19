@@ -26,6 +26,8 @@ fi
 
 if [ ! -f $3 ]; then
   usage-exit "Could not read config file: "$3
+else
+  tg_config_file=$3
 fi
 
 # check that supplied testname will make a valid directory name
@@ -39,7 +41,6 @@ fi
 # make directory for today's date, unless it already exists
 today=$(date +'%Y-%m-%d')
 today_dir="results/$today"
-
 if [ ! -d "$today_dir" ]
 then
   echo "================================================================================"
@@ -50,7 +51,7 @@ fi
 
 # make main directory for this test group
 test_group_dir="$today_dir/$test_group"
-  echo "================================================================================"
+echo "================================================================================"
 if [ ! -d $test_group_dir ]
 then
   echo "Creating main directory for test group "$test_group" ..."
@@ -71,14 +72,14 @@ fi
 touch $test_group_dir/"middropdata.csv"
 touch $test_group_dir/"enddropdata.csv"
 
-if [ ! -f $test_group_dir/$3 ]; then
+if [ ! -f $test_group_dir/$tg_config_file ]; then
   echo "Copying config file to test group directory ..."
-  cp $3 $test_group_dir
+  cp $tg_config_file $test_group_dir
   echo "Done"
 fi
 
 # strip comments from config file
-file_no_comments=$(sed '/^#/'d $3)
+file_no_comments=$(sed '/^#/'d $tg_config_file)
 # strip header
 param_sets=$(echo "$file_no_comments" | sed 1d)
 
@@ -93,17 +94,22 @@ param_names=($(echo "$file_no_comments" | awk 'NR==1'))
 num_params=${#param_names[@]}
 param_set_padding=${#num_param_sets}
 
-#construct PBS script
+# start constructing PBS script
+pbs_script="PBS-$test_group.sh"
+echo "================================================================================"
+echo "Creating PBS script for test group $test_group ..."
 
-pbs_script="$test_group-PBS.sh"
-
+# first, send necessary variables
 cat >> $pbs_script << _endmsg
 #!/bin/bash
 #PBS -N $test_group
 #PBS -l walltime=1:00:00
+#PBS -o $test_group.log
 #PBS -j oe
 #PBS -t 1-$num_param_sets
 
+this_script=$pbs_script
+tg_config_file=$tg_config_file
 param_sets="$param_sets"
 param_names=(${param_names[@]})
 num_params=${#param_names[@]}
@@ -111,9 +117,10 @@ num_param_sets=$num_param_sets
 param_set_padding=${#num_param_sets}
 runs_per_param_set=$runs_per_param_set
 test_group=$test_group
-test_group_dir='$test_group_dir'
+test_group_dir="$test_group_dir"
 _endmsg
 
+# then send the body of the script, verbatim
 cat >> $pbs_script << '_endmsg'
 
 cd $PBS_O_WORKDIR
@@ -164,5 +171,8 @@ echo "Done"
 ./run_param_set.sh $param_set_config_file
 
 # when run, this script should copy itself to the test group directory
-cp "$0" '$test_group_dir'
+cp "$this_script" "$test_group_dir"
+mv $test_group.log-$PBS_ARRAYID $test_group_dir
 _endmsg
+
+echo "Script created as $pbs_script."
