@@ -32,7 +32,7 @@ class Subpopulation(object):
         self.depth = depth
         self.s_time = time
         self.d_time = None
-        self.idnt = "" ##This gets created when we run freq through tree
+        #self.idnt = "" ##This gets created when we run freq through tree
         self.mut_type = mut_type  #b/d/n
         self.col = col
         self.branch_length = time - prev_time
@@ -256,7 +256,7 @@ class Subpopulation(object):
             self_node = [(self.pop_count(),
                           "pr-{}-{}{}".format(str(self.proliferation),
                                               self.mut_type, idnt))]
-            self.idnt = idnt + str(self.depth)
+            #self.idnt = idnt + str(self.depth)
             #if len(self.nodes) == 0: #deepest point in tree
                 #self_node = [
 
