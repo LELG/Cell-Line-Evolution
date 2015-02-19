@@ -31,7 +31,7 @@ class Population(object):
         self.max_size_lim = opt.max_size_lim
         self.prolif_lim = self.opt.prolif_lim
         self.subpop = Subpopulation(opt=opt,
-                                    p=opt.pro, m=opt.mut,
+                                    prolif=opt.pro, mut=opt.mut,
                                     depth=0, time=0,
                                     mut_type='n', col='n',
                                     prev_time=0)

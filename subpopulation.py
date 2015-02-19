@@ -17,17 +17,17 @@ class Subpopulation(object):
     """
     Individual cancer clone.
     """
-    def __init__(self, opt, p, m, depth, time, mut_type, col, prev_time):
+    def __init__(self, opt, prolif, mut, depth, time, mut_type, col, prev_time):
         """Create new clone."""
-        self.proliferation = p
-        self.mutation = m
+        self.proliferation = prolif
+        self.mutation = mut
         # self.mut_static = m #static for scale calution of new value
         self.death = opt.die
         self.size = 1
         self.precrash_size = 0
         # self.max_size_lim = opt.max_size_lim
         # initialise prolif_adj to maximum amount
-        self.prolif_adj = opt.prolif_lim
+        #self.prolif_adj = opt.prolif_lim
         self.nodes = []
         self.depth = depth
         self.s_time = time
@@ -47,8 +47,8 @@ class Subpopulation(object):
 
             #add new subpopulation node
             new_subpop = Subpopulation(opt=opt,
-                                       p=self.proliferation,
-                                       m=mut, depth=1, time=0,
+                                       prolif=self.proliferation,
+                                       mut=mut, depth=1, time=0,
                                        mut_type='n', col=col,
                                        prev_time=0)
             new_subpop.size = opt.init_size
@@ -166,7 +166,7 @@ class Subpopulation(object):
 
         new_depth = self.depth + 1
         child = Subpopulation(opt=opt,
-                              p=new_prolif, m=new_mut,
+                              prolif=new_prolif, mut=new_mut,
                               depth=new_depth, time=time,
                               mut_type=new_mut_type, col=self.col,
                               prev_time=self.s_time)
