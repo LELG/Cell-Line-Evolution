@@ -102,7 +102,7 @@ class Treatment(object):
         if not popn.opt.no_plots:
             plotdata.print_results(popn, "mid", t_curr)
         tree_to_xml.tree_parse(popn.subpop, popn.tumoursize,
-                               t_curr, "mid0")
+                               t_curr, popn.opt.run_dir, "mid0")
         if popn.opt.init_diversity:
             dropdata.drop(popn.subpop, popn.tumoursize,
                           t_curr, popn.opt.test_group_dir, "mid0")

@@ -38,7 +38,7 @@ class Subpopulation(object):
         self.mut_type = mut_type  #b/d/n
         self.prob_inc_mut = pim #opt["prob_inc_mut"]
         self.prob_dec_mut = pdm #opt["prob_dec_mut"]
-        # TODO deprecate this instance variable
+        # TODO deprecate this instance variable?
         self.mutagenic_pressure = 0
         self.col = col
         self.branch_length = time - prev_time
@@ -135,7 +135,7 @@ class Subpopulation(object):
             pro_agg = 0
 
         for node in self.nodes:
-            node_results = node.update(select_pressure, mutagenic_pressure,
+            node_results = node.update(opt, select_pressure, mutagenic_pressure,
                                        time, prolif_adj)
             ret_new_size, ret_sub_count, ret_mut_agg, ret_pro_agg = node_results
 
@@ -318,9 +318,9 @@ class Subpopulation(object):
                     self_node = [self.mutation]
                     #added mutagenic pressure
 
-        if prm == "effective_proliferation":
-            if self.size > 0:
-                self_node = [(self.proliferation - self.prolif_adj, self.size)]
+        #if prm == "effective_proliferation":
+        #    if self.size > 0:
+        #        self_node = [(self.proliferation - self.prolif_adj, self.size)]
 
         #could change to effective mutation rate for mutagenic selection
         if prm == "mutation_rate":

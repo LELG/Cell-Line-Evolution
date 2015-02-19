@@ -219,7 +219,7 @@ class Simulator(object):
         fname = ""
         # write phylogenetic tree to XML file
         tree_to_xml.tree_parse(self.popn.subpop, self.popn.tumoursize,
-                               self.total_cycles, fname)
+                               self.total_cycles, self.run_dir, fname)
         # if heterogeneous initial pop, output drop data
         if self.init_diversity:
             print("Printing drop data")

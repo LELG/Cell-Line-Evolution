@@ -5,10 +5,10 @@ import math
 import sys
 import subpopulation
 
-def tree_parse(subpopulation, tumoursize, time, fname):
+def tree_parse(subpop, tumoursize, time, results_dir, fname):
     min_size = 1 # 1% min
 
-    fpath = "{0}/{1}_phylo.xml".format(subpopulation.opt.run_dir, fname)
+    fpath = "{0}/{1}_phylo.xml".format(results_dir, fname)
 
     xml_header = '''<?xml version="1.0" encoding="UTF-8"?>\n'''
     xml_header += '''<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instancei" '''
@@ -20,7 +20,7 @@ def tree_parse(subpopulation, tumoursize, time, fname):
     phylo_file = open(fpath, 'w')
     phylo_file.write(xml_header)
     phylo_file.close()
-    print_clade(subpopulation, min_size, float(time), fpath)
+    print_clade(subpop, min_size, float(time), fpath)
     print_xml_footer(fpath)
 
 def print_xml_footer(xml_filepath):
