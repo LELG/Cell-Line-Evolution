@@ -310,6 +310,7 @@ class Simulator(object):
                         recovered, recover_type, recover_percent,
                         popn.opt.pro, popn.opt.die, popn.opt.mut,
                         treatmt.select_time, treatmt.init_select_pressure,
+                        max(popn.analytics_base.select_pressure),
                         popn.opt.prob_mut_pos, popn.opt.prob_mut_neg,
                         popn.opt.prob_inc_mut, popn.opt.prob_dec_mut,
                         popn.analytics_base.tumoursize[-1],

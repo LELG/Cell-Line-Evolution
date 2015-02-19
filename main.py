@@ -257,6 +257,7 @@ def create_results_file(filepath):
                'recovered', 'recov_type', 'recov_percent',
                'prolif_rate', 'death_rate', 'mut_rate',
                'select_time', 'select_pressure',
+               'max_select_pressure',
                'prob_ben_mut', 'prob_del_mut',
                'prob_mut_incr', 'prob_mut_decr',
                'pop_size', 'num_clones',
