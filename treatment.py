@@ -23,6 +23,7 @@ import tree_to_xml
 import plotdata
 import dropdata
 import math
+import gzip
 from functools import partial
 
 class Treatment(object):
@@ -106,8 +107,9 @@ class Treatment(object):
         if popn.opt.init_diversity:
             dropdata.drop(popn.subpop, popn.tumoursize,
                           t_curr, popn.opt.test_group_dir, "mid0")
-        with open('testsubpop.json', 'w') as f:
-            f.write(popn.subpop.to_JSON())
+        f = gzip.open('testsubpop.json.gz', 'wb')
+        f.write(popn.subpop.to_JSON())
+        f.close()
 
     def update(self, popn, t_curr):
         """
