@@ -354,5 +354,14 @@ class Subpopulation(object):
         return self.is_dead() and not self.has_children()
 
     def to_JSON(self):
-        return json.dumps(self, default=lambda o: o.__dict__,
+        return json.dumps(self, default=subpop_to_JSON,
                           sort_keys=True, indent=4)
+
+def subpop_to_JSON(obj):
+    if isinstance(obj, Subpopulation):
+        d = {}
+        d['__class__'] = 'Subpopulation'
+        d['__value__'] = obj.__dict__
+        return d
+    else:
+        raise TypeError(repr(obj) + ' is not JSON serializable')
