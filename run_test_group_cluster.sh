@@ -5,7 +5,7 @@
 
 # check for correct invocation
 E_WRONG_ARGS=85
-script_parameters="test_group_name runs_per_param_set config_file"
+script_parameters="[-m ADDRESS] [-w WALLTIME] test_group_name runs_per_param_set config_file"
 
 function usage-exit () {
   echo "Usage: ./`basename $0` $script_parameters"
@@ -13,9 +13,35 @@ function usage-exit () {
   exit $E_WRONG_ARGS
 }
 
+# process flag options using getopts
+
+OPTIND=1         # Reset in case getopts has been used previously in the shell.
+walltime="1:00:00"
+mailopt=""
+mailadd=""
+
+while getopts "h?w:m:" opt; do
+    case "$opt" in
+    h|\?)
+        usage-exit
+        ;;
+    w)  walltime=$OPTARG
+        ;;
+    m)  mailopt="#PBS -m ae"
+	mailadd="#PBS -M "$OPTARG
+	;;
+    esac
+done
+
+shift $((OPTIND-1))
+
+[ "$1" = "--" ] && shift
+
+# now check for required positional arguments
+
 num_expected_args=3
 if [ $# -ne $num_expected_args ]; then
-  usage-exit "Incorrect number of parameters provided"
+  usage-exit #"Incorrect number of parameters provided"
 fi
 
 if $(echo $2 | grep -E -q '^[0-9]+$'); then
@@ -103,10 +129,12 @@ echo "Creating PBS script for test group $test_group ..."
 cat >> $pbs_script << _endmsg
 #!/bin/bash
 #PBS -N $test_group
-#PBS -l walltime=1:00:00
+#PBS -l walltime=$walltime
 #PBS -o $test_group.log
 #PBS -j oe
 #PBS -t 1-$num_param_sets
+$mailopt
+$mailadd
 
 this_script=$pbs_script
 tg_config_file=$tg_config_file
