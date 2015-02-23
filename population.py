@@ -31,17 +31,13 @@ class Population(object):
         self.max_size_lim = opt.max_size_lim
         self.prolif_lim = self.opt.prolif_lim
         self.subpop = Subpopulation(opt=opt,
-                                    p=opt.pro, m=opt.mut,
+                                    prolif=opt.pro, mut=opt.mut,
                                     depth=0, time=0,
                                     mut_type='n', col='n',
-                                    pmp=opt.prob_mut_pos,
-                                    pmn=opt.prob_mut_neg,
-                                    pim=opt.prob_inc_mut,
-                                    pdm=opt.prob_dec_mut,
                                     prev_time=0)
         if opt.init_diversity:
             self.subpop.size = 0 #don't use init dummy popn if reading from file
-            self.subpop.newsubpop_from_file(self.opt.sub_file)
+            self.subpop.new_subpop_from_file(self.opt, self.opt.sub_file)
         else:
             self.subpop.size = opt.init_size
         self.analytics_base = Analytics()
@@ -85,7 +81,7 @@ class Population(object):
         # update subpopulations, getting back
         # tumour size, clone count, and aggregate
         # mutation and proliferation rates
-        subpop_results = self.subpop.update(self.tumoursize,
+        subpop_results = self.subpop.update(self.opt,
                                             self.select_pressure,
                                             self.mutagenic_pressure,
                                             t, prolif_adj)
