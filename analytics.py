@@ -151,3 +151,10 @@ def precrash_minmax(treatmt, popn):
     min_time = pre_crash_pop.index(min_val)
     max_time = pre_crash_pop.index(max_val)
     return min_val, min_time, max_val, max_time
+
+def get_dom_clone_size(subpop, max_size=0):
+    """Find size of largest clone in the tumour."""
+    max_size = max(max_size, subpop.size)
+    for child in subpop.nodes:
+        max_size = max(max_size, get_dom_clone_size(child, max_size))
+    return max_size

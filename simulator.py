@@ -306,6 +306,13 @@ class Simulator(object):
         tg_writer = csv.writer(tg_results_file)
         ps_writer = csv.writer(ps_results_file)
 
+        # determine proportion of tumour taken up by dominant clone
+        if not popn.is_dead():
+            dom_clone_size = analytics.get_dom_clone_size(popn.subpop)
+            dom_clone_proportion = dom_clone_size / float(popn.tumoursize)
+        else:
+            dom_clone_proportion = None
+
         # assemble values to write
         summary_vals = (self.param_set, self.run_number, went_through_crash,
                         recovered, recover_type, recover_percent,
@@ -316,6 +323,7 @@ class Simulator(object):
                         popn.opt.prob_inc_mut, popn.opt.prob_dec_mut,
                         popn.analytics_base.tumoursize[-1],
                         popn.analytics_base.clonecount[-1],
+                        '{:.5f}'.format(dom_clone_proportion),
                         popn.analytics_base.avg_mutation[-1],
                         popn.analytics_base.avg_proliferation[-1],
                         secs_to_hms(elapsed_time), tot_cycles,
