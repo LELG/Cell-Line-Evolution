@@ -66,6 +66,7 @@ class Treatment(object):
         self.decay_rate = opt.decay_rate
         self.decay_func = None
         self.select_time = opt.select_time
+        self.crash_time = None
         self.init_select_pressure = opt.select_pressure
         self.init_mut_pressure = opt.mutagenic_pressure
 
@@ -89,6 +90,7 @@ class Treatment(object):
         """
         self.is_introduced = True
         self.select_time = t_curr
+        self.crash_time = t_curr
         self.curr_select_pressure = self.init_select_pressure
         self.curr_mut_pressure = self.init_mut_pressure
         # set decay function
