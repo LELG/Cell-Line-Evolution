@@ -107,9 +107,9 @@ class Treatment(object):
         if popn.opt.init_diversity:
             dropdata.drop(popn.subpop, popn.tumoursize,
                           t_curr, popn.opt.test_group_dir, "mid0")
-        f = gzip.open('testsubpop.json.gz', 'wb')
-        f.write(popn.subpop.to_JSON())
-        f.close()
+        #f = gzip.open('testsubpop.json.gz', 'wb')
+        #f.write(popn.subpop.to_JSON())
+        #f.close()
 
     def update(self, popn, t_curr):
         """
