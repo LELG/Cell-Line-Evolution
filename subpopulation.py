@@ -171,6 +171,7 @@ class Subpopulation(object):
                               mut_type=new_mut_type, col=self.col,
                               prev_time=self.s_time)
         self.nodes.append(child)
+        opt.total_mutations += 1
 
     def mutation_beneficial(self, scale, prolif):
         """Gives random value between 0-1
