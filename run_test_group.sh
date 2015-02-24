@@ -43,9 +43,9 @@ today_dir="results/$today"
 if [ ! -d "$today_dir" ]
 then
   echo "================================================================================"
-  echo "Creating results directory for "$today" ..."
+  printf "Creating results directory for "$today" ...\r"
   mkdir -p "$today_dir"
-  echo "Done"
+  printf "Creating results directory for "$today" ... done.\n"
 fi
 
 # make main directory for this test group
@@ -53,9 +53,9 @@ test_group_dir="$today_dir/$test_group"
   echo "================================================================================"
 if [ ! -d $test_group_dir ]
 then
-  echo "Creating main directory for test group "$test_group" ..."
+  printf "Creating main directory for test group "$test_group" ...\r"
   mkdir -p $test_group_dir
-  echo "Done"
+  printf "Creating main directory for test group "$test_group" ... done.\n"
 else
   echo "Warning: results for test group "$test_group" already exist"
   i=1
@@ -63,18 +63,18 @@ else
     let i++
   done
   test_group_dir="$test_group_dir($i)"
-  echo "Creating test group directory: "$test_group_dir" ..."
+  printf "Creating main directory for test group "$test_group" ...\r"
   mkdir -p $test_group_dir
-  echo "Done"
+  printf "Creating main directory for test group "$test_group" ... done.\n"
 fi
 
 touch $test_group_dir/"middropdata.csv"
 touch $test_group_dir/"enddropdata.csv"
 
 if [ ! -f $test_group_dir/$3 ]; then
-  echo "Copying config file to test group directory ..."
+  printf "Copying config file to test group directory ...\r"
   cp $3 $test_group_dir
-  echo "Done"
+  printf "Copying config file to test group directory ... done.\n"
 fi
 
 # strip comments from config file
@@ -101,9 +101,9 @@ echo "$file_no_comments" | sed 1d | while read -r line; do
 
   if [ ! -d $param_set_dir ]; then
   echo "================================================================================"
-    echo "Creating param set directory: "$param_set_dir" ..."
+    printf "Creating param set directory: "$param_set_dir" ...\r"
     mkdir -p $param_set_dir
-    echo "Done"
+    printf "Creating param set directory: "$param_set_dir" ... done.\n"
   fi
 
   # each parameter set will get stored to its own file
@@ -114,7 +114,7 @@ echo "$file_no_comments" | sed 1d | while read -r line; do
   vals=($(echo $line))
 
   echo "================================================================================"
-  echo "Writing parameter set to config file ..."
+  printf "Writing parameter set to config file ...\r"
   i=0
   while [ $i -lt $num_params ]; do
     # construct var=val pair and write it to file
@@ -131,7 +131,8 @@ echo "$file_no_comments" | sed 1d | while read -r line; do
   echo "param_set_dir='$param_set_dir'" >> $param_set_config_file
   echo "num_param_sets=$num_param_sets" >> $param_set_config_file
   echo "runs_per_param_set=$runs_per_param_set" >> $param_set_config_file
-  echo "Done"
+
+  printf "Writing parameter set to config file ... done.\n"
 
   ./run_param_set.sh $param_set_config_file
 

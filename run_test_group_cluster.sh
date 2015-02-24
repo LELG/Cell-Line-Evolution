@@ -70,9 +70,9 @@ today_dir="results/$today"
 if [ ! -d "$today_dir" ]
 then
   echo "================================================================================"
-  echo "Creating results directory for "$today" ..."
+  printf "Creating results directory for "$today" ...\r"
   mkdir -p "$today_dir"
-  echo "Done"
+  printf "Creating results directory for "$today" ... done.\n"
 fi
 
 # make main directory for this test group
@@ -80,9 +80,9 @@ test_group_dir="$today_dir/$test_group"
 echo "================================================================================"
 if [ ! -d $test_group_dir ]
 then
-  echo "Creating main directory for test group "$test_group" ..."
+  printf "Creating main directory for test group "$test_group" ...\r"
   mkdir -p $test_group_dir
-  echo "Done"
+  printf "Creating main directory for test group "$test_group" ... done.\n"
 else
   echo "Warning: results for test group "$test_group" already exist"
   i=1
@@ -90,18 +90,18 @@ else
     let i++
   done
   test_group_dir="$test_group_dir($i)"
-  echo "Creating test group directory: "$test_group_dir" ..."
+  printf "Creating main directory for test group "$test_group" ...\r"
   mkdir -p $test_group_dir
-  echo "Done"
+  printf "Creating main directory for test group "$test_group" ... done.\n"
 fi
 
 touch $test_group_dir/"middropdata.csv"
 touch $test_group_dir/"enddropdata.csv"
 
 if [ ! -f $test_group_dir/$tg_config_file ]; then
-  echo "Copying config file to test group directory ..."
+  printf "Copying config file to test group directory ...\r"
   cp $tg_config_file $test_group_dir
-  echo "Done"
+  printf "Copying config file to test group directory ... done."
 fi
 
 # strip comments from config file
@@ -167,9 +167,9 @@ param_set_dir=$(printf "%s/%0*d" $test_group_dir $param_set_padding $param_set)
 
 if [ ! -d $param_set_dir ]; then
 echo "================================================================================"
-  echo "Creating param set directory: "$param_set_dir" ..."
+  printf "Creating param set directory: "$param_set_dir" ...\r"
   mkdir -p $param_set_dir
-  echo "Done"
+  printf "Creating param set directory: "$param_set_dir" ... done.\n"
 fi
 
 # each parameter set will get stored to its own file
@@ -177,7 +177,8 @@ fi
 param_set_config_file="$param_set_dir/$test_group-$param_set.conf"
 
 echo "================================================================================"
-echo "Writing parameter set to config file ..."
+printf "Writing parameter set to config file ...\r"
+
 i=0
 while [ $i -lt $num_params ]; do
   # construct var=val pair and write it to file
@@ -194,7 +195,8 @@ echo "test_group_dir='$test_group_dir'" >> $param_set_config_file
 echo "param_set_dir='$param_set_dir'" >> $param_set_config_file
 echo "num_param_sets=$num_param_sets" >> $param_set_config_file
 echo "runs_per_param_set=$runs_per_param_set" >> $param_set_config_file
-echo "Done"
+
+printf "Writing parameter set to config file ... done.\n"
 
 ./run_param_set.sh $param_set_config_file
 

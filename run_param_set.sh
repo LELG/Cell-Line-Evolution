@@ -23,9 +23,9 @@ fi
 
 # read parameters from config file
 echo "================================================================================"
-echo "Reading parameters from config file ..."
+printf "Reading parameters from config file ...\r"
 source $1
-echo "Done"
+printf "Reading parameters from config file ... done."
 
 # get appropriate padding for run_dir
 # (this just finds the length of runs_per_param_set as a string)
