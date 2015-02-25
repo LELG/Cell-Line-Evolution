@@ -138,18 +138,18 @@ class Simulator(object):
         start_time = time.time()
 
         end_condition = END_MAX_CYCLES
-        for t in xrange(self.max_cycles):
-            self.update(t)
+        for t_curr in xrange(self.max_cycles):
+            self.update(t_curr)
 
             # test for end conditions
             if self.popn.exceeds_size_limit(self.max_size_lim, tolerance=0.05):
                 if self.treatmt.is_introduced:
                     end_condition = END_POP_TOO_LARGE
-                    self.total_cycles = t
+                    self.total_cycles = t_curr
                     break
             if self.popn.is_dead():
                 end_condition = END_POP_DIED_OUT
-                self.total_cycles = t
+                self.total_cycles = t_curr
                 break
 
         # finish timing
@@ -161,7 +161,7 @@ class Simulator(object):
         # end simulation
         self.finish(end_condition)
 
-    def update(self, t):
+    def update(self, t_curr):
         """
         Simulate a single time step.
 
@@ -173,19 +173,19 @@ class Simulator(object):
 
         Args
         ----
-        t : Current time step.
+        t_curr : Current time step.
 
         Returns
         -------
         None.
         """
-        self.treatmt.update(self.popn, t)
-        self.popn.update(self.treatmt, t)
-        self.popn.analytics_base.update(self.popn, self.treatmt, t)
+        self.treatmt.update(self.popn, t_curr)
+        self.popn.update(self.treatmt, t_curr)
+        self.popn.analytics_base.update(self.popn, self.treatmt, t_curr)
 
         # print status message
-        if t % 1000 == 0:
-            self.print_status_update(t)
+        if t_curr % 1000 == 0:
+            self.print_status_update(t_curr)
 
     def finish(self, end_condition):
         """
@@ -224,11 +224,10 @@ class Simulator(object):
         # if heterogeneous initial pop, output drop data
         if self.init_diversity:
             print("Printing drop data")
-            dropdata.drop(self.popn.subpop, self.popn.tumoursize,
-                          self.total_cycles, self.test_group_dir, "end")
+            dropdata.drop(self.popn.subpop, self.test_group_dir, "end")
 
 
-    def print_status_update(self, t):
+    def print_status_update(self, t_curr):
         """ Print current time step and tumour size for running sim."""
         os.system('clear')
         status_msg = dedent("""\
@@ -240,7 +239,7 @@ class Simulator(object):
             Cycle:       {0} of {1}
             Tumour size: {2}
             """)
-        print(status_msg.format(t, self.max_cycles, self.popn.tumoursize))
+        print(status_msg.format(t_curr, self.max_cycles, self.popn.tumoursize))
 
     def print_info(self):
         """Print simulation's initial parameter set."""

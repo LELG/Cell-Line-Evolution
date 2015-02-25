@@ -32,7 +32,7 @@ class Population(object):
         self.prolif_lim = self.opt.prolif_lim
         self.subpop = Subpopulation(opt=opt,
                                     prolif=opt.pro, mut=opt.mut,
-                                    depth=0, time=0,
+                                    depth=0, t_curr=0,
                                     mut_type='n', col='n',
                                     prev_time=0)
         if opt.init_diversity:
@@ -50,7 +50,7 @@ class Population(object):
         self.mid_proliferation = []
         self.mid_mutation = []
 
-    def update(self, treatmt, t):
+    def update(self, treatmt, t_curr):
         """
         Update tumour and clones for a single time step.
 
@@ -62,7 +62,7 @@ class Population(object):
         Args
         ----
         treatmt : a treatment object
-        t : current time step
+        t_curr : current time step
 
         Returns
         -------
@@ -84,7 +84,7 @@ class Population(object):
         subpop_results = self.subpop.update(self.opt,
                                             self.select_pressure,
                                             self.mutagenic_pressure,
-                                            t, prolif_adj)
+                                            t_curr, prolif_adj)
         self.tumoursize, self.clonecount, agg_mut, agg_pro = subpop_results
 
         if not self.is_dead():

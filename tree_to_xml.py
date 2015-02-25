@@ -5,7 +5,7 @@ import math
 import sys
 import subpopulation
 
-def tree_parse(subpop, tumoursize, time, results_dir, fname):
+def tree_parse(subpop, tumoursize, t_curr, results_dir, fname):
     min_size = 1 # 1% min
 
     fpath = "{0}/{1}_phylo.xml".format(results_dir, fname)
@@ -20,7 +20,7 @@ def tree_parse(subpop, tumoursize, time, results_dir, fname):
     phylo_file = open(fpath, 'w')
     phylo_file.write(xml_header)
     phylo_file.close()
-    print_clade(subpop, min_size, float(time), fpath)
+    print_clade(subpop, min_size, float(t_curr), fpath)
     print_xml_footer(fpath)
 
 def print_xml_footer(xml_filepath):
@@ -31,13 +31,13 @@ def print_xml_footer(xml_filepath):
     phylo_file.write(xml_footer)
     phylo_file.close()
 
-def print_clade(clade, min_size, time, phylo_filepath):  #'clade' is subpop
+def print_clade(clade, min_size, t_curr, phylo_filepath):  #'clade' is subpop
     if 1: #len(clade.idnt) > 0:
         if clade.size > min_size or clade.depth == 0:
             phylo_file = open(phylo_filepath, 'a')
-            if time == 0:
-                time = 1
-            clade_hdr = '<clade branch_length="{0}">\n'.format(clade.branch_length/time)
+            if t_curr == 0:
+                t_curr = 1
+            clade_hdr = '<clade branch_length="{0}">\n'.format(clade.branch_length/t_curr)
             clade_name = "<name> p:{} m:{} s:{} r:{} </name>\n"
             clade_name = clade_name.format(str(clade.proliferation)[0:6],
                                            str(clade.mutation)[0:6],
@@ -48,7 +48,7 @@ def print_clade(clade, min_size, time, phylo_filepath):  #'clade' is subpop
             phylo_file.close()
 
     for subclade in clade.nodes:
-        print_clade(subclade, min_size, time, phylo_filepath)
+        print_clade(subclade, min_size, t_curr, phylo_filepath)
 
     if 1: #len(clade.idnt) > 0:
         if clade.size > min_size or clade.depth == 0:

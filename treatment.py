@@ -107,8 +107,7 @@ class Treatment(object):
         tree_to_xml.tree_parse(popn.subpop, popn.tumoursize,
                                t_curr, popn.opt.run_dir, "mid0")
         if popn.opt.init_diversity:
-            dropdata.drop(popn.subpop, popn.tumoursize,
-                          t_curr, popn.opt.test_group_dir, "mid0")
+            dropdata.drop(popn.subpop, popn.opt.test_group_dir, "mid0")
         #f = gzip.open('testsubpop.json.gz', 'wb')
         #f.write(popn.subpop.to_JSON())
         #f.close()
