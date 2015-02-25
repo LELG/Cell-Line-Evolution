@@ -17,7 +17,7 @@ class Subpopulation(object):
     """
     Individual cancer clone.
     """
-    def __init__(self, opt, prolif, mut, depth, time, mut_type, col, prev_time):
+    def __init__(self, opt, prolif, mut, depth, t_curr, mut_type, col, prev_time):
         """Create new clone."""
         self.proliferation = prolif
         self.mutation = mut
@@ -30,12 +30,12 @@ class Subpopulation(object):
         #self.prolif_adj = opt.prolif_lim
         self.nodes = []
         self.depth = depth
-        self.s_time = time
+        self.s_time = t_curr
         self.d_time = None
         #self.idnt = "" ##This gets created when we run freq through tree
         self.mut_type = mut_type  #b/d/n
         self.col = col
-        self.branch_length = time - prev_time
+        self.branch_length = t_curr - prev_time
 
     def new_subpop_from_file(self, opt, filename):
         """Load a heterogeneous starting population from a subfile."""
@@ -48,7 +48,7 @@ class Subpopulation(object):
             #add new subpopulation node
             new_subpop = Subpopulation(opt=opt,
                                        prolif=self.proliferation,
-                                       mut=mut, depth=1, time=0,
+                                       mut=mut, depth=1, t_curr=0,
                                        mut_type='n', col=col,
                                        prev_time=0)
             new_subpop.size = opt.init_size
@@ -69,7 +69,7 @@ class Subpopulation(object):
         for node in self.nodes:
             node.set_precrash_size()
 
-    def update(self, opt, select_pressure, mutagenic_pressure, time, prolif_adj):
+    def update(self, opt, select_pressure, mutagenic_pressure, t_curr, prolif_adj):
         """Update this clone and its children for one time step."""
         cells_new = 0
         cells_mut = 0
@@ -77,7 +77,7 @@ class Subpopulation(object):
         if self.is_dead():
             self.size = 0
             if not self.d_time:
-                self.d_time = time
+                self.d_time = t_curr
         else:
             if opt.prune_clones: #if running large dataset
             # MIGHT BE QUICKER TO FILTER ALL END NODES
@@ -121,7 +121,7 @@ class Subpopulation(object):
 
         for node in self.nodes:
             node_results = node.update(opt, select_pressure, mutagenic_pressure,
-                                       time, prolif_adj)
+                                       t_curr, prolif_adj)
             ret_new_size, ret_sub_count, ret_mut_agg, ret_pro_agg = node_results
 
             new_pop_size += ret_new_size
@@ -131,7 +131,7 @@ class Subpopulation(object):
 
         # make new subpopulations after the fact
         for _ in range(0, cells_mut):
-            self.new_child(time, opt)
+            self.new_child(t_curr, opt)
 
         if self.size > 0:
             sub_count += 1
@@ -139,7 +139,7 @@ class Subpopulation(object):
 
         return new_pop_size, sub_count, mut_agg, pro_agg
 
-    def new_child(self, time, opt):
+    def new_child(self, t_curr, opt):
         """Spawn a new child clone."""
         # get child's proliferation rate
         prolif_mut_event = random.random()
@@ -167,7 +167,7 @@ class Subpopulation(object):
         new_depth = self.depth + 1
         child = Subpopulation(opt=opt,
                               prolif=new_prolif, mut=new_mut,
-                              depth=new_depth, time=time,
+                              depth=new_depth, t_curr=t_curr,
                               mut_type=new_mut_type, col=self.col,
                               prev_time=self.s_time)
         self.nodes.append(child)

@@ -39,7 +39,7 @@ class Analytics(object):
         self.avg_proliferation = []
         self.select_pressure = []
 
-    def update(self, popn, treatmt, t):
+    def update(self, popn, treatmt, t_curr):
         """
         Update analytics for a single time step.
 
@@ -48,7 +48,7 @@ class Analytics(object):
         """
         self.tumoursize.append(popn.tumoursize)
         self.clonecount.append(popn.clonecount)
-        self.time.append(t)
+        self.time.append(t_curr)
         self.select_pressure.append(treatmt.curr_select_pressure)
 
         # append effective proliferation

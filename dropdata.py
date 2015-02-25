@@ -2,7 +2,7 @@ from __future__ import print_function
 import csv
 
 
-def drop(subpop, tumoursize, time, results_dir, label):
+def drop(subpop, results_dir, label):
     ## print info for multiple populations
     ## print by colour of population
     #summary for all runs - add value and overwrite
