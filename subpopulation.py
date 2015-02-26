@@ -19,8 +19,8 @@ class Subpopulation(object):
     """
     def __init__(self, opt, prolif, mut, depth, t_curr, mut_type, col, prev_time):
         """Create new clone."""
-        self.proliferation = prolif
-        self.mutation = mut
+        self.prolif_rate = prolif
+        self.mut_rate = mut
         # self.mut_static = m #static for scale calution of new value
         self.death = opt.die
         self.size = 1
@@ -47,7 +47,7 @@ class Subpopulation(object):
 
             #add new subpopulation node
             new_subpop = Subpopulation(opt=opt,
-                                       prolif=self.proliferation,
+                                       prolif=self.prolif_rate,
                                        mut=mut, depth=1, t_curr=0,
                                        mut_type='n', col=col,
                                        prev_time=0)
@@ -59,7 +59,7 @@ class Subpopulation(object):
         print("Clone Info")
         print(self.__dict__)
         print("No. of nodes: ", len(self.nodes))
-        print(self.proliferation, self.mutation)
+        print(self.prolif_rate, self.mut_rate)
         for node in self.nodes:
             node.info()
 
@@ -79,9 +79,9 @@ class Subpopulation(object):
             if not self.d_time:
                 self.d_time = t_curr
         else:
-            effective_pro = self.proliferation - prolif_adj - select_pressure
+            effective_pro = self.prolif_rate - prolif_adj - select_pressure
 
-            effective_mut = self.mutation
+            effective_mut = self.mut_rate
             if mutagenic_pressure:
                 effective_mut *= mutagenic_pressure
 
@@ -102,7 +102,7 @@ class Subpopulation(object):
         sub_count = 0
         if not self.is_dead():
             mut_agg = effective_mut * self.size
-            pro_agg = ((self.proliferation - prolif_adj) * self.size)
+            pro_agg = ((self.prolif_rate - prolif_adj) * self.size)
         else:
             mut_agg = 0
             pro_agg = 0
@@ -139,18 +139,18 @@ class Subpopulation(object):
             new_prolif = self.mutation_deleterious(opt.scale, opt.pro)
             new_mut_type = 'd'
         else:
-            new_prolif = self.proliferation
+            new_prolif = self.prolif_rate
             new_mut_type = 'n'
 
         # get child's mutation rate
         mut_mut_event = random.random()
 
         if mut_mut_event <= opt.prob_inc_mut:
-            new_mut = self.mutation_change_increase(opt.mscale, self.mutation)
+            new_mut = self.mutation_change_increase(opt.mscale, self.mut_rate)
         elif mut_mut_event <= opt.prob_inc_mut + opt.prob_dec_mut:
-            new_mut = self.mutation_change_decrease(opt.mscale, self.mutation)
+            new_mut = self.mutation_change_decrease(opt.mscale, self.mut_rate)
         else:
-            new_mut = self.mutation
+            new_mut = self.mut_rate
 
         new_depth = self.depth + 1
         child = Subpopulation(opt=opt,
@@ -172,7 +172,7 @@ class Subpopulation(object):
         beta = 3
         pro_scale = scale * prolif
         prolif_delta = np.random.beta(alpha, beta, size=1)[0] * pro_scale
-        new_prolif = self.proliferation + prolif_delta
+        new_prolif = self.prolif_rate + prolif_delta
         if new_prolif > 1:
             new_prolif = 0.99
         return new_prolif
@@ -188,7 +188,7 @@ class Subpopulation(object):
         beta = 3
         pro_scale = scale * prolif
         prolif_delta = np.random.beta(alpha, beta, size=1)[0] * pro_scale
-        new_prolif = self.proliferation - prolif_delta
+        new_prolif = self.prolif_rate - prolif_delta
         if new_prolif < 0:
             new_prolif = pro_scale / 10000.0
         return new_prolif
@@ -198,7 +198,7 @@ class Subpopulation(object):
         beta = 3
         mut_scale = mscale * mut_rate
         mut_delta = np.random.beta(alpha, beta, size=1)[0] * mut_scale
-        new_mut = self.mutation + mut_delta
+        new_mut = self.mut_rate + mut_delta
         if new_mut > 1:
             new_mut = 0.99
         return new_mut
@@ -208,7 +208,7 @@ class Subpopulation(object):
         beta = 3
         mut_scale = mscale * mut_rate
         mut_delta = np.random.beta(alpha, beta, size=1)[0] * mut_scale
-        new_mut = self.mutation - mut_delta
+        new_mut = self.mut_rate - mut_delta
         if new_mut < 0:
             new_mut = mut_scale / 10000.0
         return new_mut
@@ -258,7 +258,7 @@ class Subpopulation(object):
         blank_ctree = []
         if self.size > 0:
             self_node = [(self.pop_count(),
-                          "pr-{}-{}{}".format(str(self.proliferation),
+                          "pr-{}-{}{}".format(str(self.prolif_rate),
                                               self.mut_type, idnt))]
             #self.idnt = idnt + str(self.depth)
             #if len(self.nodes) == 0: #deepest point in tree
@@ -291,46 +291,46 @@ class Subpopulation(object):
 
         if prm == "proliferation":
             if self.size > 0:
-                self_node = [self.proliferation]
+                self_node = [self.prolif_rate]
 
         if prm == "proliferation_size":
             if self.size > 0:
-                self_node = [(self.proliferation, self.size)]
+                self_node = [(self.prolif_rate, self.size)]
 
         if prm == "mutation":
             if self.size > 0:
-                self_node = [self.mutation]
+                self_node = [self.mut_rate]
                 #if self.mutagenic_pressure > 0:
-                #    self_node = [self.mutation * self.mutagenic_pressure]
+                #    self_node = [self.mut_rate * self.mutagenic_pressure]
                 #else:
-                #    self_node = [self.mutation]
+                #    self_node = [self.mut_rate]
                     #added mutagenic pressure
 
         #if prm == "effective_proliferation":
         #    if self.size > 0:
-        #        self_node = [(self.proliferation - self.prolif_adj, self.size)]
+        #        self_node = [(self.prolif_rate - self.prolif_adj, self.size)]
 
         #could change to effective mutation rate for mutagenic selection
         if prm == "mutation_rate":
             if self.size > 0:
-                self_node = [(self.mutation, self.size)]
+                self_node = [(self.mut_rate, self.size)]
 
         if prm == "cell_line_time":
             self_node = [(self.col, self.s_time, self.d_time)]
 
         if prm == "cell_line_time_mut":
-            self_node = [(self.s_time, self.d_time, self.mutation, self.size)]
+            self_node = [(self.s_time, self.d_time, self.mut_rate, self.size)]
 
         if prm == "circles":
             if self.size > 0:
-                self_node = [(self.mutation, self.proliferation, self.size)]
+                self_node = [(self.mut_rate, self.prolif_rate, self.size)]
 
         if prm == "circles_all":
-            self_node = [(self.mutation, self.proliferation, self.size)]
+            self_node = [(self.mut_rate, self.prolif_rate, self.size)]
 
         if prm == "mutation_distribution":
             if self.size > 0:
-                self_node = [(self.mutation, self.precrash_size, self.size)]
+                self_node = [(self.mut_rate, self.precrash_size, self.size)]
 
         if prm == "two_side_size":
             if self.size > 0:
@@ -338,7 +338,7 @@ class Subpopulation(object):
 
         if prm == "mutation_distribution_1":
             if self.size > 0:
-                self_node = [(self.mutation, self.proliferation,
+                self_node = [(self.mut_rate, self.prolif_rate,
                               self.size, self.precrash_size)]
 
         if not self.nodes:
