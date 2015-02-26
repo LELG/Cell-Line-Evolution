@@ -79,18 +79,6 @@ class Subpopulation(object):
             if not self.d_time:
                 self.d_time = t_curr
         else:
-            if opt.prune_clones: #if running large dataset
-            # MIGHT BE QUICKER TO FILTER ALL END NODES
-            # ONE CALL PER 10 RUNS / 2 RUNS
-            # remove 0 nodes
-            #MERGE ALIVE INTO CYCLE
-            #EATS UP THE ACTUAL REFERENCE FOR TREE
-            #CHOMPS ANY INTERMEDIATE NODES
-                nodes_to_keep = [node for node
-                                 in self.nodes
-                                 if not node.is_dead_end()]
-                self.nodes = nodes_to_keep
-
             effective_pro = self.proliferation - prolif_adj - select_pressure
 
             effective_mut = self.mutation
@@ -224,6 +212,21 @@ class Subpopulation(object):
         if new_mut < 0:
             new_mut = mut_scale / 10000.0
         return new_mut
+
+    def prune_dead_end_clones(self):
+        """Remove all dead end clones from subpopulation tree.
+
+        A dead end clone is defined as one
+        which is dead, and has no children.
+        """
+        children_to_keep = [node for node
+                            in self.nodes
+                            if not node.is_dead_end()]
+        self.nodes = children_to_keep
+
+        for node in self.nodes:
+            node.prune_dead_end_clones()
+
 
     # GATHER DATA FOR ANALYTICS
     # Dangerous loops beyond this sign

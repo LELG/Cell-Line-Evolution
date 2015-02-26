@@ -78,6 +78,10 @@ class Population(object):
         ratio = self.tumoursize / float(self.max_size_lim)
         prolif_adj = ratio * self.prolif_lim
 
+        if self.opt.prune_clones:
+            # delete all dead, childless clones
+            self.subpop.prune_dead_end_clones()
+
         # update subpopulations, getting back
         # tumour size, clone count, and aggregate
         # mutation and proliferation rates
