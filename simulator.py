@@ -310,7 +310,7 @@ class Simulator(object):
             dom_clone_size = analytics.get_dom_clone_size(popn.subpop)
             dom_clone_proportion = dom_clone_size / float(popn.tumoursize)
         else:
-            dom_clone_proportion = None
+            dom_clone_proportion = 0
 
         # assemble values to write
         summary_vals = (self.param_set, self.run_number, went_through_crash,
