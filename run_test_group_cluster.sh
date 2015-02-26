@@ -101,7 +101,7 @@ touch $test_group_dir/"enddropdata.csv"
 if [ ! -f $test_group_dir/$tg_config_file ]; then
   printf "Copying config file to test group directory ...\r"
   cp $tg_config_file $test_group_dir
-  printf "Copying config file to test group directory ... done."
+  printf "Copying config file to test group directory ... done.\n"
 fi
 
 # strip comments from config file
@@ -202,7 +202,6 @@ printf "Writing parameter set to config file ... done.\n"
 
 # when run, this script should copy itself to the test group directory
 cp "$this_script" "$test_group_dir"
-mv $test_group.log-$PBS_ARRAYID $test_group_dir
 _endmsg
 
 echo "Script created as $pbs_script."
