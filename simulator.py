@@ -23,6 +23,7 @@ import time
 import os
 import csv
 from textwrap import dedent
+import numpy as np
 import population
 import treatment
 import analytics
@@ -70,6 +71,7 @@ class Simulator(object):
         # this avoids the need to take it from command line
         self.opt.prolif_lim = opt.pro - opt.die
         self.opt.total_mutations = 0
+        self.opt.get_beta_dist_sample = lambda: np.random.beta(1, 3)
 
         # TODO determine which of these params
         # really need to be copied out of opt.
