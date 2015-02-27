@@ -164,7 +164,10 @@ def get_dom_clone_size(subpop, max_size=0):
 def get_avg_depth(popn):
     """Get the average depth of clones in the tumour."""
     agg_depth = get_agg_depth(popn.subpop)
-    return agg_depth / float(popn.clonecount)
+    if popn.clonecount == 0:
+        return 0.0
+    else:
+        return agg_depth / float(popn.clonecount)
 
 
 def get_agg_depth(subpop):
