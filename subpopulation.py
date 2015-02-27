@@ -12,6 +12,7 @@ import random
 import csv
 import json
 import numpy as np
+from mutation import Mutation
 
 class Subpopulation(object):
     """
@@ -71,61 +72,62 @@ class Subpopulation(object):
 
     def update(self, opt, select_pressure, mutagenic_pressure, t_curr, prolif_adj):
         """Update this clone and its children for one time step."""
-        cells_new = 0
-        cells_mut = 0
+        if self.is_dead_end():
+            return (0, 0, 0, 0,)
 
-        if self.is_dead():
-            self.size = 0
+        new_pop_size = new_sub_count = new_mut_agg = new_pro_agg = 0
+
+        if not self.is_dead():
+            effective_prolif = self.prolif_rate - prolif_adj - select_pressure
+            # TODO check whether mutagenic pressure should be additive or multiplicative
+            effective_mut = self.mut_rate - mutagenic_pressure
+            # sample for cell death, division and mutation
+            cells_dead = safe_binomial_sample(self.size, self.death_rate)
+            # eliminate the possibility of a cell dying
+            # and reproducing in the same cycle
+            self.size -= cells_dead
+            cells_new = safe_binomial_sample(self.size, effective_prolif)
+            self.size += cells_new
+            new_mutns = safe_binomial_sample(cells_new, effective_mut)
+        else:
+            # clone is dead - update its attributes
+            # if it died on the previous cycle
+            if self.size < 0:
+                self.size = 0
             if not self.d_time:
                 self.d_time = t_curr
-        else:
-            effective_pro = self.prolif_rate - prolif_adj - select_pressure
 
-            effective_mut = self.mut_rate
-            if mutagenic_pressure:
-                effective_mut *= mutagenic_pressure
-
-            # sample for number of dead cells
-            cells_dead = np.random.binomial(self.size, self.death_rate)
-            # sample for new cells
-            if effective_pro > 0:
-                cells_new = np.random.binomial(self.size, effective_pro)
-            # sample for mutations
-            if cells_new > 0 and effective_mut > 0:
-                cells_mut = np.random.binomial(cells_new, effective_mut)
-
-            self.size += cells_new - cells_mut - cells_dead
-
-        # update children
-
-        new_pop_size = cells_mut
-        sub_count = 0
-        if not self.is_dead():
-            mut_agg = effective_mut * self.size
-            pro_agg = ((self.prolif_rate - prolif_adj) * self.size)
-        else:
-            mut_agg = 0
-            pro_agg = 0
-
+        # update child nodes - whether or not clone is alive
         for node in self.nodes:
             node_results = node.update(opt, select_pressure, mutagenic_pressure,
                                        t_curr, prolif_adj)
-            ret_new_size, ret_sub_count, ret_mut_agg, ret_pro_agg = node_results
+            node_pop, node_sub_count, node_mut_agg, node_pro_agg = node_results
+            new_pop_size += node_pop
+            new_sub_count += node_sub_count
+            new_mut_agg += node_mut_agg
+            new_pro_agg += node_pro_agg
 
-            new_pop_size += ret_new_size
-            sub_count += ret_sub_count
-            mut_agg += ret_mut_agg
-            pro_agg += ret_pro_agg
+        # check again whether clone is alive;
+        # clones which have died in this update
+        # will now register as dead
+        if not self.is_dead():
+            for _i in xrange(new_mutns):
+                new_mutn = Mutation(opt)
+                self.new_child(t_curr, opt, new_mutn)
+                self.size -= 1
+                new_sub_count += 1
+                new_pop_size += 1
 
-        # make new subpopulations after the fact
-        for _ in range(0, cells_mut):
-            self.new_child(t_curr, opt)
+        # finally, add this clone's stats to the return values
+        new_pop_size += self.size
+        new_sub_count += 1
+        # TODO check re the discrepancy between mutagenic and
+        # TODO selective pressure here
+        new_mut_agg += (self.mut_rate - mutagenic_pressure) * self.size
+        new_pro_agg += (self.prolif_rate - prolif_adj) * self.size
 
-        if self.size > 0:
-            sub_count += 1
-            new_pop_size += self.size
+        return new_pop_size, new_sub_count, new_mut_agg, new_pro_agg
 
-        return new_pop_size, sub_count, mut_agg, pro_agg
 
     def new_child(self, t_curr, opt):
         """Spawn a new child clone."""
@@ -369,3 +371,11 @@ def subpop_to_JSON(obj):
         return d
     else:
         raise TypeError(repr(obj) + ' is not JSON serializable')
+
+
+def safe_binomial_sample(num, prob):
+    """Sample from the binomial distribution, validating params first."""
+    if num < 0 or prob < 0:
+        return 0
+    else:
+        return np.random.binomial(num, prob)
