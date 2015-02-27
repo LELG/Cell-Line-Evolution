@@ -27,15 +27,11 @@ class Subpopulation(object):
         self.death_rate = opt.die
         self.size = 1
         self.precrash_size = 0
-        # self.max_size_lim = opt.max_size_lim
-        # initialise prolif_adj to maximum amount
-        #self.prolif_adj = opt.prolif_lim
         self.nodes = []
         self.depth = depth
         self.s_time = t_curr
         self.d_time = None
         #self.idnt = "" ##This gets created when we run freq through tree
-        #self.mut_type = mut_type  #b/d/n
         self.col = col
         self.branch_length = t_curr - prev_time
 
@@ -112,7 +108,7 @@ class Subpopulation(object):
         # will now register as dead
         if not self.is_dead():
             for _i in xrange(new_mutns):
-                new_mutn = Mutation(opt)
+                new_mutn = Mutation(opt, self.mut_rate)
                 self.new_child(t_curr, opt, new_mutn)
                 self.size -= 1
                 new_sub_count += 1
@@ -128,91 +124,81 @@ class Subpopulation(object):
 
         return new_pop_size, new_sub_count, new_mut_agg, new_pro_agg
 
-
-    def new_child(self, t_curr, opt):
+    def new_child(self, t_curr, opt, new_mutn):
         """Spawn a new child clone."""
-        # get child's proliferation rate
-        prolif_mut_event = random.random()
+        # get new prolif rate, making sure we
+        # bound above and below
+        # TODO Check that 0 and 1 are the appropriate bounds
+        provis_prolif = self.prolif_rate + new_mutn.prolif_rate_effect
+        new_prolif_rate = max(0.0, min(1.0, provis_prolif))
 
-        if prolif_mut_event <= opt.prob_mut_pos:
-            new_prolif = self.mutation_beneficial(opt.scale, opt.pro)
-            new_mut_type = 'b'
-        elif prolif_mut_event <= opt.prob_mut_pos + opt.prob_mut_neg:
-            new_prolif = self.mutation_deleterious(opt.scale, opt.pro)
-            new_mut_type = 'd'
-        else:
-            new_prolif = self.prolif_rate
-            new_mut_type = 'n'
+        # get new mutation rate, again, bounding appropriately
+        # TODO Check that 0 and 1 are the appropriate bounds
+        provis_mut = self.mut_rate + new_mutn.mut_rate_effect
+        new_mut_rate = max(0.0, min(1.0, provis_mut))
 
-        # get child's mutation rate
-        mut_mut_event = random.random()
-
-        if mut_mut_event <= opt.prob_inc_mut:
-            new_mut = self.mutation_change_increase(opt.mscale, self.mut_rate)
-        elif mut_mut_event <= opt.prob_inc_mut + opt.prob_dec_mut:
-            new_mut = self.mutation_change_decrease(opt.mscale, self.mut_rate)
-        else:
-            new_mut = self.mut_rate
-
+        new_mutns = self.mutations + [new_mutn]
         new_depth = self.depth + 1
+
         child = Subpopulation(opt=opt,
-                              prolif=new_prolif, mut_rate=new_mut,
+                              prolif=new_prolif_rate, mut_rate=new_mut_rate,
                               depth=new_depth, t_curr=t_curr,
-                              col=self.col, prev_time=self.s_time)
+                              col=self.col, prev_time=self.s_time,
+                              inherited_mutns=new_mutns)
+
         self.nodes.append(child)
-        opt.total_mutations += 1
 
-    def mutation_beneficial(self, scale, prolif):
-        """Gives random value between 0-1
-
-        Scale the value down to a max of 0.001
-        OR dynamically the max could be difference between P and D
-        OR one unit of 'selective pressure'
-        """
-        alpha = 1
-        beta = 3
-        pro_scale = scale * prolif
-        prolif_delta = np.random.beta(alpha, beta, size=1)[0] * pro_scale
-        new_prolif = self.prolif_rate + prolif_delta
-        if new_prolif > 1:
-            new_prolif = 0.99
-        return new_prolif
-
-    def mutation_deleterious(self, scale, prolif):
-        """ Gives random value between 0-1
-
-        Scale the value down to a max of 0.001
-        OR dynamically the max could be difference between P and D
-        OR one unit of 'selective pressure'
-        """
-        alpha = 1
-        beta = 3
-        pro_scale = scale * prolif
-        prolif_delta = np.random.beta(alpha, beta, size=1)[0] * pro_scale
-        new_prolif = self.prolif_rate - prolif_delta
-        if new_prolif < 0:
-            new_prolif = pro_scale / 10000.0
-        return new_prolif
-
-    def mutation_change_increase(self, mscale, mut_rate):
-        alpha = 1
-        beta = 3
-        mut_scale = mscale * mut_rate
-        mut_delta = np.random.beta(alpha, beta, size=1)[0] * mut_scale
-        new_mut = self.mut_rate + mut_delta
-        if new_mut > 1:
-            new_mut = 0.99
-        return new_mut
-
-    def mutation_change_decrease(self, mscale, mut_rate):
-        alpha = 1
-        beta = 3
-        mut_scale = mscale * mut_rate
-        mut_delta = np.random.beta(alpha, beta, size=1)[0] * mut_scale
-        new_mut = self.mut_rate - mut_delta
-        if new_mut < 0:
-            new_mut = mut_scale / 10000.0
-        return new_mut
+#    def mutation_beneficial(self, scale, prolif):
+#        """Gives random value between 0-1
+#
+#        Scale the value down to a max of 0.001
+#        OR dynamically the max could be difference between P and D
+#        OR one unit of 'selective pressure'
+#        """
+#        alpha = 1
+#        beta = 3
+#        pro_scale = scale * prolif
+#        prolif_delta = np.random.beta(alpha, beta, size=1)[0] * pro_scale
+#        new_prolif = self.prolif_rate + prolif_delta
+#        if new_prolif > 1:
+#            new_prolif = 0.99
+#        return new_prolif
+#
+#    def mutation_deleterious(self, scale, prolif):
+#        """ Gives random value between 0-1
+#
+#        Scale the value down to a max of 0.001
+#        OR dynamically the max could be difference between P and D
+#        OR one unit of 'selective pressure'
+#        """
+#        alpha = 1
+#        beta = 3
+#        pro_scale = scale * prolif
+#        prolif_delta = np.random.beta(alpha, beta, size=1)[0] * pro_scale
+#        new_prolif = self.prolif_rate - prolif_delta
+#        if new_prolif < 0:
+#            new_prolif = pro_scale / 10000.0
+#        return new_prolif
+#
+#    def mutation_change_increase(self, mscale, mut_rate):
+#        alpha = 1
+#        beta = 3
+#        mut_scale = mscale * mut_rate
+#        mut_delta = np.random.beta(alpha, beta, size=1)[0] * mut_scale
+#        new_mut = self.mut_rate + mut_delta
+#        if new_mut > 1:
+#            new_mut = 0.99
+#        return new_mut
+#
+#    def mutation_change_decrease(self, mscale, mut_rate):
+#        alpha = 1
+#        beta = 3
+#        mut_scale = mscale * mut_rate
+#        mut_delta = np.random.beta(alpha, beta, size=1)[0] * mut_scale
+#        new_mut = self.mut_rate - mut_delta
+#        if new_mut < 0:
+#            new_mut = mut_scale / 10000.0
+#        return new_mut
 
     def prune_dead_end_clones(self):
         """Remove all dead end clones from subpopulation tree.
@@ -257,11 +243,15 @@ class Subpopulation(object):
     def freq_to_list(self, idnt):
         self_node = []
         blank_ctree = []
+        if self.mutations:
+            mut_type = self.mutations[-1].mut_type
+        else:
+            mut_type = 'n'
+
         if self.size > 0:
             self_node = [(self.pop_count(),
                           "pr-{}-{}{}".format(str(self.prolif_rate),
-                                              self.mutations[0].mut_type,
-                                              idnt))]
+                                              mut_type, idnt))]
             #self.idnt = idnt + str(self.depth)
             #if len(self.nodes) == 0: #deepest point in tree
                 #self_node = [
@@ -270,7 +260,11 @@ class Subpopulation(object):
             return self_node
         else:
             for node in self.nodes:
-                new_idnt = str(self.nodes.index(node)) + node.mutations[0].mut_type + idnt
+                if node.mutations:
+                    mut_type = node.mutations[-1].mut_type
+                else:
+                    mut_type = 'n'
+                new_idnt = str(self.nodes.index(node)) + mut_type + idnt
                 blank_ctree += node.freq_to_list(new_idnt)
             return blank_ctree + self_node
 
@@ -351,12 +345,15 @@ class Subpopulation(object):
             return blank_ctree + self_node
 
     def is_dead(self):
+        """Determine if this clone is dead, i.e. has no cells."""
         return self.size <= 0
 
     def has_children(self):
+        """Determine if this clone has children in the subpopulation tree."""
         return bool(self.nodes)
 
     def is_dead_end(self):
+        """Determine if this clone is a dead end."""
         return self.is_dead() and not self.has_children()
 
     def to_JSON(self):
