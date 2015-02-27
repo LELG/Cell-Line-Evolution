@@ -17,12 +17,13 @@ class Subpopulation(object):
     """
     Individual cancer clone.
     """
-    def __init__(self, opt, prolif, mut, depth, t_curr, mut_type, col, prev_time):
+    def __init__(self, opt, prolif, mut_rate, depth, t_curr, col, prev_time, inherited_mutns=[]):
         """Create new clone."""
         self.prolif_rate = prolif
-        self.mut_rate = mut
+        self.mut_rate = mut_rate
+        self.mutations = inherited_mutns
         # self.mut_static = m #static for scale calution of new value
-        self.death = opt.die
+        self.death_rate = opt.die
         self.size = 1
         self.precrash_size = 0
         # self.max_size_lim = opt.max_size_lim
@@ -33,7 +34,7 @@ class Subpopulation(object):
         self.s_time = t_curr
         self.d_time = None
         #self.idnt = "" ##This gets created when we run freq through tree
-        self.mut_type = mut_type  #b/d/n
+        #self.mut_type = mut_type  #b/d/n
         self.col = col
         self.branch_length = t_curr - prev_time
 
@@ -48,9 +49,8 @@ class Subpopulation(object):
             #add new subpopulation node
             new_subpop = Subpopulation(opt=opt,
                                        prolif=self.prolif_rate,
-                                       mut=mut, depth=1, t_curr=0,
-                                       mut_type='n', col=col,
-                                       prev_time=0)
+                                       mut_rate=mut, depth=1, t_curr=0,
+                                       col=col, prev_time=0)
             new_subpop.size = opt.init_size
             self.nodes.append(new_subpop)
 
@@ -86,7 +86,7 @@ class Subpopulation(object):
                 effective_mut *= mutagenic_pressure
 
             # sample for number of dead cells
-            cells_dead = np.random.binomial(self.size, self.death)
+            cells_dead = np.random.binomial(self.size, self.death_rate)
             # sample for new cells
             if effective_pro > 0:
                 cells_new = np.random.binomial(self.size, effective_pro)
@@ -154,10 +154,9 @@ class Subpopulation(object):
 
         new_depth = self.depth + 1
         child = Subpopulation(opt=opt,
-                              prolif=new_prolif, mut=new_mut,
+                              prolif=new_prolif, mut_rate=new_mut,
                               depth=new_depth, t_curr=t_curr,
-                              mut_type=new_mut_type, col=self.col,
-                              prev_time=self.s_time)
+                              col=self.col, prev_time=self.s_time)
         self.nodes.append(child)
         opt.total_mutations += 1
 
@@ -259,7 +258,8 @@ class Subpopulation(object):
         if self.size > 0:
             self_node = [(self.pop_count(),
                           "pr-{}-{}{}".format(str(self.prolif_rate),
-                                              self.mut_type, idnt))]
+                                              self.mutations[0].mut_type,
+                                              idnt))]
             #self.idnt = idnt + str(self.depth)
             #if len(self.nodes) == 0: #deepest point in tree
                 #self_node = [
@@ -268,7 +268,7 @@ class Subpopulation(object):
             return self_node
         else:
             for node in self.nodes:
-                new_idnt = str(self.nodes.index(node)) + node.mut_type + idnt
+                new_idnt = str(self.nodes.index(node)) + node.mutations[0].mut_type + idnt
                 blank_ctree += node.freq_to_list(new_idnt)
             return blank_ctree + self_node
 

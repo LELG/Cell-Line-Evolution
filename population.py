@@ -31,10 +31,9 @@ class Population(object):
         self.max_size_lim = opt.max_size_lim
         self.prolif_lim = self.opt.prolif_lim
         self.subpop = Subpopulation(opt=opt,
-                                    prolif=opt.pro, mut=opt.mut,
+                                    prolif=opt.pro, mut_rate=opt.mut,
                                     depth=0, t_curr=0,
-                                    mut_type='n', col='n',
-                                    prev_time=0)
+                                    col='n', prev_time=0)
         if opt.init_diversity:
             self.subpop.size = 0 #don't use init dummy popn if reading from file
             self.subpop.new_subpop_from_file(self.opt, self.opt.sub_file)
