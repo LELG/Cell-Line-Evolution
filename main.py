@@ -261,7 +261,7 @@ def create_results_file(filepath):
                'prob_ben_mut', 'prob_del_mut',
                'prob_mut_incr', 'prob_mut_decr',
                'pop_size', 'num_clones',
-               'dom_clone_proportion',
+               'dom_clone_proportion', 'avg_depth',
                'avg_mut_rate_at_end', 'avg_prolif_rate_at_end',
                'elapsed_time', 'elapsed_cycles',
                'total_mutations',

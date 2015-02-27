@@ -312,6 +312,9 @@ class Simulator(object):
         else:
             dom_clone_proportion = 0
 
+        # determine average depth of clones in tumour
+        avg_depth = analytics.get_avg_depth(popn)
+
         # assemble values to write
         summary_vals = (self.param_set, self.run_number, went_through_crash,
                         recovered, recover_type, recover_percent,
@@ -323,6 +326,7 @@ class Simulator(object):
                         popn.analytics_base.tumoursize[-1],
                         popn.analytics_base.clonecount[-1],
                         '{:.5f}'.format(dom_clone_proportion),
+                        '{:.5f}'.format(avg_depth),
                         popn.analytics_base.avg_mutation[-1],
                         popn.analytics_base.avg_proliferation[-1],
                         secs_to_hms(elapsed_time), tot_cycles,
