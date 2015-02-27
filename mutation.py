@@ -9,7 +9,11 @@ class Mutation(object):
     """
     Class to represent mutations.
     """
-    def __init__(self, opt, mut_id=None):
+    # TODO Need to resolve this strange discrepancy between
+    # TODO proliferation and mutation rates, where the scale factor
+    # TODO for proliferation is based on initial prolif rate (opt.pro),
+    # TODO but mutation scale factor is based on subpop's *current* mut rate
+    def __init__(self, opt, existing_mut_rate, mut_id=None):
         """Create new mutation"""
         if not mut_id:
             self.mut_id = id(self)
@@ -23,34 +27,37 @@ class Mutation(object):
             self.mut_type = 'd'
         # get mutation rate effect - this does not
         # affect mutation type
-        self.mut_rate_effect = get_mut_rate_mutn(opt)
+        self.mut_rate_effect = get_mut_rate_mutn(opt, existing_mut_rate)
+        opt.all_mutations.append(self)
 
 
 def get_prolif_rate_mutn(opt):
     """Generate a proliferation rate mutation effect."""
+    scale_factor = opt.scale * opt.pro
     prolif_rate_effect = get_mutn_effect(opt.get_beta_dist_sample,
-                                         opt.scale, opt.prob_ben_mut,
-                                         opt.prob_del_mut)
+                                         scale_factor, opt.prob_mut_pos,
+                                         opt.prob_mut_neg)
     return prolif_rate_effect
 
 
-def get_mut_rate_mutn(opt):
+def get_mut_rate_mutn(opt, existing_mut_rate):
     """Generate a mutation rate mutation effect."""
+    scale_factor = opt.mscale * existing_mut_rate
     mut_rate_effect = get_mutn_effect(opt.get_beta_dist_sample,
-                                      opt.mscale, opt.prob_mut_incr,
-                                      opt.prob_mut_decr)
+                                      scale_factor, opt.prob_inc_mut,
+                                      opt.prob_dec_mut)
     return mut_rate_effect
 
 
-def get_mutn_effect(get_effect_size, scale_param, prob_pos, prob_neg):
+def get_mutn_effect(get_effect_size, scale_factor, prob_pos, prob_neg):
     """Get a mutation effect size and type.
 
-    Note that get_effect_size must be a function,
-    that samples from a suitable probability distribution.
+    Note that `get_effect_size` must be a function
+    which samples from a suitable probability distribution.
     """
     # get a random effect size from a suitable probability
     # distribution, and scale as necessary
-    mutn_magnitude = get_effect_size() * scale_param
+    mutn_magnitude = get_effect_size() * scale_factor
 
     # random.random generates a pseudo-random float
     # between 0 and 1; by subtracting the probability
