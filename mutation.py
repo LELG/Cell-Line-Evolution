@@ -9,11 +9,7 @@ class Mutation(object):
     """
     Class to represent mutations.
     """
-    # TODO Need to resolve this strange discrepancy between
-    # TODO proliferation and mutation rates, where the scale factor
-    # TODO for proliferation is based on initial prolif rate (opt.pro),
-    # TODO but mutation scale factor is based on subpop's *current* mut rate
-    def __init__(self, opt, existing_mut_rate, mut_id=None):
+    def __init__(self, opt, mut_id=None):
         """Create new mutation"""
         if not mut_id:
             self.mut_id = id(self)
@@ -27,7 +23,7 @@ class Mutation(object):
             self.mut_type = 'd'
         # get mutation rate effect - this does not
         # affect mutation type
-        self.mut_rate_effect = get_mut_rate_mutn(opt, existing_mut_rate)
+        self.mut_rate_effect = get_mut_rate_mutn(opt)
         opt.all_mutations.append(self)
 
 
@@ -40,9 +36,9 @@ def get_prolif_rate_mutn(opt):
     return prolif_rate_effect
 
 
-def get_mut_rate_mutn(opt, existing_mut_rate):
+def get_mut_rate_mutn(opt):
     """Generate a mutation rate mutation effect."""
-    scale_factor = opt.mscale * existing_mut_rate
+    scale_factor = opt.mscale * opt.mut
     mut_rate_effect = get_mutn_effect(opt.get_beta_dist_sample,
                                       scale_factor, opt.prob_inc_mut,
                                       opt.prob_dec_mut)

@@ -110,7 +110,7 @@ class Subpopulation(object):
         # will now register as dead
         if not self.is_dead():
             for _i in xrange(new_mutns):
-                new_mutn = Mutation(opt, self.mut_rate)
+                new_mutn = Mutation(opt)
                 self.new_child(t_curr, opt, new_mutn)
                 self.size -= 1
                 new_sub_count += 1
