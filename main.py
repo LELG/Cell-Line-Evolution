@@ -123,6 +123,12 @@ def parse_cmd_line_args():
     mutagenic_pressure : float
         Change in mutation rate during selection event
 
+    NOTE: As currently implemented, mutagenic_pressure is
+        considered to be a multiplicative factor, i.e. clones
+        with a higher mutation rate experience higher mutagenic
+        pressure. In future this may change to be an additive
+        pressure, analogous to proliferation pressure.
+
     prob_mut_pos : float
         Probability that mutation with be beneficial
     prob_mut_neg : float

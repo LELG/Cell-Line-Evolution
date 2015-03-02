@@ -75,8 +75,10 @@ class Subpopulation(object):
 
         if not self.is_dead():
             effective_prolif = self.prolif_rate - prolif_adj - select_pressure
-            # TODO check whether mutagenic pressure should be additive or multiplicative
-            effective_mut = self.mut_rate - mutagenic_pressure
+            if mutagenic_pressure:
+                effective_mut = self.mut_rate * mutagenic_pressure
+            else:
+                effective_mut = self.mut_rate
             # sample for cell death, division and mutation
             cells_dead = safe_binomial_sample(self.size, self.death_rate)
             # eliminate the possibility of a cell dying
@@ -117,25 +119,28 @@ class Subpopulation(object):
         # finally, add this clone's stats to the return values
         new_pop_size += self.size
         new_sub_count += 1
-        # TODO check re the discrepancy between mutagenic and
-        # TODO selective pressure here
-        new_mut_agg += (self.mut_rate - mutagenic_pressure) * self.size
+        # return aggregate prolif and mut rates, ignoring
+        # selective and mutagenic pressure
+        new_mut_agg += self.mut_rate * self.size
         new_pro_agg += (self.prolif_rate - prolif_adj) * self.size
 
         return new_pop_size, new_sub_count, new_mut_agg, new_pro_agg
 
     def new_child(self, t_curr, opt, new_mutn):
         """Spawn a new child clone."""
+        max_pro_rate = 1.0
+        max_mut_rate = 1.0
+        min_pro_rate = 0.0
+        min_mut_rate = 1e-10
+
         # get new prolif rate, making sure we
         # bound above and below
-        # TODO Check that 0 and 1 are the appropriate bounds
         provis_prolif = self.prolif_rate + new_mutn.prolif_rate_effect
-        new_prolif_rate = max(0.0, min(1.0, provis_prolif))
+        new_prolif_rate = max(min_pro_rate, min(max_pro_rate, provis_prolif))
 
         # get new mutation rate, again, bounding appropriately
-        # TODO Check that 0 and 1 are the appropriate bounds
         provis_mut = self.mut_rate + new_mutn.mut_rate_effect
-        new_mut_rate = max(0.0, min(1.0, provis_mut))
+        new_mut_rate = max(min_mut_rate, min(max_mut_rate, provis_mut))
 
         new_mutns = self.mutations + [new_mutn]
         new_depth = self.depth + 1
