@@ -113,7 +113,7 @@ class Subpopulation(object):
         # will now register as dead
         if not self.is_dead():
             for _i in xrange(new_mutns):
-                new_mutn = Mutation(opt, all_muts)
+                new_mutn = Mutation(opt, self, all_muts)
                 self.new_child(t_curr, opt, new_mutn)
                 self.size -= 1
                 new_sub_count += 1
@@ -155,6 +155,25 @@ class Subpopulation(object):
                               inherited_mutns=new_mutns)
 
         self.nodes.append(child)
+
+    def recalculate_fitness(self, opt):
+        """
+        Recalculate prolif and mut rates.
+
+        Recalculate proliferation and mutation rates,
+        in case one of this subpopulation's mutations
+        has become a resistance mutation.
+        """
+        prolif_mutns_effect = sum([mut.prolif_rate_effect
+                                   for mut in self.mutations])
+        mut_mutns_effect = sum([mut.mut_rate_effect
+                                for mut in self.mutations])
+
+        self.prolif_rate = opt.pro + prolif_mutns_effect
+        self.mut_rate = opt.pro + mut_mutns_effect
+
+        for node in self.nodes:
+            node.recalculate_fitness(opt)
 
 #    def mutation_beneficial(self, scale, prolif):
 #        """Gives random value between 0-1
