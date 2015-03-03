@@ -80,12 +80,15 @@ class Subpopulation(object):
             else:
                 effective_mut = self.mut_rate
             # sample for cell death, division and mutation
-            cells_dead = safe_binomial_sample(self.size, self.death_rate)
-            # eliminate the possibility of a cell dying
-            # and reproducing in the same cycle
-            self.size -= cells_dead
+            # note that we sample for both division AND death before
+            # updating the clone size. This means that a 'cell'
+            # could technically reproduce and die in the same cycle
+            # (i.e. if cells_dead + cells_new > initial_size)
             cells_new = safe_binomial_sample(self.size, effective_prolif)
-            self.size += cells_new
+            cells_dead = safe_binomial_sample(self.size, self.death_rate)
+            self.size = self.size + cells_new - cells_dead
+            # this is the total number of mutations this cycle,
+            # not necessarily number of new subclones to spawn
             new_mutns = safe_binomial_sample(cells_new, effective_mut)
         else:
             # clone is dead - update its attributes
