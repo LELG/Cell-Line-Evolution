@@ -37,22 +37,22 @@ def make_plot(xdata, ydata, filename, title):
     """Plot a single independent variable."""
     #        global DETAILS
     _fig, ax1 = plt.subplots()
-    ax1.plot(xdata, ydata, color='b', alpha=0.5, linewidth=2)
+    ax1.plot(xdata, ydata, alpha=0.5, linewidth=2)
     ax1.set_xlabel('Discrete Time Intervals', fontsize=9)
     ax1.set_ylabel(title, fontsize=9, color='b')
     for label in ax1.get_yticklabels():
         label.set_color('b')
         label.set_fontsize(9)
     for label in ax1.get_xticklabels():
-        #label.set_color('grey')
+        label.set_color('grey')
         label.set_fontsize(9)
     plt.savefig(filename)
     print("PLOT CREATED: " + filename)
     plt.close()
 
-def make_hist(xdata, filename, title, bins):
+def make_hist(xdata, filename, title, bins=25, log=False):
     """Plot a histogram."""
-    plt.hist(xdata, bins, log=True)
+    plt.hist(xdata, bins, log=log)
     plt.title(title)
     plt.savefig(filename)
     print("HISTOGRAM CREATED: " + filename)
@@ -179,6 +179,18 @@ def make_subpop_life_mut(X, filename, title, end_time, loops, select_time, mbase
     print("PLOT CREATED: ", filename)
     print("base mut rate ", mbase)
     plt.close()
+
+def plot_mut_effect_sizes(mutations, rate_type, filename, bins=100):
+    """Plot the distribution of mutation effect sizes."""
+    if rate_type == 'prolif':
+        effect_data = [m.prolif_rate_effect for m in mutations]
+    elif rate_type == 'mut':
+        effect_data = [m.mut_rate_effect for m in mutations]
+    else:
+        raise ValueError("Rate type must be `prolif` or `mut`")
+
+    title = "Mutation Effect Sizes ({} Rate)".format(rate_type.title())
+    make_hist(effect_data, filename, title, bins)
 
 def mutation_distribution(md, filename, title, SCALE):
     #print("MD",md)
@@ -315,13 +327,15 @@ def mutation_crash(clones, filename, title, SCALE):
     plt.close()
 
 
-def print_results(popn, when, end_time):
+def print_results(popn, when, end_time, plot_style=None):
     """ Print all results to plots / file
 
     Print result to graphs using matplotlib
     If --r_output option parsed print raw output to file
 
     """
+    if plot_style:
+        plt.style.use(plot_style)
 
     filename = "{0}/{1}_".format(popn.opt.run_dir, when)
 
@@ -377,6 +391,12 @@ def print_results(popn, when, end_time):
                        filename + "pop_v_select_pressure",
                        'Tumour Size', 'Selective Pressure')
 
+        # Histogram of mutation effect sizes
+        plot_mut_effect_sizes(popn.all_mutations, 'prolif',
+                              filename + "mut_effect_sizes_prolif")
+        plot_mut_effect_sizes(popn.all_mutations, 'mut',
+                              filename + "mut_effect_sizes_mut")
+
         # Mutation...
         mut_distro = popn.subpop.tree_to_list("mutation_distribution")
         mutation_distribution(mut_distro,
@@ -410,12 +430,12 @@ def print_results(popn, when, end_time):
 
         make_hist(pro_hist,
                   filename+"proliferation_hist",
-                  "Proliferation Rates", 25)
+                  "Proliferation Rates", log=True)
         #MUTATION HISTOGRAM
         # [popn.mutation]
         make_hist(mut_hist,
                   filename+"mutation_hist",
-                  "Mutation Rates", 25)
+                  "Mutation Rates", log=True)
         #POPULATION HISTOGRAM
         # [popn.size]
 
@@ -423,7 +443,7 @@ def print_results(popn, when, end_time):
 
         make_hist(pop_hist,
                   filename+"population_hist",
-                  "Population Division", 25)
+                  "Population Division", log=True)
         #ALLELE FREQ
         # just_allele_freq z = z + [i/float(tumoursize)]
         norm, r, just_allele_freq = \
@@ -432,7 +452,7 @@ def print_results(popn, when, end_time):
                   filename + "allele",
                   "Allele Freq",
                   #bins equal to number of sub pops
-                  anlt.clonecount[-1])
+                  bins=anlt.clonecount[-1], log=True)
         #CELL CIRCLE MUT V PRO RATES
         # if size > 0 [(popn.mutation,popn.proliferation,popn.size)]
         mutation_v_proliferation(popn.subpop.tree_to_list("circles"),
