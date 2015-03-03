@@ -48,6 +48,7 @@ class Population(object):
         # these lists will be populated at crash time
         self.mid_proliferation = []
         self.mid_mutation = []
+        self.all_mutations = []
 
     def update(self, treatmt, t_curr):
         """
@@ -87,7 +88,8 @@ class Population(object):
         subpop_results = self.subpop.update(self.opt,
                                             self.select_pressure,
                                             self.mutagenic_pressure,
-                                            t_curr, prolif_adj)
+                                            t_curr, prolif_adj,
+                                            self.all_mutations)
         self.tumoursize, self.clonecount, agg_mut, agg_pro = subpop_results
 
         if not self.is_dead():

@@ -70,7 +70,6 @@ class Simulator(object):
         # calculate and record proliferation limit
         # this avoids the need to take it from command line
         self.opt.prolif_lim = opt.pro - opt.die
-        self.opt.all_mutations = []
         self.opt.get_beta_dist_sample = lambda: np.random.beta(1, 3)
 
         # TODO determine which of these params
@@ -328,7 +327,7 @@ class Simulator(object):
                         popn.analytics_base.avg_mutation[-1],
                         popn.analytics_base.avg_proliferation[-1],
                         secs_to_hms(elapsed_time), tot_cycles,
-                        len(self.opt.all_mutations),
+                        len(popn.all_mutations),
                         min_val, min_time, max_val, max_time,
                         cmin_val, cmin_time, cmax_val, cmax_time)
 

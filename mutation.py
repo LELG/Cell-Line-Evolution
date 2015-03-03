@@ -9,7 +9,7 @@ class Mutation(object):
     """
     Class to represent mutations.
     """
-    def __init__(self, opt, mut_id=None):
+    def __init__(self, opt, all_muts, mut_id=None):
         """Create new mutation"""
         if not mut_id:
             self.mut_id = id(self)
@@ -24,7 +24,7 @@ class Mutation(object):
         # get mutation rate effect - this does not
         # affect mutation type
         self.mut_rate_effect = get_mut_rate_mutn(opt)
-        opt.all_mutations.append(self)
+        all_muts.append(self)
 
 
 def get_prolif_rate_mutn(opt):

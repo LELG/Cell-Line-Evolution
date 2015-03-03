@@ -66,7 +66,7 @@ class Subpopulation(object):
         for node in self.nodes:
             node.set_precrash_size()
 
-    def update(self, opt, select_pressure, mutagenic_pressure, t_curr, prolif_adj):
+    def update(self, opt, select_pressure, mutagenic_pressure, t_curr, prolif_adj, all_muts):
         """Update this clone and its children for one time step."""
         if self.is_dead_end():
             return (0, 0, 0, 0,)
@@ -98,7 +98,7 @@ class Subpopulation(object):
         # update child nodes - whether or not clone is alive
         for node in self.nodes:
             node_results = node.update(opt, select_pressure, mutagenic_pressure,
-                                       t_curr, prolif_adj)
+                                       t_curr, prolif_adj, all_muts)
             node_pop, node_sub_count, node_mut_agg, node_pro_agg = node_results
             new_pop_size += node_pop
             new_sub_count += node_sub_count
@@ -110,7 +110,7 @@ class Subpopulation(object):
         # will now register as dead
         if not self.is_dead():
             for _i in xrange(new_mutns):
-                new_mutn = Mutation(opt)
+                new_mutn = Mutation(opt, all_muts)
                 self.new_child(t_curr, opt, new_mutn)
                 self.size -= 1
                 new_sub_count += 1
