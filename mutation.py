@@ -9,7 +9,7 @@ class Mutation(object):
     """
     Class to represent mutations.
     """
-    def __init__(self, opt, all_muts, mut_id=None):
+    def __init__(self, opt, subpop, all_muts, mut_id=None):
         """Create new mutation"""
         if not mut_id:
             self.mut_id = id(self)
@@ -24,6 +24,8 @@ class Mutation(object):
         # get mutation rate effect - this does not
         # affect mutation type
         self.mut_rate_effect = get_mut_rate_mutn(opt)
+
+        self.original_clone = subpop
         all_muts.append(self)
 
 
@@ -55,12 +57,12 @@ def get_mutn_effect(get_effect_size, scale_factor, prob_pos, prob_neg):
     # distribution, and scale as necessary
     mutn_magnitude = get_effect_size() * scale_factor
 
-    # random.random generates a pseudo-random float
+    # random.random generates a uniform pseudo-random float
     # between 0 and 1; by subtracting the probability
     # of a negative mutation from this float, we get
-    # a float with `prob_neg` chance of being negative
-    # and `1 - prob_neg` chance of being positive
-    #(which could mean beneficial, or neutral)
+    # a float with `prob_neg` chance of being < 0
+    # and `1 - prob_neg` chance of being > 0
+    # (which could be beneficial or neutral)
     mut_type_from_sign = random.random() - prob_neg
 
     # allow for the possibility that there is a non-zero
