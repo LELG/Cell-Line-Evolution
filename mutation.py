@@ -3,6 +3,7 @@ Module for class representing mutations,
 and associated functions.
 """
 import math
+import numpy as np
 import random
 
 class Mutation(object):
@@ -27,6 +28,12 @@ class Mutation(object):
 
         self.original_clone = subpop
         all_muts.append(self)
+
+    def become_resistant(self):
+        # get a strong beneficial mutation effect
+        # TODO implement me
+        # signal to clone that something has changed
+        self.original_clone.recalculate_fitness()
 
 
 def get_prolif_rate_mutn(opt):
@@ -77,3 +84,27 @@ def get_mutn_effect(get_effect_size, scale_factor, prob_pos, prob_neg):
     mutn_effect = math.copysign(mutn_magnitude, mut_type_from_sign)
 
     return mutn_effect
+
+
+def generate_resistance(all_mutations, tumoursize):
+    """Trigger the creation of resistance mutations."""
+    total_mutns = len(all_mutations)
+    num_resist_mutns = get_num_resist_mutations(total_mutns, tumoursize)
+    indices = []
+    for event in range(num_resist_mutns):
+        rand_index = random.randrange(total_mutns)
+        # make sure we don't get duplicate indices
+        if event > 0:
+            while rand_index in indices:
+                rand_index = random.randrange(total_mutns)
+        indices.append(rand_index)
+        all_mutations[rand_index].become_resistant()
+    return indices
+
+
+def get_num_resist_mutations(total_mutns, tumoursize, min_resistant_pop_size=1e6):
+    """Get a random number of resistance mutations for a given population."""
+    prob_single_resist_mutn = tumoursize / float(min_resistant_pop_size)
+    prob_resistance_mutn = prob_single_resist_mutn / float(total_mutns)
+    num_resist_mutns = np.random.binomial(total_mutns, prob_resistance_mutn)
+    return num_resist_mutns
