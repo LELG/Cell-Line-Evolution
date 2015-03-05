@@ -90,16 +90,12 @@ def generate_resistance(all_mutations, tumoursize):
     """Trigger the creation of resistance mutations."""
     total_mutns = len(all_mutations)
     num_resist_mutns = get_num_resist_mutations(total_mutns, tumoursize)
-    indices = []
-    for event in range(num_resist_mutns):
-        rand_index = random.randrange(total_mutns)
-        # make sure we don't get duplicate indices
-        if event > 0:
-            while rand_index in indices:
-                rand_index = random.randrange(total_mutns)
-        indices.append(rand_index)
-        all_mutations[rand_index].become_resistant()
-    return indices
+    # random.sample selects num_resist_mutns from the list
+    # of all mutations (with uniform likelihood)
+    resistance_mutns = random.sample(all_mutations, num_resist_mutns)
+    for mutn in resistance_mutns:
+        mutn.become_resistant()
+    return resistance_mutns
 
 
 def get_num_resist_mutations(total_mutns, tumoursize, min_resistant_pop_size=1e6):
