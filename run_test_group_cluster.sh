@@ -5,7 +5,7 @@
 
 # check for correct invocation
 E_WRONG_ARGS=85
-script_parameters="[-m ADDRESS] [-w WALLTIME] test_group_name runs_per_param_set config_file"
+script_parameters="[-m MAIL_ADDRESS] [-w WALLTIME] [-q QUEUE_NAME] testgroup_name runs_per_param_set config_file"
 
 function usage-exit () {
   echo "Usage: ./`basename $0` $script_parameters"
@@ -17,10 +17,11 @@ function usage-exit () {
 
 OPTIND=1         # Reset in case getopts has been used previously in the shell.
 walltime="1:00:00"
+queue=""
 mailopt=""
 mailadd=""
 
-while getopts "h?w:m:" opt; do
+while getopts "h?w:m:q:" opt; do
     case "$opt" in
     h|\?)
         usage-exit
@@ -30,6 +31,8 @@ while getopts "h?w:m:" opt; do
     m)  mailopt="#PBS -m ae"
 	mailadd="#PBS -M "$OPTARG
 	;;
+    q)  queue="#PBS -q "$OPTARG
+        ;;
     esac
 done
 
@@ -41,7 +44,7 @@ shift $((OPTIND-1))
 
 num_expected_args=3
 if [ $# -ne $num_expected_args ]; then
-  usage-exit #"Incorrect number of parameters provided"
+  usage-exit
 fi
 
 if $(echo $2 | grep -E -q '^[0-9]+$'); then
@@ -133,6 +136,7 @@ cat >> $pbs_script << _endmsg
 #PBS -o $test_group.log
 #PBS -j oe
 #PBS -t 1-$num_param_sets
+$queue
 $mailopt
 $mailadd
 
