@@ -157,9 +157,27 @@ def precrash_minmax(treatmt, popn):
     max_time = pre_crash_pop.index(max_val)
     return min_val, min_time, max_val, max_time
 
+
 def get_dom_clone_size(subpop, max_size=0):
     """Find size of largest clone in the tumour."""
     max_size = max(max_size, subpop.size)
     for child in subpop.nodes:
         max_size = max(max_size, get_dom_clone_size(child, max_size))
     return max_size
+
+
+def get_avg_depth(popn):
+    """Get the average depth of clones in the tumour."""
+    agg_depth = get_agg_depth(popn.subpop)
+    if popn.clonecount == 0:
+        return 0.0
+    else:
+        return agg_depth / float(popn.clonecount)
+
+
+def get_agg_depth(subpop):
+    """Get the aggregate depth and clone count of a subpopulation tree."""
+    agg_depth = subpop.depth
+    for node in subpop.nodes:
+        agg_depth += get_agg_depth(node)
+    return agg_depth

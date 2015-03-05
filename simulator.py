@@ -107,11 +107,11 @@ class Simulator(object):
         self.popn = population.Population(self.opt)
         # create the Treatment
         if opt.treatment_type == 'single_dose':
-            self.treatmt = treatment.Treatment(self.opt)
+            self.treatmt = treatment.Treatment(self.opt, self)
         elif opt.treatment_type == 'metronomic':
-            self.treatmt = treatment.MetronomicTreatment(self.opt)
+            self.treatmt = treatment.MetronomicTreatment(self.opt, self)
         elif opt.treatment_type == 'adaptive':
-            self.treatmt = treatment.AdaptiveTreatment(self.opt)
+            self.treatmt = treatment.AdaptiveTreatment(self.opt, self)
         else:
             raise ValueError("Bad value for treatment type parameter")
 
@@ -242,6 +242,18 @@ class Simulator(object):
             """)
         print(status_msg.format(t_curr, self.max_cycles, self.popn.tumoursize))
 
+    def record_treatment_introduction(self, t_curr):
+        """Make plots and record data at time of treatment introduction."""
+        if not self.opt.no_plots:
+            plotdata.print_results(self.popn, "mid", t_curr)
+        tree_to_xml.tree_parse(self.popn.subpop, self.popn.tumoursize,
+                               t_curr, self.opt.run_dir, "mid0")
+        if self.opt.init_diversity:
+            dropdata.drop(self.popn.subpop, self.opt.test_group_dir, "mid0")
+        #f = gzip.open('testsubpop.json.gz', 'wb')
+        #f.write(self.popn.subpop.to_JSON())
+        #f.close()
+
     def print_info(self):
         """Print simulation's initial parameter set."""
         hdr = dedent("""\
@@ -313,6 +325,9 @@ class Simulator(object):
         else:
             dom_clone_proportion = 0
 
+        # determine average depth of clones in tumour
+        avg_depth = analytics.get_avg_depth(popn)
+
         # assemble values to write
         summary_vals = (self.param_set, self.run_number, went_through_crash,
                         recovered, recover_type, recover_percent,
@@ -324,6 +339,7 @@ class Simulator(object):
                         popn.analytics_base.tumoursize[-1],
                         popn.analytics_base.clonecount[-1],
                         '{:.5f}'.format(dom_clone_proportion),
+                        '{:.5f}'.format(avg_depth),
                         popn.analytics_base.avg_mutation[-1],
                         popn.analytics_base.avg_proliferation[-1],
                         secs_to_hms(elapsed_time), tot_cycles,
