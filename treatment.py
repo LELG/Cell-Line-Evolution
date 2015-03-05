@@ -58,7 +58,7 @@ class Treatment(object):
     decay_func : function to determine how selective pressure
         decays over time
     """
-    def __init__(self, opt):
+    def __init__(self, opt, simulator):
         """Create a new Treatment object"""
         # adopt relevant command line parameters
         self.treatment_type = opt.treatment_type
@@ -72,6 +72,10 @@ class Treatment(object):
 
         self.auto_treatment = opt.auto_treatment
         self.max_size_lim = opt.max_size_lim
+
+        # keep a reference to the simulator
+        # this means treatmt can signal sim when introduced
+        self.sim = simulator
 
         # assume that all simulations will start
         # with no selective pressure introduced
@@ -101,16 +105,7 @@ class Treatment(object):
         # let population know that treatment has
         # been introduced
         popn.record_treatment_introduction(self)
-        # TODO move this plotting elsewhere
-        if not popn.opt.no_plots:
-            plotdata.print_results(popn, "mid", t_curr)
-        tree_to_xml.tree_parse(popn.subpop, popn.tumoursize,
-                               t_curr, popn.opt.run_dir, "mid0")
-        if popn.opt.init_diversity:
-            dropdata.drop(popn.subpop, popn.opt.test_group_dir, "mid0")
-        #f = gzip.open('testsubpop.json.gz', 'wb')
-        #f.write(popn.subpop.to_JSON())
-        #f.close()
+        self.sim.record_treatment_introduction(t_curr)
 
     def update(self, popn, t_curr):
         """
@@ -157,8 +152,8 @@ class MetronomicTreatment(Treatment):
     A course of metronomic treatment; that is,
     small doses of treatment at frequent, regular intervals.
     """
-    def __init__(self, opt):
-        super(MetronomicTreatment, self).__init__(opt)
+    def __init__(self, opt, simulator):
+        super(MetronomicTreatment, self).__init__(opt, simulator)
         self.treatment_freq = opt.treatment_freq
 
     def reintroduction_conditions_met(self, popn, t_curr):
@@ -201,9 +196,9 @@ class AdaptiveTreatment(Treatment):
     NOTE: This model currently does not allow for
           mutagenic pressure.
     """
-    def __init__(self, opt):
+    def __init__(self, opt, simulator):
         # initialise a Treatment object
-        super(AdaptiveTreatment, self).__init__(opt)
+        super(AdaptiveTreatment, self).__init__(opt, simulator)
         self.treatment_freq = opt.treatment_freq
         self.increment = opt.adaptive_increment
         self.growth_threshold = opt.adaptive_threshold

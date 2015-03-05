@@ -106,11 +106,11 @@ class Simulator(object):
         self.popn = population.Population(self.opt)
         # create the Treatment
         if opt.treatment_type == 'single_dose':
-            self.treatmt = treatment.Treatment(self.opt)
+            self.treatmt = treatment.Treatment(self.opt, self)
         elif opt.treatment_type == 'metronomic':
-            self.treatmt = treatment.MetronomicTreatment(self.opt)
+            self.treatmt = treatment.MetronomicTreatment(self.opt, self)
         elif opt.treatment_type == 'adaptive':
-            self.treatmt = treatment.AdaptiveTreatment(self.opt)
+            self.treatmt = treatment.AdaptiveTreatment(self.opt, self)
         else:
             raise ValueError("Bad value for treatment type parameter")
 
@@ -240,6 +240,18 @@ class Simulator(object):
             Tumour size: {2}
             """)
         print(status_msg.format(t_curr, self.max_cycles, self.popn.tumoursize))
+
+    def record_treatment_introduction(self, t_curr):
+        """Make plots and record data at time of treatment introduction."""
+        if not self.opt.no_plots:
+            plotdata.print_results(self.popn, "mid", t_curr)
+        tree_to_xml.tree_parse(self.popn.subpop, self.popn.tumoursize,
+                               t_curr, self.opt.run_dir, "mid0")
+        if self.opt.init_diversity:
+            dropdata.drop(self.popn.subpop, self.opt.test_group_dir, "mid0")
+        #f = gzip.open('testsubpop.json.gz', 'wb')
+        #f.write(self.popn.subpop.to_JSON())
+        #f.close()
 
     def print_info(self):
         """Print simulation's initial parameter set."""
