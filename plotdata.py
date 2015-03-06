@@ -398,7 +398,9 @@ def print_results(popn, when, end_time, plot_style=None):
                               filename + "mut_effect_sizes_mut")
 
         # Mutation...
-        mut_distro = popn.subpop.tree_to_list("mutation_distribution")
+        mut_distro = popn.subpop.get_clone_attrs_as_list(["mut_rate",
+                                                          "prolif_rate",
+                                                          "size"])
         mutation_distribution(mut_distro,
                               filename + "mutation_distribution",
                               "Mutation vs Time - Pre/Post Crash",
@@ -406,15 +408,21 @@ def print_results(popn, when, end_time, plot_style=None):
 
         # Mutation
         if not popn.is_dead():
-            mut_distro = popn.subpop.tree_to_list("mutation_distribution_1")
+            mut_distro = popn.subpop.get_clone_attrs_as_list(["mut_rate",
+                                                              "prolif_rate",
+                                                              "size",
+                                                              "precrash_size"])
             mutation_crash(mut_distro,
                            filename + "mutation_distribution_1",
                            "Mutation vs Time - Pre/Post Crash",
                            popn.opt.scale)
 
         #cell lines graph  - [(popn.s_time,popn.d_time)]
-        make_subpop_life(popn.subpop.tree_to_list("cell_line_time"),
-                         filename + "cell_lines_alpha",
+        cell_line_time = popn.subpop.get_clone_attrs_as_list(["col",
+                                                              "s_time",
+                                                              "d_time"],
+                                                             inc_dead_clones=True)
+        make_subpop_life(cell_line_time, filename + "cell_lines_alpha",
                          "Cell Lifespan", end_time, popn.opt.max_cycles,
                          popn.opt.select_time)
 
@@ -423,9 +431,9 @@ def print_results(popn, when, end_time, plot_style=None):
         #PROLIFERATION HISTOGRAM
         # [(popn.proliferation-popn.prolif_adj,popn.size)]
 
-        pro_hist = popn.subpop.tree_to_list("proliferation")
+        pro_hist = popn.subpop.get_clone_attrs_as_list("prolif_rate")
         pro_hist.sort()
-        mut_hist = popn.subpop.tree_to_list("mutation")
+        mut_hist = popn.subpop.get_clone_attrs_as_list("mut_rate")
         mut_hist.sort()
 
         make_hist(pro_hist,
@@ -439,7 +447,7 @@ def print_results(popn, when, end_time, plot_style=None):
         #POPULATION HISTOGRAM
         # [popn.size]
 
-        pop_hist = popn.subpop.tree_to_list("size"),
+        pop_hist = popn.subpop.get_clone_attrs_as_list("size"),
 
         make_hist(pop_hist,
                   filename+"population_hist",
@@ -455,14 +463,19 @@ def print_results(popn, when, end_time, plot_style=None):
                   bins=anlt.clonecount[-1], log=True)
         #CELL CIRCLE MUT V PRO RATES
         # if size > 0 [(popn.mutation,popn.proliferation,popn.size)]
-        mutation_v_proliferation(popn.subpop.tree_to_list("circles"),
-                                 filename + "circles",
+        circles = popn.subpop.get_clone_attrs_as_list(["mut_rate",
+                                                       "prolif_rate",
+                                                       "size"])
+        mutation_v_proliferation(circles, filename + "circles",
                                  "Mutation vs Proliferation Rates",
                                  popn.opt.scale)
 
         # [(popn.mutation,popn.proliferation,popn.size)]
-        mutation_v_proliferation(popn.subpop.tree_to_list("circles_all"),
-                                 filename + "circles_all",
+        circles_all = popn.subpop.get_clone_attrs_as_list(["mut_rate",
+                                                           "prolif_rate",
+                                                           "size"],
+                                                          inc_dead_clones=True)
+        mutation_v_proliferation(circles_all, filename + "circles_all",
                                  "Mutation vs Proliferation Rates",
                                  popn.opt.scale)
 
@@ -470,15 +483,13 @@ def print_results(popn, when, end_time, plot_style=None):
         # if size > 0 [(popn.mutation,popn.proliferation,popn.size)]
         fpath = "{0}/{1}-circles.dat".format(popn.opt.param_set_dir,
                                              popn.opt.param_set)
-        mutation_v_proliferation_dat(popn.subpop.tree_to_list("circles"),
-                                     fpath,
+        mutation_v_proliferation_dat(circles, fpath,
                                      "Mutation vs Proliferation Rates",
                                      popn.opt.scale)
         # [(popn.mutation,popn.proliferation,popn.size)]
         fpath = "{0}/{1}-circles_all.dat".format(popn.opt.param_set_dir,
                                                  popn.opt.param_set)
-        mutation_v_proliferation_dat(popn.subpop.tree_to_list("circles_all"),
-                                     fpath,
+        mutation_v_proliferation_dat(circles_all, fpath,
                                      "Mutation vs Proliferation Rates",
                                      popn.opt.scale)
 
@@ -501,8 +512,10 @@ def print_plots(popn, when):
     # Proliferation Histogram #
 
     if not popn.is_dead():
-        end_proliferation = popn.subpop.tree_to_list("proliferation_size")
-        end_mutation = popn.subpop.tree_to_list("mutation_rate")
+        end_proliferation = popn.subpop.get_clone_attrs_as_list(["prolif_rate",
+                                                                 "size"])
+
+        end_mutation = popn.subpop.get_clone_attrs_as_list(["mut_rate", "size"])
 
         #PROLIFERATION HISTOGRAM
         # [(popn.proliferation-popn.prolif_adj,popn.size)]

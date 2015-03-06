@@ -246,7 +246,7 @@ class Subpopulation(object):
     # Dangerous loops beyond this sign
 
     def pop_as_list(self):
-        n = self.tree_to_list("size")
+        n = self.get_clone_attrs_as_list("size")
         n.sort()
         #out = filter(lambda a: a!=0, n)
         return n
@@ -295,81 +295,35 @@ class Subpopulation(object):
                 blank_ctree += node.freq_to_list(new_idnt)
             return blank_ctree + self_node
 
-    # Instead of one function for each kind, better to return
-    # list of objects, right?
+    def get_clone_attrs_as_list(self, attr_names, inc_dead_clones=False):
+        """
+        Get specified attributes of clone, and its children, as a flat list.
+        """
+        if isinstance(attr_names, basestring):
+            attr_names = [attr_names]
 
-    def tree_to_list(self, prm):
-        """ SIZE AS FILTER """
-        #make it get everything, then use dictionary to access field?
-        #TO DO have size optional paramter to filter with
-        self_node = []
-        blank_ctree = []
-        if prm == "size":
-            if self.size > 0:
-                self_node = [self.size]
+        # get attributes of this particular clone
+        attr_list = []
+        if not self.is_dead() or inc_dead_clones:
+            for name in attr_names:
+                try:
+                    attr_val = getattr(self, name)
+                except AttributeError:
+                    raise
+                attr_list.append(attr_val)
 
-        if prm == "size_by_col":
-            if self.size > 0:
-                self_node = [(self.col, self.size)]
+        if len(attr_list) > 1:
+            # multiple attributes have been recorded;
+            # need to condense to a single list element
+            attr_list = [tuple(attr_list)]
 
-        if prm == "proliferation":
-            if self.size > 0:
-                self_node = [self.prolif_rate]
-
-        if prm == "proliferation_size":
-            if self.size > 0:
-                self_node = [(self.prolif_rate, self.size)]
-
-        if prm == "mutation":
-            if self.size > 0:
-                self_node = [self.mut_rate]
-                #if self.mutagenic_pressure > 0:
-                #    self_node = [self.mut_rate * self.mutagenic_pressure]
-                #else:
-                #    self_node = [self.mut_rate]
-                    #added mutagenic pressure
-
-        #if prm == "effective_proliferation":
-        #    if self.size > 0:
-        #        self_node = [(self.prolif_rate - self.prolif_adj, self.size)]
-
-        #could change to effective mutation rate for mutagenic selection
-        if prm == "mutation_rate":
-            if self.size > 0:
-                self_node = [(self.mut_rate, self.size)]
-
-        if prm == "cell_line_time":
-            self_node = [(self.col, self.s_time, self.d_time)]
-
-        if prm == "cell_line_time_mut":
-            self_node = [(self.s_time, self.d_time, self.mut_rate, self.size)]
-
-        if prm == "circles":
-            if self.size > 0:
-                self_node = [(self.mut_rate, self.prolif_rate, self.size)]
-
-        if prm == "circles_all":
-            self_node = [(self.mut_rate, self.prolif_rate, self.size)]
-
-        if prm == "mutation_distribution":
-            if self.size > 0:
-                self_node = [(self.mut_rate, self.precrash_size, self.size)]
-
-        if prm == "two_side_size":
-            if self.size > 0:
-                self_node = [(self.precrash_size, self.size)]
-
-        if prm == "mutation_distribution_1":
-            if self.size > 0:
-                self_node = [(self.mut_rate, self.prolif_rate,
-                              self.size, self.precrash_size)]
-
-        if not self.nodes:
-            return self_node
-        else:
+        # get attributes of children, if any
+        if self.has_children():
             for node in self.nodes:
-                blank_ctree += node.tree_to_list(prm)
-            return blank_ctree + self_node
+                # note the need to use 'splat' operator to unpack attr_names
+                attr_list += node.get_clone_attrs_as_list(attr_names,
+                                                          inc_dead_clones)
+        return attr_list
 
     def is_dead(self):
         """Determine if this clone is dead, i.e. has no cells."""
@@ -386,6 +340,8 @@ class Subpopulation(object):
     def to_JSON(self):
         return json.dumps(self, default=subpop_to_JSON,
                           sort_keys=True, indent=4)
+
+
 
 def subpop_to_JSON(obj):
     if isinstance(obj, Subpopulation):

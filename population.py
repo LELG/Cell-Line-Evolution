@@ -111,5 +111,5 @@ class Population(object):
         self.mutagenic_pressure = treatmt.curr_mut_pressure
         self.selective_pressure_applied = True
         self.subpop.set_precrash_size()
-        self.mid_proliferation = self.subpop.tree_to_list("proliferation_size")
-        self.mid_mutation = self.subpop.tree_to_list("mutation_rate")
+        self.mid_proliferation = self.subpop.get_clone_attrs_as_list(["prolif_rate", "size"])
+        self.mid_mutation = self.subpop.get_clone_attrs_as_list(["mut_rate", "size"])
