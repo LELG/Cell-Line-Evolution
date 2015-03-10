@@ -27,7 +27,12 @@ class Mutation(object):
         self.mut_rate_effect = get_mut_rate_mutn(opt)
 
         self.original_clone = subpop
-        all_muts.append(self)
+        # assume that all_muts is a dictionary with
+        # keys for each mutation type
+        try:
+            all_muts[self.mut_type].append(self)
+        except:
+            raise
 
     def become_resistant(self):
         # get a strong beneficial mutation effect
@@ -88,8 +93,11 @@ def get_mutn_effect(get_effect_size, scale_factor, prob_pos, prob_neg):
 
 def generate_resistance(all_mutations, tumoursize):
     """Trigger the creation of resistance mutations."""
+    # TODO This will not work now that all_mutations is a dict
     total_mutns = len(all_mutations)
     num_resist_mutns = get_num_resist_mutations(total_mutns, tumoursize)
+    # TODO need to change this so that the list is a flattened
+    # TODO list of neutral/del mutations from all_mutations dict.
     # random.sample selects num_resist_mutns from the list
     # of all mutations (with uniform likelihood)
     resistance_mutns = random.sample(all_mutations, num_resist_mutns)

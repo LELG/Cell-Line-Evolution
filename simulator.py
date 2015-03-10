@@ -343,7 +343,8 @@ class Simulator(object):
                         popn.analytics_base.avg_mutation[-1],
                         popn.analytics_base.avg_proliferation[-1],
                         secs_to_hms(elapsed_time), tot_cycles,
-                        len(popn.all_mutations),
+                        # calculate total mutations across all types
+                        sum([len(muts) for muts in popn.all_mutations.values()]),
                         min_val, min_time, max_val, max_time,
                         cmin_val, cmin_time, cmax_val, cmax_time)
 
