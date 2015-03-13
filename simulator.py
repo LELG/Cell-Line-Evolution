@@ -27,6 +27,7 @@ import numpy as np
 import population
 import treatment
 import analytics
+import mutation
 from utilities import secs_to_hms
 import tree_to_xml
 import plotdata
@@ -253,6 +254,11 @@ class Simulator(object):
         #f = gzip.open('testsubpop.json.gz', 'wb')
         #f.write(self.popn.subpop.to_JSON())
         #f.close()
+        if self.opt.resistance:
+            print("Generating resistance mutations ...")
+            mutation.generate_resistance(self.popn.all_mutations,
+                                         self.popn.tumoursize,
+                                         self.opt.num_resist_mutns)
 
     def print_info(self):
         """Print simulation's initial parameter set."""

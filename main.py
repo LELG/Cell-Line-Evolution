@@ -129,6 +129,14 @@ def parse_cmd_line_args():
         pressure. In future this may change to be an additive
         pressure, analogous to proliferation pressure.
 
+    --resistance : bool
+        Allow for pre-existing resistance mutations
+    num_resist_mutns : int
+        Deterministically specify number of resistance mutations.
+        If not specified, number of mutations will be determined
+        stochastically as function of tumour size and number of
+        existing deleterious/neutral mutations.
+
     prob_mut_pos : float
         Probability that mutation with be beneficial
     prob_mut_neg : float
@@ -191,6 +199,9 @@ def parse_cmd_line_args():
     parser.add_argument('-t', '--select_time', type=int)
     parser.add_argument('-s', '--select_pressure', type=float)
     parser.add_argument('-u', '--mutagenic_pressure', type=float, default=0.0)
+
+    parser.add_argument('--resistance', action="store_true", default=False)
+    parser.add_argument('--num_resist_mutns', type=int, default=-1)
 
     parser.add_argument('--prob_mut_pos', type=float)
     parser.add_argument('--prob_mut_neg', type=float)

@@ -91,26 +91,27 @@ def get_mutn_effect(get_effect_size, scale_factor, prob_pos, prob_neg):
     return mutn_effect
 
 
-def generate_resistance(all_mutations, tumoursize):
+def generate_resistance(all_mutations, tumoursize, deterministic_num_r_muts):
     """Trigger the creation of resistance mutations."""
-    total_mutns = 0
-    for mut_type in all_mutations:
-        total_mutns += len(all_mutations[mut_type])
-
-    num_resist_mutns = get_num_resist_mutations(total_mutns, tumoursize)
-
     # create flat list of deleterious/neutral mutations
-    del_neutr_mutations = all_mutations['d'] + all_mutations['n']
+    del_neutr_mutns = all_mutations['d'] + all_mutations['n']
 
-    # random.sample selects num_resist_mutns from the list
-    # of all mutations (with uniform likelihood)
-    resistance_mutns = random.sample(all_mutations, num_resist_mutns)
+    if deterministic_num_r_muts >= 0:
+        num_resist_mutns = deterministic_num_r_muts
+    else:
+        num_resist_mutns = get_rand_num_r_mutns(len(del_neutr_mutns), tumoursize)
+
+    # random.sample() returns a list of num_resist_mutns mutations,
+    # randomly selected from del_neutr_mutns (with uniform likelihood)
+    resistance_mutns = random.sample(del_neutr_mutns, num_resist_mutns)
+
     for mutn in resistance_mutns:
         mutn.become_resistant()
-    return resistance_mutns
+
+    print("{} resistance mutations generated.".format(num_resist_mutns))
 
 
-def get_num_resist_mutations(total_mutns, tumoursize, min_resistant_pop_size=1e6):
+def get_rand_num_r_mutns(total_mutns, tumoursize, min_resistant_pop_size=1e6):
     """Get a random number of resistance mutations for a given population."""
     prob_single_resist_mutn = tumoursize / float(min_resistant_pop_size)
     prob_resistance_mutn = prob_single_resist_mutn / float(total_mutns)
