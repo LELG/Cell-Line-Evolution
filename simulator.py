@@ -328,6 +328,11 @@ class Simulator(object):
         # determine average depth of clones in tumour
         avg_depth = analytics.get_avg_depth(popn)
 
+        # calculate total number of mutations
+        total_mutns = 0
+        for mut_type in popn.all_mutations:
+            total_mutns += len(popn.all_mutations[mut_type])
+
         # assemble values to write
         summary_vals = (self.param_set, self.run_number, went_through_crash,
                         recovered, recover_type, recover_percent,
@@ -342,9 +347,7 @@ class Simulator(object):
                         '{:.5f}'.format(avg_depth),
                         popn.analytics_base.avg_mutation[-1],
                         popn.analytics_base.avg_proliferation[-1],
-                        secs_to_hms(elapsed_time), tot_cycles,
-                        # calculate total mutations across all types
-                        sum([len(muts) for muts in popn.all_mutations.values()]),
+                        secs_to_hms(elapsed_time), tot_cycles, total_mutns,
                         min_val, min_time, max_val, max_time,
                         cmin_val, cmin_time, cmax_val, cmax_time)
 

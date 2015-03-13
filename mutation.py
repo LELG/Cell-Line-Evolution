@@ -93,11 +93,15 @@ def get_mutn_effect(get_effect_size, scale_factor, prob_pos, prob_neg):
 
 def generate_resistance(all_mutations, tumoursize):
     """Trigger the creation of resistance mutations."""
-    # TODO This will not work now that all_mutations is a dict
-    total_mutns = len(all_mutations)
+    total_mutns = 0
+    for mut_type in all_mutations:
+        total_mutns += len(all_mutations[mut_type])
+
     num_resist_mutns = get_num_resist_mutations(total_mutns, tumoursize)
-    # TODO need to change this so that the list is a flattened
-    # TODO list of neutral/del mutations from all_mutations dict.
+
+    # create flat list of deleterious/neutral mutations
+    del_neutr_mutations = all_mutations['d'] + all_mutations['n']
+
     # random.sample selects num_resist_mutns from the list
     # of all mutations (with uniform likelihood)
     resistance_mutns = random.sample(all_mutations, num_resist_mutns)

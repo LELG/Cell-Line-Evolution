@@ -391,10 +391,9 @@ def print_results(popn, when, end_time, plot_style=None):
                        filename + "pop_v_select_pressure",
                        'Tumour Size', 'Selective Pressure')
 
-        # create flat list of all mutations
         all_muts_flat_list = []
-        for muts in popn.all_mutations:
-            all_muts_flat_list.extend(muts)
+        for mut_type in popn.all_mutations:
+            all_muts_flat_list += popn.all_mutations[mut_type]
 
         # Histogram of mutation effect sizes
         plot_mut_effect_sizes(all_muts_flat_list, 'prolif',
