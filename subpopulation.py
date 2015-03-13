@@ -18,11 +18,10 @@ class Subpopulation(object):
     """
     Individual cancer clone.
     """
-    def __init__(self, opt, prolif, mut_rate, depth, t_curr, col, prev_time, inherited_mutns=[]):
+    def __init__(self, opt, prolif, mut_rate, depth, t_curr, col, prev_time, inherited_mutns=None):
         """Create new clone."""
         self.prolif_rate = prolif
         self.mut_rate = mut_rate
-        self.mutations = inherited_mutns
         # self.mut_static = m #static for scale calution of new value
         self.death_rate = opt.die
         self.size = 1
@@ -34,6 +33,16 @@ class Subpopulation(object):
         #self.idnt = "" ##This gets created when we run freq through tree
         self.col = col
         self.branch_length = t_curr - prev_time
+
+        if inherited_mutns is None:
+            self.mutations = {'b': [], 'n': [], 'd': [], 'r': []}
+        else:
+            self.mutations = inherited_mutns
+
+        if len(self.mutations['r']) > 0:
+            self.is_resistant = True
+        else:
+            self.is_resistant = False
 
     def new_subpop_from_file(self, opt, filename):
         """Load a heterogeneous starting population from a subfile."""
@@ -113,7 +122,7 @@ class Subpopulation(object):
         # will now register as dead
         if not self.is_dead():
             for _i in xrange(new_mutns):
-                new_mutn = Mutation(opt, self, all_muts)
+                new_mutn = Mutation(opt, all_muts)
                 self.new_child(t_curr, opt, new_mutn)
                 self.size -= 1
                 new_sub_count += 1
@@ -145,87 +154,50 @@ class Subpopulation(object):
         provis_mut = self.mut_rate + new_mutn.mut_rate_effect
         new_mut_rate = max(min_mut_rate, min(max_mut_rate, provis_mut))
 
-        new_mutns = self.mutations + [new_mutn]
+        # create shallow copy of mutation dictionary
+        child_mutns = self.mutations.copy()
+        # now create shallow copies of each mut type list.
+        # the lists will still point to identical mutn objects,
+        # but appending to parent's list will not change child's list,
+        # and vice versa
+        for mut_type in child_mutns:
+            child_mutns[mut_type] = self.mutations[mut_type][:]
+
+        # now append new mutation to child's inherited mutations
+        child_mutns[new_mutn.mut_type].append(new_mutn)
+
         new_depth = self.depth + 1
 
         child = Subpopulation(opt=opt,
                               prolif=new_prolif_rate, mut_rate=new_mut_rate,
                               depth=new_depth, t_curr=t_curr,
                               col=self.col, prev_time=self.s_time,
-                              inherited_mutns=new_mutns)
+                              inherited_mutns=child_mutns)
 
+        new_mutn.original_clone = child
         self.nodes.append(child)
 
-    def recalculate_fitness(self, opt):
-        """
-        Recalculate prolif and mut rates.
-
-        Recalculate proliferation and mutation rates,
-        in case one of this subpopulation's mutations
-        has become a resistance mutation.
-        """
-        prolif_mutns_effect = sum([mut.prolif_rate_effect
-                                   for mut in self.mutations])
-        mut_mutns_effect = sum([mut.mut_rate_effect
-                                for mut in self.mutations])
-
-        self.prolif_rate = opt.pro + prolif_mutns_effect
-        self.mut_rate = opt.pro + mut_mutns_effect
+    def switch_mutn_type(self, mutn, new_type):
+        """Change the type of one of this clone's mutations."""
+        try:
+            self.mutations[mutn.mut_type].remove(mutn)
+        except ValueError:
+            raise
+        try:
+            self.mutations[new_type].append(mutn)
+        except KeyError:
+            raise
 
         for node in self.nodes:
-            node.recalculate_fitness(opt)
+            node.switch_mutn_type(mutn, new_type)
 
-#    def mutation_beneficial(self, scale, prolif):
-#        """Gives random value between 0-1
-#
-#        Scale the value down to a max of 0.001
-#        OR dynamically the max could be difference between P and D
-#        OR one unit of 'selective pressure'
-#        """
-#        alpha = 1
-#        beta = 3
-#        pro_scale = scale * prolif
-#        prolif_delta = np.random.beta(alpha, beta, size=1)[0] * pro_scale
-#        new_prolif = self.prolif_rate + prolif_delta
-#        if new_prolif > 1:
-#            new_prolif = 0.99
-#        return new_prolif
-#
-#    def mutation_deleterious(self, scale, prolif):
-#        """ Gives random value between 0-1
-#
-#        Scale the value down to a max of 0.001
-#        OR dynamically the max could be difference between P and D
-#        OR one unit of 'selective pressure'
-#        """
-#        alpha = 1
-#        beta = 3
-#        pro_scale = scale * prolif
-#        prolif_delta = np.random.beta(alpha, beta, size=1)[0] * pro_scale
-#        new_prolif = self.prolif_rate - prolif_delta
-#        if new_prolif < 0:
-#            new_prolif = pro_scale / 10000.0
-#        return new_prolif
-#
-#    def mutation_change_increase(self, mscale, mut_rate):
-#        alpha = 1
-#        beta = 3
-#        mut_scale = mscale * mut_rate
-#        mut_delta = np.random.beta(alpha, beta, size=1)[0] * mut_scale
-#        new_mut = self.mut_rate + mut_delta
-#        if new_mut > 1:
-#            new_mut = 0.99
-#        return new_mut
-#
-#    def mutation_change_decrease(self, mscale, mut_rate):
-#        alpha = 1
-#        beta = 3
-#        mut_scale = mscale * mut_rate
-#        mut_delta = np.random.beta(alpha, beta, size=1)[0] * mut_scale
-#        new_mut = self.mut_rate - mut_delta
-#        if new_mut < 0:
-#            new_mut = mut_scale / 10000.0
-#        return new_mut
+    def become_resistant(self):
+        """
+        Register the fact that this clone contains a resistance mutation.
+        """
+        self.is_resistant = True
+        for node in self.nodes:
+            node.become_resistant()
 
     def prune_dead_end_clones(self):
         """Remove all dead end clones from subpopulation tree.
@@ -270,10 +242,13 @@ class Subpopulation(object):
     def freq_to_list(self, idnt):
         self_node = []
         blank_ctree = []
-        if self.mutations:
-            mut_type = self.mutations[-1].mut_type
-        else:
-            mut_type = 'n'
+        # TODO fix this - it's currently broken.
+        # TODO Should subpop store type of its initial mutation?
+        #if self.mutations:
+        #    mut_type = self.mutations[-1].mut_type
+        #else:
+        #    mut_type = 'n'
+        mut_type = 'n'
 
         if self.size > 0:
             self_node = [(self.pop_count(),
@@ -287,10 +262,12 @@ class Subpopulation(object):
             return self_node
         else:
             for node in self.nodes:
-                if node.mutations:
-                    mut_type = node.mutations[-1].mut_type
-                else:
-                    mut_type = 'n'
+                # TODO fix this - it's currently broken.
+                #if node.mutations:
+                #    mut_type = node.mutations[-1].mut_type
+                #else:
+                #    mut_type = 'n'
+                mut_type = 'n'
                 new_idnt = str(self.nodes.index(node)) + mut_type + idnt
                 blank_ctree += node.freq_to_list(new_idnt)
             return blank_ctree + self_node

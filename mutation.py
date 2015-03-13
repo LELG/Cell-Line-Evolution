@@ -10,7 +10,7 @@ class Mutation(object):
     """
     Class to represent mutations.
     """
-    def __init__(self, opt, subpop, all_muts, mut_id=None):
+    def __init__(self, opt, all_muts, mut_id=None):
         """Create new mutation"""
         if not mut_id:
             self.mut_id = id(self)
@@ -26,7 +26,8 @@ class Mutation(object):
         # affect mutation type
         self.mut_rate_effect = get_mut_rate_mutn(opt)
 
-        self.original_clone = subpop
+        self.original_clone = None
+
         # assume that all_muts is a dictionary with
         # keys for each mutation type
         try:
@@ -34,11 +35,14 @@ class Mutation(object):
         except:
             raise
 
-    def become_resistant(self):
-        # get a strong beneficial mutation effect
-        # TODO implement me
-        # signal to clone that something has changed
-        self.original_clone.recalculate_fitness()
+    def become_resistant(self, all_muts):
+        """Make this mutation a resistance mutation."""
+        # switch which sublist this mutation appears in
+        all_muts[self.mut_type].remove(self)
+        all_muts['r'].append(self)
+        self.original_clone.switch_mutn_type(self, 'r')
+        self.mut_type = 'r'
+        self.original_clone.become_resistant()
 
 
 def get_prolif_rate_mutn(opt):
@@ -106,7 +110,7 @@ def generate_resistance(all_mutations, tumoursize, deterministic_num_r_muts):
     resistance_mutns = random.sample(del_neutr_mutns, num_resist_mutns)
 
     for mutn in resistance_mutns:
-        mutn.become_resistant()
+        mutn.become_resistant(all_mutations)
 
     print("{} resistance mutations generated.".format(num_resist_mutns))
 

@@ -48,7 +48,7 @@ class Population(object):
         # these lists will be populated at crash time
         self.mid_proliferation = []
         self.mid_mutation = []
-        self.all_mutations = {'b': [], 'n': [], 'd': []}
+        self.all_mutations = {'b': [], 'n': [], 'd': [], 'r': []}
 
     def update(self, treatmt, t_curr):
         """
