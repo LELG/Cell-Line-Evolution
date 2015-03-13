@@ -82,7 +82,9 @@ file_no_comments=$(sed '/^#/'d $3)
 
 # get param names from header row of config file,
 # and save them to an array
+IFS=','
 param_names=($(echo "$file_no_comments" | awk 'NR==1'))
+unset IFS
 
 num_params=${#param_names[@]}
 
@@ -111,7 +113,9 @@ echo "$file_no_comments" | sed 1d | while read -r line; do
   param_set_config_file="$param_set_dir/$test_group-$param_set.conf"
 
   # save this set of parameter values to an array
-  vals=($(echo $line))
+  IFS=','
+  vals=($(echo "$line"))
+  unset IFS
 
   echo "================================================================================"
   printf "Writing parameter set to config file ...\r"
