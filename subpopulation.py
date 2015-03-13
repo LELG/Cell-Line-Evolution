@@ -83,11 +83,15 @@ class Subpopulation(object):
         new_pop_size = new_sub_count = new_mut_agg = new_pro_agg = 0
 
         if not self.is_dead():
-            effective_prolif = self.prolif_rate - prolif_adj - select_pressure
-            if mutagenic_pressure:
-                effective_mut = self.mut_rate * mutagenic_pressure
-            else:
+            if self.is_resistant:
+                effective_prolif = self.prolif_rate - prolif_adj
                 effective_mut = self.mut_rate
+            else:
+                effective_prolif = self.prolif_rate - prolif_adj - select_pressure
+                if mutagenic_pressure:
+                    effective_mut = self.mut_rate * mutagenic_pressure
+                else:
+                    effective_mut = self.mut_rate
             # sample for cell death, division and mutation
             # note that we sample for both division AND death before
             # updating the clone size. This means that a 'cell'
