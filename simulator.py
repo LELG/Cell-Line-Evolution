@@ -209,6 +209,7 @@ class Simulator(object):
         # write to summary file
         self.write_summary(self.popn, self.treatmt,
                            self.total_cycles, self.runtime)
+        self.write_clone_summary(self.popn)
         # dump all run data to CSV file
         data_dump_fpath = "{0}/{1}_{2}_{3}_alldata.csv".format(self.run_dir,
                                                                self.test_group,
@@ -361,3 +362,19 @@ class Simulator(object):
         ps_writer.writerow(summary_vals)
         tg_results_file.close()
         ps_results_file.close()
+
+    def write_clone_summary(self, popn):
+        """Write summary data for all clones."""
+        fpath = "{0}/{1}-{2}-{3}_clone_summary.csv".format(self.run_dir,
+                                                           self.test_group,
+                                                           self.param_set,
+                                                           self.run_number)
+        clone_summary_file = open(fpath, 'w')
+        writer = csv.writer(clone_summary_file)
+        header = ("clone_id",
+                  "b_muts", "n_muts", "d_muts", "r_muts",
+                  "size", "depth", "prolif_rate", "mut_rate")
+        writer.writerow(header)
+        clone_summary_file.close()
+
+        popn.subpop.write_details_to_file(fpath)

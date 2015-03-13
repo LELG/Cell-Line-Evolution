@@ -318,6 +318,21 @@ class Subpopulation(object):
         return json.dumps(self, default=subpop_to_JSON,
                           sort_keys=True, indent=4)
 
+    def write_details_to_file(self, fpath):
+        """Write summary details about this clone to a summary file."""
+        summary_file = open(fpath, 'a')
+        writer = csv.writer(summary_file)
+
+        vals = (id(self),
+                len(self.mutations['b']), len(self.mutations['n']),
+                len(self.mutations['d']), len(self.mutations['r']),
+                self.size, self.depth, self.prolif_rate, self.mut_rate)
+
+        writer.writerow(vals)
+        summary_file.close()
+
+        for node in self.nodes:
+            node.write_details_to_file(fpath)
 
 
 def subpop_to_JSON(obj):
