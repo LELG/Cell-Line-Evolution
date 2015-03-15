@@ -287,6 +287,7 @@ def create_results_file(filepath):
                'avg_mut_rate_at_end', 'avg_prolif_rate_at_end',
                'elapsed_time', 'elapsed_cycles',
                'total_mutations',
+               'generated_resist_mutns', 'surviving_resist_mutns',
                'pre_crash_min', 'pre_crash_min_time',
                'pre_crash_max', 'pre_crash_max_time',
                'post_crash_min', 'post_crash_min_time',

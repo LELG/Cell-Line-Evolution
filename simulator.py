@@ -340,6 +340,12 @@ class Simulator(object):
         for mut_type in popn.all_mutations:
             total_mutns += len(popn.all_mutations[mut_type])
 
+        generated_resist_mutns = len(popn.all_mutations['r'])
+        surviving_resist_mutns = 0
+        for mut in popn.all_mutations['r']:
+            if not mut.original_clone.is_dead_end():
+                surviving_resist_mutns += 1
+
         # assemble values to write
         summary_vals = (self.param_set, self.run_number, went_through_crash,
                         recovered, recover_type, recover_percent,
@@ -355,6 +361,7 @@ class Simulator(object):
                         popn.analytics_base.avg_mutation[-1],
                         popn.analytics_base.avg_proliferation[-1],
                         secs_to_hms(elapsed_time), tot_cycles, total_mutns,
+                        generated_resist_mutns, surviving_resist_mutns,
                         min_val, min_time, max_val, max_time,
                         cmin_val, cmin_time, cmax_val, cmax_time)
 
