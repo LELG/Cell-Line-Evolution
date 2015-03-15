@@ -41,8 +41,12 @@ class Subpopulation(object):
 
         if len(self.mutations['r']) > 0:
             self.is_resistant = True
+            # this clone is as resistant as its most resistant mutation
+            self.resist_strength = max([mut.resist_strength
+                                        for mut in self.mutations['r']])
         else:
             self.is_resistant = False
+            self.resist_strength = None
 
     def new_subpop_from_file(self, opt, filename):
         """Load a heterogeneous starting population from a subfile."""
@@ -84,7 +88,11 @@ class Subpopulation(object):
 
         if not self.is_dead():
             if self.is_resistant:
-                effective_prolif = self.prolif_rate - prolif_adj
+                # warning: as currently implemented, the value of
+                # resist_strength is not actually guaranteed to be
+                # in the interval [0,1]
+                eff_pressure = select_pressure * (1.0 - self.resist_strength)
+                effective_prolif = self.prolif_rate - prolif_adj - eff_pressure
                 effective_mut = self.mut_rate
             else:
                 effective_prolif = self.prolif_rate - prolif_adj - select_pressure
@@ -195,13 +203,16 @@ class Subpopulation(object):
         for node in self.nodes:
             node.switch_mutn_type(mutn, new_type)
 
-    def become_resistant(self):
+    def become_resistant(self, resist_strength):
         """
         Register the fact that this clone contains a resistance mutation.
         """
         self.is_resistant = True
+        # on the off-chance we have acquired multiple resistance mutations,
+        # our resistance strength is just whichever is stronger
+        self.resist_strength = max(self.resist_strength, resist_strength)
         for node in self.nodes:
-            node.become_resistant()
+            node.become_resistant(resist_strength)
 
     def prune_dead_end_clones(self):
         """Remove all dead end clones from subpopulation tree.
