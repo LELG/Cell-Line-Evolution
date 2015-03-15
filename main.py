@@ -136,6 +136,10 @@ def parse_cmd_line_args():
         If not specified, number of mutations will be determined
         stochastically as function of tumour size and number of
         existing deleterious/neutral mutations.
+    resist_strength : float
+        Determine the strength of the immunity to selective
+        pressure conferred by a resistance mutation. This must be
+        a float between 0 and 1.
 
     prob_mut_pos : float
         Probability that mutation with be beneficial
@@ -202,6 +206,7 @@ def parse_cmd_line_args():
 
     parser.add_argument('--resistance', action="store_true", default=False)
     parser.add_argument('--num_resist_mutns', type=int, default=-1)
+    parser.add_argument('--resist_strength', type=float, default=1.0)
 
     parser.add_argument('--prob_mut_pos', type=float)
     parser.add_argument('--prob_mut_neg', type=float)
