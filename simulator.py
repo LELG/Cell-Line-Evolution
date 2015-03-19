@@ -19,6 +19,7 @@ Change log
 11 Feb 2015 - Various small changes
             - Add documentation
 """
+from __future__ import print_function
 import time
 import os
 import csv
@@ -209,7 +210,7 @@ class Simulator(object):
         # write to summary file
         self.write_summary(self.popn, self.treatmt,
                            self.total_cycles, self.runtime)
-        self.write_clone_summary(self.popn)
+        self.write_clone_summary(self.popn, label="end")
         # dump all run data to CSV file
         data_dump_fpath = "{0}/{1}_{2}_{3}_alldata.csv".format(self.run_dir,
                                                                self.test_group,
@@ -255,6 +256,7 @@ class Simulator(object):
         #f = gzip.open('testsubpop.json.gz', 'wb')
         #f.write(self.popn.subpop.to_JSON())
         #f.close()
+        self.write_clone_summary(self.popn, label="mid")
         if self.opt.resistance:
             print("Generating resistance mutations ...")
             mutation.generate_resistance(self.popn.all_mutations,
@@ -370,12 +372,13 @@ class Simulator(object):
         tg_results_file.close()
         ps_results_file.close()
 
-    def write_clone_summary(self, popn):
+    def write_clone_summary(self, popn, label):
         """Write summary data for all clones."""
-        fpath = "{0}/{1}-{2}-{3}_clone_summary.csv".format(self.run_dir,
-                                                           self.test_group,
-                                                           self.param_set,
-                                                           self.run_number)
+        fpath = "{0}/{1}-{2}-{3}_{4}_clone_summary.csv".format(self.run_dir,
+                                                               self.test_group,
+                                                               self.param_set,
+                                                               self.run_number,
+                                                               label)
         clone_summary_file = open(fpath, 'w')
         writer = csv.writer(clone_summary_file)
         header = ("clone_id",
