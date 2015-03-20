@@ -221,7 +221,7 @@ class Subpopulation(object):
         -------
         - whether the mutation is neutral (True / False)
         """
-        THRESHOLD = 0.1
+        THRESHOLD = 0.001
         pro_change = abs(new_mutn.prolif_rate_effect) / self.prolif_rate
         mut_change = abs(new_mutn.mut_rate_effect) / self.mut_rate
         return pro_change < THRESHOLD and mut_change < THRESHOLD
