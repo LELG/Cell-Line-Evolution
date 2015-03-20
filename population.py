@@ -31,10 +31,9 @@ class Population(object):
         self.max_size_lim = opt.max_size_lim
         self.prolif_lim = self.opt.prolif_lim
         self.subpop = Subpopulation(opt=opt,
-                                    prolif=opt.pro, mut=opt.mut,
+                                    prolif=opt.pro, mut_rate=opt.mut,
                                     depth=0, t_curr=0,
-                                    mut_type='n', col='n',
-                                    prev_time=0)
+                                    col='n', prev_time=0)
         if opt.init_diversity:
             self.subpop.size = 0 #don't use init dummy popn if reading from file
             self.subpop.new_subpop_from_file(self.opt, self.opt.sub_file)
@@ -49,6 +48,7 @@ class Population(object):
         # these lists will be populated at crash time
         self.mid_proliferation = []
         self.mid_mutation = []
+        self.all_mutations = {'b': [], 'n': [], 'd': [], 'r': []}
 
     def update(self, treatmt, t_curr):
         """
@@ -78,13 +78,18 @@ class Population(object):
         ratio = self.tumoursize / float(self.max_size_lim)
         prolif_adj = ratio * self.prolif_lim
 
+        if self.opt.prune_clones:
+            # delete all dead, childless clones
+            self.subpop.prune_dead_end_clones()
+
         # update subpopulations, getting back
         # tumour size, clone count, and aggregate
         # mutation and proliferation rates
         subpop_results = self.subpop.update(self.opt,
                                             self.select_pressure,
                                             self.mutagenic_pressure,
-                                            t_curr, prolif_adj)
+                                            t_curr, prolif_adj,
+                                            self.all_mutations)
         self.tumoursize, self.clonecount, agg_mut, agg_pro = subpop_results
 
         if not self.is_dead():
@@ -106,5 +111,5 @@ class Population(object):
         self.mutagenic_pressure = treatmt.curr_mut_pressure
         self.selective_pressure_applied = True
         self.subpop.set_precrash_size()
-        self.mid_proliferation = self.subpop.tree_to_list("proliferation_size")
-        self.mid_mutation = self.subpop.tree_to_list("mutation_rate")
+        self.mid_proliferation = self.subpop.get_clone_attrs_as_list(["prolif_rate", "size"])
+        self.mid_mutation = self.subpop.get_clone_attrs_as_list(["mut_rate", "size"])

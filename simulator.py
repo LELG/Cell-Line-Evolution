@@ -19,13 +19,16 @@ Change log
 11 Feb 2015 - Various small changes
             - Add documentation
 """
+from __future__ import print_function
 import time
 import os
 import csv
 from textwrap import dedent
+import numpy as np
 import population
 import treatment
 import analytics
+import mutation
 from utilities import secs_to_hms
 import tree_to_xml
 import plotdata
@@ -69,7 +72,7 @@ class Simulator(object):
         # calculate and record proliferation limit
         # this avoids the need to take it from command line
         self.opt.prolif_lim = opt.pro - opt.die
-        self.opt.total_mutations = 0
+        self.opt.get_beta_dist_sample = lambda: np.random.beta(1, 3)
 
         # TODO determine which of these params
         # really need to be copied out of opt.
@@ -207,6 +210,7 @@ class Simulator(object):
         # write to summary file
         self.write_summary(self.popn, self.treatmt,
                            self.total_cycles, self.runtime)
+        self.write_clone_summary(self.popn, label="end")
         # dump all run data to CSV file
         data_dump_fpath = "{0}/{1}_{2}_{3}_alldata.csv".format(self.run_dir,
                                                                self.test_group,
@@ -252,6 +256,12 @@ class Simulator(object):
         #f = gzip.open('testsubpop.json.gz', 'wb')
         #f.write(self.popn.subpop.to_JSON())
         #f.close()
+        self.write_clone_summary(self.popn, label="mid")
+        if self.opt.resistance:
+            print("Generating resistance mutations ...")
+            mutation.generate_resistance(self.popn.all_mutations,
+                                         self.popn.tumoursize,
+                                         self.opt.num_resist_mutns)
 
     def print_info(self):
         """Print simulation's initial parameter set."""
@@ -327,6 +337,17 @@ class Simulator(object):
         # determine average depth of clones in tumour
         avg_depth = analytics.get_avg_depth(popn)
 
+        # calculate total number of mutations
+        total_mutns = 0
+        for mut_type in popn.all_mutations:
+            total_mutns += len(popn.all_mutations[mut_type])
+
+        generated_resist_mutns = len(popn.all_mutations['r'])
+        surviving_resist_mutns = 0
+        for mut in popn.all_mutations['r']:
+            if not mut.original_clone.is_dead_end():
+                surviving_resist_mutns += 1
+
         # assemble values to write
         summary_vals = (self.param_set, self.run_number, went_through_crash,
                         recovered, recover_type, recover_percent,
@@ -341,8 +362,8 @@ class Simulator(object):
                         '{:.5f}'.format(avg_depth),
                         popn.analytics_base.avg_mutation[-1],
                         popn.analytics_base.avg_proliferation[-1],
-                        secs_to_hms(elapsed_time), tot_cycles,
-                        self.opt.total_mutations,
+                        secs_to_hms(elapsed_time), tot_cycles, total_mutns,
+                        generated_resist_mutns, surviving_resist_mutns,
                         min_val, min_time, max_val, max_time,
                         cmin_val, cmin_time, cmax_val, cmax_time)
 
@@ -350,3 +371,20 @@ class Simulator(object):
         ps_writer.writerow(summary_vals)
         tg_results_file.close()
         ps_results_file.close()
+
+    def write_clone_summary(self, popn, label):
+        """Write summary data for all clones."""
+        fpath = "{0}/{1}-{2}-{3}_{4}_clone_summary.csv".format(self.run_dir,
+                                                               self.test_group,
+                                                               self.param_set,
+                                                               self.run_number,
+                                                               label)
+        clone_summary_file = open(fpath, 'w')
+        writer = csv.writer(clone_summary_file)
+        header = ("clone_id",
+                  "b_muts", "n_muts", "d_muts", "r_muts",
+                  "size", "depth", "prolif_rate", "mut_rate")
+        writer.writerow(header)
+        clone_summary_file.close()
+
+        popn.subpop.write_details_to_file(fpath)

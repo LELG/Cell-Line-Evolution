@@ -63,6 +63,7 @@ while [ $run_number -le $runs_per_param_set ]; do
   sim_params="$sim_params --treatment_freq $treatment_freq"
   sim_params="$sim_params --adaptive_increment $adaptive_increment --adaptive_threshold $adaptive_threshold"
   sim_params="$sim_params --select_time $select_time --select_pressure $selective_pressure"
+  sim_params="$sim_params $resistance_flag $num_resist_mutns $resist_strength"
   sim_params="$sim_params --prob_mut_pos $prob_mut_pos --prob_mut_neg $prob_mut_neg"
   sim_params="$sim_params --prob_inc_mut $prob_inc_mut --prob_dec_mut $prob_dec_mut"
   sim_params="$sim_params --init_size $init_size"

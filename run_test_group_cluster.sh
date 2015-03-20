@@ -118,7 +118,9 @@ num_param_sets=$(echo "$param_sets" | wc -l | xargs)
 
 # get param names from header row of config file,
 # and save them to an array
+IFS=','
 param_names=($(echo "$file_no_comments" | awk 'NR==1'))
+unset IFS
 
 num_params=${#param_names[@]}
 param_set_padding=${#num_param_sets}
@@ -164,7 +166,9 @@ param_set=$PBS_ARRAYID
 line=$(echo "$param_sets" | awk -v linenum=$param_set 'NR==linenum')
 
 # save this set of parameter values to an array
-vals=($(echo $line))
+IFS=','
+vals=($(echo "$line"))
+unset IFS
 
 # pad directories to ensure proper ordering
 param_set_dir=$(printf "%s/%0*d" $test_group_dir $param_set_padding $param_set)

@@ -7,7 +7,7 @@ def drop(subpop, results_dir, label):
     ## print by colour of population
     #summary for all runs - add value and overwrite
 
-    cols_sizes = subpop.tree_to_list("size_by_col")
+    cols_sizes = subpop.get_clone_attrs_as_list(["col", "size"])
 
     cols_sizes.sort()
 

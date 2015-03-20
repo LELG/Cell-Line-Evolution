@@ -37,22 +37,22 @@ def make_plot(xdata, ydata, filename, title):
     """Plot a single independent variable."""
     #        global DETAILS
     _fig, ax1 = plt.subplots()
-    ax1.plot(xdata, ydata, color='b', alpha=0.5, linewidth=2)
+    ax1.plot(xdata, ydata, alpha=0.5, linewidth=2)
     ax1.set_xlabel('Discrete Time Intervals', fontsize=9)
     ax1.set_ylabel(title, fontsize=9, color='b')
     for label in ax1.get_yticklabels():
         label.set_color('b')
         label.set_fontsize(9)
     for label in ax1.get_xticklabels():
-        #label.set_color('grey')
+        label.set_color('grey')
         label.set_fontsize(9)
     plt.savefig(filename)
     print("PLOT CREATED: " + filename)
     plt.close()
 
-def make_hist(xdata, filename, title, bins):
+def make_hist(xdata, filename, title, bins=25, log=False):
     """Plot a histogram."""
-    plt.hist(xdata, bins, log=True)
+    plt.hist(xdata, bins, log=log)
     plt.title(title)
     plt.savefig(filename)
     print("HISTOGRAM CREATED: " + filename)
@@ -179,6 +179,18 @@ def make_subpop_life_mut(X, filename, title, end_time, loops, select_time, mbase
     print("PLOT CREATED: ", filename)
     print("base mut rate ", mbase)
     plt.close()
+
+def plot_mut_effect_sizes(mutations, rate_type, filename, bins=100):
+    """Plot the distribution of mutation effect sizes."""
+    if rate_type == 'prolif':
+        effect_data = [m.prolif_rate_effect for m in mutations]
+    elif rate_type == 'mut':
+        effect_data = [m.mut_rate_effect for m in mutations]
+    else:
+        raise ValueError("Rate type must be `prolif` or `mut`")
+
+    title = "Mutation Effect Sizes ({} Rate)".format(rate_type.title())
+    make_hist(effect_data, filename, title, bins)
 
 def mutation_distribution(md, filename, title, SCALE):
     #print("MD",md)
@@ -315,13 +327,15 @@ def mutation_crash(clones, filename, title, SCALE):
     plt.close()
 
 
-def print_results(popn, when, end_time):
+def print_results(popn, when, end_time, plot_style=None):
     """ Print all results to plots / file
 
     Print result to graphs using matplotlib
     If --r_output option parsed print raw output to file
 
     """
+    if plot_style:
+        plt.style.use(plot_style)
 
     filename = "{0}/{1}_".format(popn.opt.run_dir, when)
 
@@ -377,8 +391,20 @@ def print_results(popn, when, end_time):
                        filename + "pop_v_select_pressure",
                        'Tumour Size', 'Selective Pressure')
 
+        all_muts_flat_list = []
+        for mut_type in popn.all_mutations:
+            all_muts_flat_list += popn.all_mutations[mut_type]
+
+        # Histogram of mutation effect sizes
+        plot_mut_effect_sizes(all_muts_flat_list, 'prolif',
+                              filename + "mut_effect_sizes_prolif")
+        plot_mut_effect_sizes(all_muts_flat_list, 'mut',
+                              filename + "mut_effect_sizes_mut")
+
         # Mutation...
-        mut_distro = popn.subpop.tree_to_list("mutation_distribution")
+        mut_distro = popn.subpop.get_clone_attrs_as_list(["mut_rate",
+                                                          "prolif_rate",
+                                                          "size"])
         mutation_distribution(mut_distro,
                               filename + "mutation_distribution",
                               "Mutation vs Time - Pre/Post Crash",
@@ -386,15 +412,21 @@ def print_results(popn, when, end_time):
 
         # Mutation
         if not popn.is_dead():
-            mut_distro = popn.subpop.tree_to_list("mutation_distribution_1")
+            mut_distro = popn.subpop.get_clone_attrs_as_list(["mut_rate",
+                                                              "prolif_rate",
+                                                              "size",
+                                                              "precrash_size"])
             mutation_crash(mut_distro,
                            filename + "mutation_distribution_1",
                            "Mutation vs Time - Pre/Post Crash",
                            popn.opt.scale)
 
         #cell lines graph  - [(popn.s_time,popn.d_time)]
-        make_subpop_life(popn.subpop.tree_to_list("cell_line_time"),
-                         filename + "cell_lines_alpha",
+        cell_line_time = popn.subpop.get_clone_attrs_as_list(["col",
+                                                              "s_time",
+                                                              "d_time"],
+                                                             inc_dead_clones=True)
+        make_subpop_life(cell_line_time, filename + "cell_lines_alpha",
                          "Cell Lifespan", end_time, popn.opt.max_cycles,
                          popn.opt.select_time)
 
@@ -403,27 +435,27 @@ def print_results(popn, when, end_time):
         #PROLIFERATION HISTOGRAM
         # [(popn.proliferation-popn.prolif_adj,popn.size)]
 
-        pro_hist = popn.subpop.tree_to_list("proliferation")
+        pro_hist = popn.subpop.get_clone_attrs_as_list("prolif_rate")
         pro_hist.sort()
-        mut_hist = popn.subpop.tree_to_list("mutation")
+        mut_hist = popn.subpop.get_clone_attrs_as_list("mut_rate")
         mut_hist.sort()
 
         make_hist(pro_hist,
                   filename+"proliferation_hist",
-                  "Proliferation Rates", 25)
+                  "Proliferation Rates", log=True)
         #MUTATION HISTOGRAM
         # [popn.mutation]
         make_hist(mut_hist,
                   filename+"mutation_hist",
-                  "Mutation Rates", 25)
+                  "Mutation Rates", log=True)
         #POPULATION HISTOGRAM
         # [popn.size]
 
-        pop_hist = popn.subpop.tree_to_list("size"),
+        pop_hist = popn.subpop.get_clone_attrs_as_list("size"),
 
         make_hist(pop_hist,
                   filename+"population_hist",
-                  "Population Division", 25)
+                  "Population Division", log=True)
         #ALLELE FREQ
         # just_allele_freq z = z + [i/float(tumoursize)]
         norm, r, just_allele_freq = \
@@ -432,17 +464,22 @@ def print_results(popn, when, end_time):
                   filename + "allele",
                   "Allele Freq",
                   #bins equal to number of sub pops
-                  anlt.clonecount[-1])
+                  bins=anlt.clonecount[-1], log=True)
         #CELL CIRCLE MUT V PRO RATES
         # if size > 0 [(popn.mutation,popn.proliferation,popn.size)]
-        mutation_v_proliferation(popn.subpop.tree_to_list("circles"),
-                                 filename + "circles",
+        circles = popn.subpop.get_clone_attrs_as_list(["mut_rate",
+                                                       "prolif_rate",
+                                                       "size"])
+        mutation_v_proliferation(circles, filename + "circles",
                                  "Mutation vs Proliferation Rates",
                                  popn.opt.scale)
 
         # [(popn.mutation,popn.proliferation,popn.size)]
-        mutation_v_proliferation(popn.subpop.tree_to_list("circles_all"),
-                                 filename + "circles_all",
+        circles_all = popn.subpop.get_clone_attrs_as_list(["mut_rate",
+                                                           "prolif_rate",
+                                                           "size"],
+                                                          inc_dead_clones=True)
+        mutation_v_proliferation(circles_all, filename + "circles_all",
                                  "Mutation vs Proliferation Rates",
                                  popn.opt.scale)
 
@@ -450,15 +487,13 @@ def print_results(popn, when, end_time):
         # if size > 0 [(popn.mutation,popn.proliferation,popn.size)]
         fpath = "{0}/{1}-circles.dat".format(popn.opt.param_set_dir,
                                              popn.opt.param_set)
-        mutation_v_proliferation_dat(popn.subpop.tree_to_list("circles"),
-                                     fpath,
+        mutation_v_proliferation_dat(circles, fpath,
                                      "Mutation vs Proliferation Rates",
                                      popn.opt.scale)
         # [(popn.mutation,popn.proliferation,popn.size)]
         fpath = "{0}/{1}-circles_all.dat".format(popn.opt.param_set_dir,
                                                  popn.opt.param_set)
-        mutation_v_proliferation_dat(popn.subpop.tree_to_list("circles_all"),
-                                     fpath,
+        mutation_v_proliferation_dat(circles_all, fpath,
                                      "Mutation vs Proliferation Rates",
                                      popn.opt.scale)
 
@@ -481,8 +516,10 @@ def print_plots(popn, when):
     # Proliferation Histogram #
 
     if not popn.is_dead():
-        end_proliferation = popn.subpop.tree_to_list("proliferation_size")
-        end_mutation = popn.subpop.tree_to_list("mutation_rate")
+        end_proliferation = popn.subpop.get_clone_attrs_as_list(["prolif_rate",
+                                                                 "size"])
+
+        end_mutation = popn.subpop.get_clone_attrs_as_list(["mut_rate", "size"])
 
         #PROLIFERATION HISTOGRAM
         # [(popn.proliferation-popn.prolif_adj,popn.size)]

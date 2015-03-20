@@ -123,6 +123,24 @@ def parse_cmd_line_args():
     mutagenic_pressure : float
         Change in mutation rate during selection event
 
+    NOTE: As currently implemented, mutagenic_pressure is
+        considered to be a multiplicative factor, i.e. clones
+        with a higher mutation rate experience higher mutagenic
+        pressure. In future this may change to be an additive
+        pressure, analogous to proliferation pressure.
+
+    --resistance : bool
+        Allow for pre-existing resistance mutations
+    num_resist_mutns : int
+        Deterministically specify number of resistance mutations.
+        If not specified, number of mutations will be determined
+        stochastically as function of tumour size and number of
+        existing deleterious/neutral mutations.
+    resist_strength : float
+        Determine the strength of the immunity to selective
+        pressure conferred by a resistance mutation. This must be
+        a float between 0 and 1.
+
     prob_mut_pos : float
         Probability that mutation with be beneficial
     prob_mut_neg : float
@@ -185,6 +203,10 @@ def parse_cmd_line_args():
     parser.add_argument('-t', '--select_time', type=int)
     parser.add_argument('-s', '--select_pressure', type=float)
     parser.add_argument('-u', '--mutagenic_pressure', type=float, default=0.0)
+
+    parser.add_argument('--resistance', action="store_true", default=False)
+    parser.add_argument('--num_resist_mutns', type=int, default=-1)
+    parser.add_argument('--resist_strength', type=float, default=1.0)
 
     parser.add_argument('--prob_mut_pos', type=float)
     parser.add_argument('--prob_mut_neg', type=float)
@@ -265,6 +287,7 @@ def create_results_file(filepath):
                'avg_mut_rate_at_end', 'avg_prolif_rate_at_end',
                'elapsed_time', 'elapsed_cycles',
                'total_mutations',
+               'generated_resist_mutns', 'surviving_resist_mutns',
                'pre_crash_min', 'pre_crash_min_time',
                'pre_crash_max', 'pre_crash_max_time',
                'post_crash_min', 'post_crash_min_time',

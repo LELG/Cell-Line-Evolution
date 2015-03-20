@@ -39,8 +39,8 @@ def print_clade(clade, min_size, t_curr, phylo_filepath):  #'clade' is subpop
                 t_curr = 1
             clade_hdr = '<clade branch_length="{0}">\n'.format(clade.branch_length/t_curr)
             clade_name = "<name> p:{} m:{} s:{} r:{} </name>\n"
-            clade_name = clade_name.format(str(clade.proliferation)[0:6],
-                                           str(clade.mutation)[0:6],
+            clade_name = clade_name.format(str(clade.prolif_rate)[0:6],
+                                           str(clade.mut_rate)[0:6],
                                            str(clade.size),
                                            str(clade.col))
             phylo_file.write(clade_hdr)

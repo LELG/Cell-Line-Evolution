@@ -54,11 +54,16 @@ class Analytics(object):
         # append effective proliferation
         if treatmt.is_introduced:
             eff_avg_prolif = popn.avg_pro_rate - treatmt.curr_select_pressure
+            if treatmt.curr_mut_pressure:
+                eff_avg_mut = popn.avg_mut_rate * treatmt.curr_mut_pressure
+            else:
+                eff_avg_mut = popn.avg_mut_rate
             self.avg_proliferation.append(eff_avg_prolif)
+            self.avg_mutation.append(eff_avg_mut)
         else:
             self.avg_proliferation.append(popn.avg_pro_rate)
+            self.avg_mutation.append(popn.avg_mut_rate)
 
-        self.avg_mutation.append(popn.avg_mut_rate)
 
     def write_to_file(self, filepath):
         """
