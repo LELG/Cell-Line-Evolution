@@ -135,10 +135,14 @@ class Subpopulation(object):
         if not self.is_dead():
             for _i in xrange(new_mutns):
                 new_mutn = Mutation(opt, all_muts)
-                self.new_child(t_curr, opt, new_mutn)
-                self.size -= 1
-                new_sub_count += 1
-                new_pop_size += 1
+                if self.is_neutral_mutn(new_mutn):
+                    new_mutn.mut_type = 'n'
+                    self.add_mutation(new_mutn)
+                else:
+                    self.new_child(t_curr, opt, new_mutn)
+                    self.size -= 1
+                    new_sub_count += 1
+                    new_pop_size += 1
 
         # finally, add this clone's stats to the return values
         new_pop_size += self.size
@@ -152,23 +156,16 @@ class Subpopulation(object):
 
     def new_child(self, t_curr, opt, new_mutn):
         """Spawn a new child clone."""
-        max_pro_rate = 1.0
-        max_mut_rate = 1.0
-        min_pro_rate = 0.0
-        min_mut_rate = 1e-10
-
-        # get new prolif rate, making sure we
-        # bound above and below
-        provis_prolif = self.prolif_rate + new_mutn.prolif_rate_effect
-        new_prolif_rate = max(min_pro_rate, min(max_pro_rate, provis_prolif))
+        # get new prolif rate, making sure we bound above and below
+        new_prolif_rate = self.get_bounded_pro_rate(new_mutn.prolif_rate_effect)
 
         # get new mutation rate, again, bounding appropriately
-        provis_mut = self.mut_rate + new_mutn.mut_rate_effect
-        new_mut_rate = max(min_mut_rate, min(max_mut_rate, provis_mut))
+        new_mut_rate = self.get_bounded_mut_rate(new_mutn.mut_rate_effect)
 
         # create shallow copy of mutation dictionary
         child_mutns = self.mutations.copy()
         # now create shallow copies of each mut type list.
+        # (The slicing syntax lst[:] creates a copy of lst.)
         # the lists will still point to identical mutn objects,
         # but appending to parent's list will not change child's list,
         # and vice versa
@@ -188,6 +185,56 @@ class Subpopulation(object):
 
         new_mutn.original_clone = child
         self.nodes.append(child)
+
+    def get_bounded_pro_rate(self, prolif_effect):
+        """Get a mutated prolif rate, bounding appropriately."""
+        max_pro_rate = 1.0
+        min_pro_rate = 0.0
+        provis_prolif = self.prolif_rate + prolif_effect
+        new_prolif_rate = max(min_pro_rate, min(max_pro_rate, provis_prolif))
+        return new_prolif_rate
+
+    def get_bounded_mut_rate(self, mut_effect):
+        """Get a mutated mut rate, bounding appropriately."""
+        max_mut_rate = 1.0
+        min_mut_rate = 1e-10
+        provis_mut = self.mut_rate + mut_effect
+        new_mut_rate = max(min_mut_rate, min(max_mut_rate, provis_mut))
+        return new_mut_rate
+
+    def is_neutral_mutn(self, new_mutn):
+        """
+        Test whether a mutation is effectively neutral for this clone.
+
+        Test whether a mutation's proliferation and mutation
+        rate effects are below a threshold proportion of
+        clone's existing proliferation and mutation rates.
+
+        If either effect is above the threshold change, the
+        mutation is classed as non-neutral.
+
+        Parameters
+        ----------
+        - new_mutn : a newly-generated Mutation
+
+        Returns
+        -------
+        - whether the mutation is neutral (True / False)
+        """
+        THRESHOLD = 0.1
+        pro_change = abs(new_mutn.prolif_rate_effect) / self.prolif_rate
+        mut_change = abs(new_mutn.mut_rate_effect) / self.mut_rate
+        return pro_change < THRESHOLD and mut_change < THRESHOLD
+
+    def add_mutation(self, new_mutn):
+        """Insert a new mutation into this clone's mutation dict."""
+        try:
+            self.mutations[new_mutn.mut_type].append(new_mutn)
+        except KeyError:
+            raise
+        new_mutn.original_clone = self
+        self.prolif_rate = self.get_bounded_pro_rate(new_mutn.prolif_rate_effect)
+        self.mut_rate = self.get_bounded_mut_rate(new_mutn.mut_rate_effect)
 
     def switch_mutn_type(self, mutn, new_type):
         """Change the type of one of this clone's mutations."""
@@ -240,7 +287,7 @@ class Subpopulation(object):
 
     def pop_count(self):
         x = self.pop_as_list()
-        z = 0 
+        z = 0
         for i in x:
             z = z + i
         return z
