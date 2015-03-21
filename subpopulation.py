@@ -103,7 +103,7 @@ class Subpopulation(object):
             # sample for cell death, division and mutation
             # note that we sample for both division AND death before
             # updating the clone size. This means that a 'cell'
-            # could technically reproduce and die in the same cycle
+            # can reproduce and die in the same cycle
             # (i.e. if cells_dead + cells_new > initial_size)
             cells_new = safe_binomial_sample(self.size, effective_prolif)
             cells_dead = safe_binomial_sample(self.size, self.death_rate)
@@ -128,7 +128,6 @@ class Subpopulation(object):
             new_sub_count += node_sub_count
             new_mut_agg += node_mut_agg
             new_pro_agg += node_pro_agg
-
         # check again whether clone is alive;
         # clones which have died in this update
         # will now register as dead
@@ -221,7 +220,7 @@ class Subpopulation(object):
         -------
         - whether the mutation is neutral (True / False)
         """
-        THRESHOLD = 0.001
+        THRESHOLD = 0.05
         pro_change = abs(new_mutn.prolif_rate_effect) / self.prolif_rate
         mut_change = abs(new_mutn.mut_rate_effect) / self.mut_rate
         return pro_change < THRESHOLD and mut_change < THRESHOLD
@@ -233,8 +232,8 @@ class Subpopulation(object):
         except KeyError:
             raise
         new_mutn.original_clone = self
-        self.prolif_rate = self.get_bounded_pro_rate(new_mutn.prolif_rate_effect)
-        self.mut_rate = self.get_bounded_mut_rate(new_mutn.mut_rate_effect)
+        #self.prolif_rate = self.get_bounded_pro_rate(new_mutn.prolif_rate_effect)
+        #self.mut_rate = self.get_bounded_mut_rate(new_mutn.mut_rate_effect)
 
     def switch_mutn_type(self, mutn, new_type):
         """Change the type of one of this clone's mutations."""
