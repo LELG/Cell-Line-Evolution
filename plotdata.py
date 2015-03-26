@@ -8,7 +8,8 @@ Yoshua Wakeham : yoshwakeham@gmail.com
 """
 
 from __future__ import print_function
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
+import pandas as pd
 
 def make_dual_plot(xdata, y1data, y2data, filename, title1, title2):
     """Plot two dependent vars against the same independent var."""
@@ -536,3 +537,27 @@ def print_plots(popn, when):
 
         make_dual_box(end_mutation, popn.mid_mutation,
                       filename + "mutation_box", "Mutation Rate Box")
+
+def plot_clone_freqs_from_file(mid_clone_fname, end_clone_fname):
+    """
+    Plot pre-crash clone frequencies against post-crash frequencies.
+
+    Input files are assumed to be in CSV format.
+    """
+    plt.style.use('ggplot')
+
+    mid_clone_data = pd.read_csv(mid_clone_fname, index_col='clone_id')
+    end_clone_data = pd.read_csv(end_clone_fname, index_col='clone_id')
+
+    mid_clone_data.rename(columns={'size': 'pre_size'}, inplace=True)
+    end_clone_data.rename(columns={'size': 'post_size'}, inplace=True)
+
+    comparison_data = mid_clone_data[['pre_size']].join(end_clone_data[['post_size']])
+    comparison_data.dropna(inplace=True)
+
+    ax = comparison_data.plot(kind='scatter', x='pre_size', y='post_size')
+    ax.set_xlabel = "Pre-Crash Clone Size"
+    ax.set_ylabel = "Post-Crash Clone Size"
+    ax.set_title('Clonal Frequencies, Pre/Post Crash')
+    plt.savefig('clone_frequencies_comparison.png')
+    plt.close()
