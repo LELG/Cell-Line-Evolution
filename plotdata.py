@@ -8,6 +8,7 @@ Yoshua Wakeham : yoshwakeham@gmail.com
 """
 
 from __future__ import print_function
+import os
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -538,26 +539,46 @@ def print_plots(popn, when):
         make_dual_box(end_mutation, popn.mid_mutation,
                       filename + "mutation_box", "Mutation Rate Box")
 
-def plot_clone_freqs_from_file(mid_clone_fname, end_clone_fname):
+def plot_clone_freqs_from_file(date, test_group_name, param_set, run_number):
     """
     Plot pre-crash clone frequencies against post-crash frequencies.
 
-    Input files are assumed to be in CSV format.
+    Specified simulation must have correct CSV files for
+    this to work, namely
+
+        end_clone_summary.csv
+        mid_clone_summary.csv
+
+    in the correct (run-specific) results folder.
     """
     plt.style.use('ggplot')
 
-    mid_clone_data = pd.read_csv(mid_clone_fname, index_col='clone_id')
-    end_clone_data = pd.read_csv(end_clone_fname, index_col='clone_id')
+    path_kwargs = {'date': date, 'tg': test_group_name,
+                   'ps': param_set, 'run': run_number}
 
-    mid_clone_data.rename(columns={'size': 'pre_size'}, inplace=True)
-    end_clone_data.rename(columns={'size': 'post_size'}, inplace=True)
+    run_dir = "{cwd}/results/{date}/{tg}/{ps}/{run}".format(cwd=os.getcwd(),
+                                                            **path_kwargs)
+    if not os.path.isdir(run_dir):
+        raise ValueError("Could not find results directory for simulation")
 
-    comparison_data = mid_clone_data[['pre_size']].join(end_clone_data[['post_size']])
-    comparison_data.dropna(inplace=True)
+    fpath = "{run_dir}/data/{stage}_clone_summary.csv"
+    mid_fpath = fpath.format(stage='mid', run_dir=run_dir)
+    end_fpath = fpath.format(stage='end', run_dir=run_dir)
 
-    ax = comparison_data.plot(kind='scatter', x='pre_size', y='post_size')
+    try:
+        mid_clone_data = pd.read_csv(mid_fpath, index_col='clone_id')
+        end_clone_data = pd.read_csv(end_fpath, index_col='clone_id')
+    except:
+        raise IOError("Simulation does not have required clone summary files.")
+
+    mid_clone_data.rename(columns={'size': 'pre_size', 'r_muts':'pre_r_muts'}, inplace=True)
+    end_clone_data.rename(columns={'size': 'post_size', 'r_muts':'post_r_muts'}, inplace=True)
+
+    comparison_data = mid_clone_data[['pre_size', 'pre_r_muts']].join(end_clone_data[['post_size', 'post_r_muts']])
+    comparison_data_noNaNs = comparison_data.dropna()
+
+    ax = comparison_data_noNaNs.plot(kind='scatter', x='pre_size', y='post_size')
     ax.set_xlabel = "Pre-Crash Clone Size"
     ax.set_ylabel = "Post-Crash Clone Size"
     ax.set_title('Clonal Frequencies, Pre/Post Crash')
-    plt.savefig('clone_frequencies_comparison.png')
-    plt.close()
+    plt.savefig('{run_dir}/plots/clonal-freqs-pre-post-crash.png'.format(run_dir=run_dir))
