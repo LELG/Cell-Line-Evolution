@@ -339,7 +339,7 @@ def print_results(popn, when, end_time, plot_style=None):
     if plot_style:
         plt.style.use(plot_style)
 
-    filename = "{0}/{1}_".format(popn.opt.run_dir, when)
+    filename = "{0}/plots/{1}_".format(popn.opt.run_dir, when)
 
     anlt = popn.analytics_base
 
@@ -507,7 +507,7 @@ def print_plots(popn, when):
     If --r_output option parsed print raw output to file
     """
 
-    filename = "{0}/{1}_".format(popn.opt.run_dir, when)
+    filename = "{0}/plots/{1}_".format(popn.opt.run_dir, when)
 
     """
     if popn.opt.r_output:
@@ -539,31 +539,28 @@ def print_plots(popn, when):
         make_dual_box(end_mutation, popn.mid_mutation,
                       filename + "mutation_box", "Mutation Rate Box")
 
-def plot_clone_freqs_from_file(date, test_group_name, param_set, run_number):
+def plot_clone_freqs_from_file(run_dir):
     """
     Plot pre-crash clone frequencies against post-crash frequencies.
 
     Specified simulation must have correct CSV files for
     this to work, namely
 
-        end_clone_summary.csv
-        mid_clone_summary.csv
+        data/end_clone_summary.csv
+        data/mid_clone_summary.csv
 
-    in the correct (run-specific) results folder.
+    in the specified run folder.
     """
     plt.style.use('ggplot')
 
-    path_kwargs = {'date': date, 'tg': test_group_name,
-                   'ps': param_set, 'run': run_number}
+    full_run_dir = "{cwd}/{run_dir}".format(cwd=os.getcwd(), run_dir=run_dir)
 
-    run_dir = "{cwd}/results/{date}/{tg}/{ps}/{run}".format(cwd=os.getcwd(),
-                                                            **path_kwargs)
-    if not os.path.isdir(run_dir):
+    if not os.path.isdir(full_run_dir):
         raise ValueError("Could not find results directory for simulation")
 
     fpath = "{run_dir}/data/{stage}_clone_summary.csv"
-    mid_fpath = fpath.format(stage='mid', run_dir=run_dir)
-    end_fpath = fpath.format(stage='end', run_dir=run_dir)
+    mid_fpath = fpath.format(stage='mid', run_dir=full_run_dir)
+    end_fpath = fpath.format(stage='end', run_dir=full_run_dir)
 
     try:
         mid_clone_data = pd.read_csv(mid_fpath, index_col='clone_id')
@@ -571,14 +568,35 @@ def plot_clone_freqs_from_file(date, test_group_name, param_set, run_number):
     except:
         raise IOError("Simulation does not have required clone summary files.")
 
-    mid_clone_data.rename(columns={'size': 'pre_size', 'r_muts':'pre_r_muts'}, inplace=True)
-    end_clone_data.rename(columns={'size': 'post_size', 'r_muts':'post_r_muts'}, inplace=True)
+    # extract size columns
+    mid_clone_sizes = mid_clone_data[['size']]
+    end_clone_sizes = end_clone_data[['size', 'r_muts']]
+    # rename
+    mid_clone_sizes.rename(columns={'size': 'pre_size'}, inplace=True)
+    end_clone_sizes.rename(columns={'size': 'post_size'}, inplace=True)
 
-    comparison_data = mid_clone_data[['pre_size', 'pre_r_muts']].join(end_clone_data[['post_size', 'post_r_muts']])
-    comparison_data_noNaNs = comparison_data.dropna()
 
-    ax = comparison_data_noNaNs.plot(kind='scatter', x='pre_size', y='post_size')
-    ax.set_xlabel = "Pre-Crash Clone Size"
-    ax.set_ylabel = "Post-Crash Clone Size"
+    # combine pre and post crash clones, and replace NaN with 0s
+    size_data = mid_clone_sizes.join(end_clone_sizes, how='outer')
+    size_data.fillna(value=0, inplace=True)
+
+    # add column for colour
+    resist_colour = lambda num_r_muts: 0.5 if num_r_muts > 0 else 0.9
+    col = size_data['r_muts'].apply(resist_colour)
+    col.name = 'col'
+    size_data = size_data.join(col)
+
+    # isolate dominant pre-crash clone
+    dom_precrash_clone = size_data.loc[size_data['pre_size'].argmax()]
+
+    ax = size_data.plot(kind='scatter', x='pre_size', y='post_size', c='col')
+    ax.set_xlabel("Pre-Crash Clone Size")
+    ax.set_ylabel("Post-Crash Clone Size")
     ax.set_title('Clonal Frequencies, Pre/Post Crash')
+    plt.annotate(s="precrash dom",
+                 xy=(dom_precrash_clone['pre_size'], dom_precrash_clone['post_size']),
+                 xytext=(0, 20), textcoords='offset points', ha='right', va='bottom',
+                 bbox={'boxstyle': 'round, pad=0.5', 'fc': 'green', 'alpha': 0.5},
+                 arrowprops={'arrowstyle': '->', 'connectionstyle': 'arc3,rad=0'})
     plt.savefig('{run_dir}/plots/clonal-freqs-pre-post-crash.png'.format(run_dir=run_dir))
+    plt.close('all')

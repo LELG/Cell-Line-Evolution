@@ -38,6 +38,8 @@ while [ $run_number -le $runs_per_param_set ]; do
 
   if [ ! -d $run_dir ]; then
     mkdir -p $run_dir
+    mkdir -p "$run_dir/data"
+    mkdir -p "$run_dir/plots"
   fi
 
   echo "------------------------------------------"

@@ -212,10 +212,7 @@ class Simulator(object):
                            self.total_cycles, self.runtime)
         self.write_clone_summary(self.popn, label="end")
         # dump all run data to CSV file
-        data_dump_fpath = "{0}/{1}_{2}_{3}_alldata.csv".format(self.run_dir,
-                                                               self.test_group,
-                                                               self.param_set,
-                                                               self.run_number)
+        data_dump_fpath = "{0}/data/analytics_data.csv".format(self.run_dir)
         self.popn.analytics_base.write_to_file(data_dump_fpath)
         # make plots
         if not self.no_plots:
@@ -374,11 +371,7 @@ class Simulator(object):
 
     def write_clone_summary(self, popn, label):
         """Write summary data for all clones."""
-        fpath = "{0}/{1}-{2}-{3}_{4}_clone_summary.csv".format(self.run_dir,
-                                                               self.test_group,
-                                                               self.param_set,
-                                                               self.run_number,
-                                                               label)
+        fpath = "{0}/data/{1}_clone_summary.csv".format(self.run_dir, label)
         clone_summary_file = open(fpath, 'w')
         writer = csv.writer(clone_summary_file)
         header = ("clone_id",
