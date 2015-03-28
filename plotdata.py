@@ -9,6 +9,7 @@ Yoshua Wakeham : yoshwakeham@gmail.com
 
 from __future__ import print_function
 import os
+import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -350,7 +351,7 @@ def print_results(popn, when, end_time, plot_style=None):
     """
 
     # Only make these plots at the end of the sim
-    if popn.selective_pressure_applied:
+    if when == "end":
         # Population vs Time
         make_plot(anlt.time, anlt.tumoursize,
                   filename + "population_graph", "Population Size")
@@ -431,6 +432,8 @@ def print_results(popn, when, end_time, plot_style=None):
         make_subpop_life(cell_line_time, filename + "cell_lines_alpha",
                          "Cell Lifespan", end_time, popn.opt.max_cycles,
                          popn.opt.select_time)
+        # make clonal frequency plot from clone summary CSV files
+        plot_clone_freqs_from_file(popn.opt.run_dir)
 
     # Print these plots both at the crash, and at the end of sim
     if not popn.is_dead():
@@ -551,10 +554,8 @@ def plot_clone_freqs_from_file(run_dir):
 
     in the specified run folder.
     """
-    plt.style.use('ggplot')
-
+    # first, get clone data from run directory
     full_run_dir = "{cwd}/{run_dir}".format(cwd=os.getcwd(), run_dir=run_dir)
-
     if not os.path.isdir(full_run_dir):
         raise ValueError("Could not find results directory for simulation")
 
@@ -571,32 +572,58 @@ def plot_clone_freqs_from_file(run_dir):
     # extract size columns
     mid_clone_sizes = mid_clone_data[['size']]
     end_clone_sizes = end_clone_data[['size', 'r_muts']]
-    # rename
+    # rename to avoid conflicting column names
     mid_clone_sizes.rename(columns={'size': 'pre_size'}, inplace=True)
     end_clone_sizes.rename(columns={'size': 'post_size'}, inplace=True)
-
 
     # combine pre and post crash clones, and replace NaN with 0s
     size_data = mid_clone_sizes.join(end_clone_sizes, how='outer')
     size_data.fillna(value=0, inplace=True)
 
-    # add column for colour
-    resist_colour = lambda num_r_muts: 0.5 if num_r_muts > 0 else 0.9
-    col = size_data['r_muts'].apply(resist_colour)
-    col.name = 'col'
-    size_data = size_data.join(col)
+    # map colours to resistant/non-resistant clones
+    def colour_by_resistance(num_r_muts):
+        if num_r_muts > 0:
+            return "#E24A33" # orange
+        else:
+            return "#348ABD" # blue
+    resist_colours = size_data['r_muts'].apply(colour_by_resistance)
 
-    # isolate dominant pre-crash clone
-    dom_precrash_clone = size_data.loc[size_data['pre_size'].argmax()]
+    # create scatter plot, colouring clones by resistance
+    ax = size_data.plot(kind='scatter',
+                        x='pre_size', y='post_size',
+                        c=resist_colours, zorder=2)
+    #ax.set_xscale('log')
+    #ax.set_xbound(0, 100+size_data['pre_size'].max())
+    #ax.set_yscale('log')
+    #ax.set_ybound(0, 100+size_data['post_size'].max())
 
-    ax = size_data.plot(kind='scatter', x='pre_size', y='post_size', c='col')
+    # set labels, title
     ax.set_xlabel("Pre-Crash Clone Size")
     ax.set_ylabel("Post-Crash Clone Size")
     ax.set_title('Clonal Frequencies, Pre/Post Crash')
+
+    # make legend
+    clone_types = ['resistant', 'non-resistant']
+    res_cols = ["#E24A33", "#348ABD"]
+    leg_cols = []
+    for col in res_cols:
+        leg_cols.append(matplotlib.patches.Circle((0, 0), 1, fc=col))
+    plt.legend(leg_cols, clone_types)
+
+    # isolate dominant pre-crash clone
+    precrash_dom = size_data.loc[size_data['pre_size'].argmax()]
+
+    # annotate the dominant clone
     plt.annotate(s="precrash dom",
-                 xy=(dom_precrash_clone['pre_size'], dom_precrash_clone['post_size']),
-                 xytext=(0, 20), textcoords='offset points', ha='right', va='bottom',
-                 bbox={'boxstyle': 'round, pad=0.5', 'fc': 'green', 'alpha': 0.5},
-                 arrowprops={'arrowstyle': '->', 'connectionstyle': 'arc3,rad=0'})
-    plt.savefig('{run_dir}/plots/clonal-freqs-pre-post-crash.png'.format(run_dir=run_dir))
+                 xy=(precrash_dom['pre_size'], precrash_dom['post_size']),
+                 xytext=(0, 30), textcoords='offset points',
+                 ha='center', va='center',
+                 arrowprops=dict(arrowstyle='->',
+                                 connectionstyle='arc3',
+                                 shrinkB=5,
+                                 color='black'))
+    plt.axhline(0, color='black', lw=0.5, zorder=1)
+    plt.axvline(0, color='black', lw=0.5, zorder=1)
+    # finally, save plot
+    plt.savefig('{}/plots/clonal-freqs-pre-post-crash.png'.format(run_dir))
     plt.close('all')
