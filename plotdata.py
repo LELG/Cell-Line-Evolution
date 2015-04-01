@@ -592,10 +592,10 @@ def plot_clone_freqs_from_file(run_dir):
     ax = size_data.plot(kind='scatter',
                         x='pre_size', y='post_size',
                         c=resist_colours, zorder=2)
-    #ax.set_xscale('log')
-    #ax.set_xbound(0, 100+size_data['pre_size'].max())
-    #ax.set_yscale('log')
-    #ax.set_ybound(0, 100+size_data['post_size'].max())
+    ax.set_xscale('symlog')
+    ax.set_xlim(left=-1)
+    ax.set_yscale('symlog')
+    ax.set_ylim(bottom=-1)
 
     # set labels, title
     ax.set_xlabel("Pre-Crash Clone Size")
