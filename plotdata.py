@@ -15,22 +15,33 @@ import pandas as pd
 
 def make_dual_plot(xdata, y1data, y2data, filename, title1, title2):
     """Plot two dependent vars against the same independent var."""
+
+    df = pd.DataFrame({#'Time':xdata,
+                       title1: y1data,
+                       title2: y2data}, index=xdata)
+
+    plt.figure()
+    df.plot()
+    plt.savefig(filename)
+    print("PLOT CREATED: " + filename)
+    plt.close()
+    return
     _fig, ax1 = plt.subplots()
-    ax1.plot(xdata, y1data, color='b', alpha=0.5, linewidth=2)
-    ax1.set_xlabel('Discrete Time Intervals', fontsize=9)
-    ax1.set_ylabel(title1, fontsize=9, color='b')
-    for label in ax1.get_yticklabels():
+    ax1.plot(xdata, y1data, alpha=0.5, linewidth=2)#, color='b')
+    ax1.set_xlabel('Discrete Time Intervals')#, fontsize=9)
+    ax1.set_ylabel(title1)#, fontsize=9, color='b')
+    '''for label in ax1.get_yticklabels():
         label.set_color('b')
         label.set_fontsize(9)
     for label in ax1.get_xticklabels():
-        label.set_fontsize(9)
+        label.set_fontsize(9)'''
 
     ax2 = ax1.twinx()
-    ax2.plot(xdata, y2data, color='r', alpha=0.5, linewidth=2)
-    ax2.set_ylabel(title2, fontsize=9, color='r')
-    for label in ax2.get_yticklabels():
+    ax2.plot(xdata, y2data, alpha=0.5, linewidth=2)#, color='r')
+    ax2.set_ylabel(title2)#, fontsize=9, color='r')
+    '''for label in ax2.get_yticklabels():
         label.set_color('r')
-        label.set_fontsize(9)
+        label.set_fontsize(9)'''
 
     plt.savefig(filename)
     print("PLOT CREATED: " + filename)
@@ -40,15 +51,15 @@ def make_plot(xdata, ydata, filename, title):
     """Plot a single independent variable."""
     #        global DETAILS
     _fig, ax1 = plt.subplots()
-    ax1.plot(xdata, ydata, alpha=0.5, linewidth=2)
-    ax1.set_xlabel('Discrete Time Intervals', fontsize=9)
-    ax1.set_ylabel(title, fontsize=9, color='b')
-    for label in ax1.get_yticklabels():
+    ax1.plot(xdata, ydata, linewidth=2)#, alpha=0.5, linewidth=2)
+    ax1.set_xlabel('Discrete Time Intervals')#, fontsize=9)
+    ax1.set_ylabel(title)#, fontsize=9, color='b')
+    '''for label in ax1.get_yticklabels():
         label.set_color('b')
         label.set_fontsize(9)
     for label in ax1.get_xticklabels():
         label.set_color('grey')
-        label.set_fontsize(9)
+        label.set_fontsize(9)'''
     plt.savefig(filename)
     print("PLOT CREATED: " + filename)
     plt.close()
