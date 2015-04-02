@@ -259,6 +259,7 @@ class Simulator(object):
             mutation.generate_resistance(self.popn.all_mutations,
                                          self.popn.tumoursize,
                                          self.opt.num_resist_mutns)
+        self.write_clone_summary(self.popn, label="resist")
 
     def print_info(self):
         """Print simulation's initial parameter set."""
