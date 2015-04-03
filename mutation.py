@@ -41,7 +41,7 @@ class Mutation(object):
         try:
             all_muts[self.mut_type].remove(self)
         except ValueError:
-            raise
+            raise ValueError("Mutn not in all_muts[{}]".format(self.mut_type))
         try:
             all_muts[new_mut_type].append(self)
         except KeyError:

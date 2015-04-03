@@ -240,7 +240,11 @@ class Subpopulation(object):
         try:
             self.mutations[mutn.mut_type].remove(mutn)
         except ValueError:
-            raise
+            # this clone didn't inherit the mutation in question,
+            # in which case, neither did its children. We're done
+            # for this section of the tree
+            return
+
         try:
             self.mutations[new_type].append(mutn)
         except KeyError:
