@@ -36,13 +36,23 @@ class Mutation(object):
         except:
             raise
 
+    def switch_mutn_type(self, all_muts, new_mut_type):
+        """Change the mutation type of this mutation."""
+        try:
+            all_muts[self.mut_type].remove(self)
+        except ValueError:
+            raise
+        try:
+            all_muts[new_mut_type].append(self)
+        except KeyError:
+            raise
+        self.mut_type = new_mut_type
+
     def become_resistant(self, all_muts, resist_strength):
         """Make this mutation a resistance mutation."""
         # switch which sublist this mutation appears in
-        all_muts[self.mut_type].remove(self)
-        all_muts['r'].append(self)
         self.original_clone.switch_mutn_type(self, 'r')
-        self.mut_type = 'r'
+        self.switch_mutn_type(all_muts, 'r')
         self.resist_strength = resist_strength
         self.original_clone.become_resistant(self.resist_strength)
 

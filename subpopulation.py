@@ -135,7 +135,7 @@ class Subpopulation(object):
             for _i in xrange(new_mutns):
                 new_mutn = Mutation(opt, all_muts)
                 if self.is_neutral_mutn(new_mutn):
-                    new_mutn.mut_type = 'n'
+                    new_mutn.switch_mutn_type(all_muts, 'n')
                     self.add_mutation(new_mutn)
                 else:
                     self.new_child(t_curr, opt, new_mutn)
