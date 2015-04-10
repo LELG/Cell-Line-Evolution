@@ -109,6 +109,13 @@ def get_mutn_effect(get_effect_size, scale_factor, prob_pos, prob_neg):
 
 def generate_resistance(all_mutations, tumoursize, deterministic_num_r_muts, resist_strength=1.0):
     """Trigger the creation of resistance mutations."""
+    # first, prune any mutations no longer present in the population
+    all_muts_flat = sum(all_mutations.values(), [])
+    all_mutations['dead'] = []
+    for mut in all_muts_flat:
+        if mut.original_clone.is_dead_end():
+            mut.switch_mutn_type(all_mutations, 'dead')
+
     # create flat list of deleterious/neutral mutations
     del_neutr_mutns = all_mutations['d'] + all_mutations['n']
 
