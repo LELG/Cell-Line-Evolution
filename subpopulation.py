@@ -268,7 +268,7 @@ class Subpopulation(object):
         """Remove all dead end clones from subpopulation tree.
 
         A dead end clone is defined as one
-        which is dead, and has no children.
+        which is dead, and has no living descendants.
         """
         children_to_keep = [node for node
                             in self.nodes
@@ -376,7 +376,36 @@ class Subpopulation(object):
         return bool(self.nodes)
 
     def is_dead_end(self):
-        """Determine if this clone is a dead end."""
+        """Determine if this clone is a dead end.
+
+        Determine whether this clone is a dead end,
+        where a dead end is defined as a dead clone
+        with no living descendants.
+        """
+        if not self.is_dead():
+            # a living clone cannot be a dead end
+            return False
+        elif self.is_dead_leaf():
+            # any dead leaf is also a dead end
+            return True
+        else:
+            # this clone is dead, but has children
+            for child in self.nodes:
+                if not child.is_dead_end():
+                    # there are living cells somewhere below this
+                    # clone in the tree, so it is not a dead end
+                    return False
+            # all children are dead ends, thus this clone
+            # is also a dead end
+            return True
+
+        return self.is_dead() and not self.has_children()
+
+    def is_dead_leaf(self):
+        """Determine if this clone is a dead leaf.
+
+        Determine whether this clone is a dead leaf,
+        where a leaf is a clone with no children."""
         return self.is_dead() and not self.has_children()
 
     def to_JSON(self):
