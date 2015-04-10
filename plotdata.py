@@ -596,7 +596,7 @@ def plot_clone_freqs_from_file(run_dir):
     leg_cols = []
     for col in res_cols:
         leg_cols.append(matplotlib.patches.Circle((0, 0), 1, fc=col))
-    plt.legend(leg_cols, clone_types)
+    plt.legend(leg_cols, clone_types, loc=7)
 
     # isolate dominant pre-crash clone
     precrash_dom = size_data.loc[size_data['pre_size'].argmax()]
