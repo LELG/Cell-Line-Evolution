@@ -220,10 +220,17 @@ class Subpopulation(object):
         -------
         - whether the mutation is neutral (True / False)
         """
-        THRESHOLD = 0.05
-        pro_change = abs(new_mutn.prolif_rate_effect) / self.prolif_rate
+        MUT_THRESHOLD = 0.05
+        BEN_THRESHOLD = 0.05
+        DEL_THRESHOLD = 0.01
+
+        pro_change = new_mutn.prolif_rate_effect / self.prolif_rate
         mut_change = abs(new_mutn.mut_rate_effect) / self.mut_rate
-        return pro_change < THRESHOLD and mut_change < THRESHOLD
+        if -DEL_THRESHOLD < pro_change < BEN_THRESHOLD:
+            # proliferation change is neutral, check mutation change
+            return mut_change < MUT_THRESHOLD
+        else:
+            return False
 
     def add_mutation(self, new_mutn):
         """Insert a new mutation into this clone's mutation dict."""
