@@ -558,28 +558,42 @@ def plot_clone_freqs_from_file(run_dir):
         raise IOError("Simulation does not have required clone summary files.")
 
     # extract size columns
-    mid_clone_sizes = mid_clone_data[['size']]
-    end_clone_sizes = end_clone_data[['size', 'r_muts']]
+    mid_clone_sizes = mid_clone_data[['size', 'b_muts']]
+    end_clone_sizes = end_clone_data[['size', 'b_muts', 'r_muts']]
     # rename to avoid conflicting column names
     mid_clone_sizes.rename(columns={'size': 'pre_size'}, inplace=True)
+    mid_clone_sizes.rename(columns={'b_muts': 'pre_b_muts'}, inplace=True)
     end_clone_sizes.rename(columns={'size': 'post_size'}, inplace=True)
+    end_clone_sizes.rename(columns={'b_muts': 'post_b_muts'}, inplace=True)
 
     # combine pre and post crash clones, and replace NaN with 0s
     size_data = mid_clone_sizes.join(end_clone_sizes, how='outer')
     size_data.fillna(value=0, inplace=True)
 
     # map colours to resistant/non-resistant clones
-    def colour_by_resistance(num_r_muts):
+    def colour_clones(num_r_muts, num_pre_b_muts, num_post_b_muts):
         if num_r_muts > 0:
-            return "#E24A33" # orange
+            # clone is resistant, paint it orange
+            return "#E24A33"
+        elif num_post_b_muts > num_pre_b_muts:
+            # clone picked up a beneficial mutation
+            # after the crash, paint it purple
+            return "#7A68A6"
         else:
-            return "#348ABD" # blue
-    resist_colours = size_data['r_muts'].apply(colour_by_resistance)
+            # paint clone blue
+            return "#348ABD"
+    # ugly solution for applying this clone-colouring
+    # function to multiple columns of data
+    colour_data = size_data[['r_muts', 'pre_b_muts', 'post_b_muts']]
+    clone_colours = colour_data.apply(lambda row: colour_clones(row['r_muts'],
+                                                                row['pre_b_muts'],
+                                                                row['post_b_muts']),
+                                      axis=1)
 
     # create scatter plot, colouring clones by resistance
-    ax = size_data.plot(kind='scatter',
+    ax = size_data.plot(kind='scatter', s=30,
                         x='pre_size', y='post_size',
-                        c=resist_colours, zorder=2)
+                        c=clone_colours, zorder=2)
     ax.set_xscale('symlog')
     ax.set_xlim(left=-1)
     ax.set_yscale('symlog')
@@ -590,13 +604,19 @@ def plot_clone_freqs_from_file(run_dir):
     ax.set_ylabel("Post-Crash Clone Size")
     ax.set_title('Clonal Frequencies, Pre/Post Crash')
 
-    # make legend
-    clone_types = ['resistant', 'non-resistant']
-    res_cols = ["#E24A33", "#348ABD"]
+    # build labels for legend
+    clone_types = ['resistant', 'non-resistant', 'non-resistant, post-crash ben. mutn.']
+    res_cols = ["#E24A33", "#348ABD", "#7A68A6"]
     leg_cols = []
     for col in res_cols:
         leg_cols.append(matplotlib.patches.Circle((0, 0), 1, fc=col))
-    plt.legend(leg_cols, clone_types, loc=7)
+    # shrink plot by 20% on right to make room for legend
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0 + box.height*0.1,
+                     box.width, box.height * 0.9])
+    # make legend
+    plt.legend(leg_cols, clone_types, loc='upper center',
+               bbox_to_anchor=(0.5, -0.1), ncol=3)
 
     # isolate dominant pre-crash clone
     precrash_dom = size_data.loc[size_data['pre_size'].argmax()]
