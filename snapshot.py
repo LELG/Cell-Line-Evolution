@@ -1,0 +1,264 @@
+"""
+A module containing functions for storing a population
+to a file, and loading it again.
+"""
+from __future__ import print_function
+import csv
+from collections import deque
+import datetime
+import tarfile
+import errno
+import os
+from mutation import Mutation
+from subpopulation import Subpopulation
+
+
+def save_population_to_file(opt, root_clone, all_muts):
+    """Save population snapshot to file.
+
+    Take a snapshot of the current simulation
+    population and save it to timestamped CSV files,
+    then compress the files into a .tar archive.
+    """
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M")
+    param_fname = "params_{}.csv".format(timestamp)
+    mut_fname = "mutations_{}.csv".format(timestamp)
+    clone_fname = "clones_{}.csv".format(timestamp)
+
+    save_parameters_to_file(opt, param_fname)
+    save_muts_to_file(all_muts, mut_fname)
+    save_clones_to_file(root_clone, clone_fname)
+
+    fnames = [param_fname, mut_fname, clone_fname]
+    pop_archive = tarfile.open("population_{}.tar.gz".format(timestamp), "w:gz")
+    for fname in fnames:
+        pop_archive.add(fname)
+    pop_archive.close()
+
+    # now delete the individual files
+    for fname in fnames:
+        # this try-except is taken from the StackOverflow post
+        #"Most pythonic way to delete a file which may not exist"
+        try:
+            os.remove(fname)
+        except OSError as err:
+            if err.errno != errno.ENOENT:
+                raise
+
+
+def save_parameters_to_file(opt, param_fname):
+    # TODO TODO TODO TODO TODO
+    pass
+
+
+def save_muts_to_file(all_muts, mut_fname):
+    """
+    Save the entire mutation dictionary to a CSV file.
+
+    Note that there is an implicit, currently unenforced contract
+    between this function and Mutation.init_from_file(). That
+    method relies on this function storing valid mutation
+    attributes, with attribute names as column headers.
+    """
+    with open(mut_fname, 'w') as mut_file:
+        writer = csv.writer(mut_file)
+        header = ['mut_id', 'mut_type',
+                  'prolif_rate_effect', 'mut_rate_effect',
+                  'resist_strength', 'original_clone_id']
+        writer.writerow(header)
+        for mut_type_list in all_muts.values():
+            for mut in mut_type_list:
+                mut_data = [mut.mut_id, mut.mut_type,
+                            mut.prolif_rate_effect, mut.mut_rate_effect,
+                            mut.resist_strength, mut.original_clone.clone_id]
+                writer.writerow(mut_data)
+
+
+def save_clones_to_file(root, clone_fname):
+    """
+    Save the entire clone tree to a CSV file.
+
+    This function stores the clones to file in
+    breadth-first search order, to facilitate reconstruction
+    of the clone tree when loading the population from file.
+
+    Note that there is an implicit, currently unenforced contract
+    between this function and Subpopulation.init_from_file(). That
+    method relies on this function storing valid clone
+    attributes, with attribute names as column headers.
+    """
+    with open(clone_fname, 'w') as clone_file:
+        writer = csv.writer(clone_file)
+        header = ['clone_id', 'parent_id', 'num_children',
+                  'prolif_rate', 'mut_rate', 'size', 'precrash_size',
+                  'depth', 's_time', 'd_time', 'branch_length',
+                  'is_resistant', 'resist_strength', 'mutations',]
+        writer.writerow(header)
+
+        # we use a LIFO queue to store the clones to file in BFS order
+        queue = deque([root])
+
+        # a dictionary to map clones to their parent IDs
+        parents = {}
+
+        # store None as string to ensure it gets written to
+        # csv file properly
+        parents[root.clone_id] = 'None'
+
+        while queue:
+            curr_clone = queue.popleft()
+            # convert dictionary of Mutations
+            # to dictionary of mutation IDs
+            mut_id_dict = {}
+            for mut_type in curr_clone.mutations:
+                mut_id_dict[mut_type] = [mut.mut_id
+                                         for mut
+                                         in curr_clone.mutations[mut_type]]
+            clone_data = [curr_clone.clone_id,
+                          # parent_id
+                          parents[curr_clone.clone_id],
+                          # num_children
+                          len(curr_clone.nodes),
+                          curr_clone.prolif_rate, curr_clone.mut_rate,
+                          curr_clone.size, curr_clone.precrash_size,
+                          curr_clone.depth,
+                          curr_clone.s_time, curr_clone.d_time,
+                          curr_clone.branch_length,
+                          curr_clone.is_resistant, curr_clone.resist_strength,
+                          # mutations
+                          repr(mut_id_dict)]
+            writer.writerow(clone_data)
+            for child in curr_clone.nodes:
+                parents[child.clone_id] = curr_clone.clone_id
+                queue.append(child)
+
+
+def load_population_from_file(archive_path):
+    """Load a population from a snapshot.
+
+    Load a population from a snapshot,
+    which should be stored in a .tar archive.
+    """
+    pop_archive = tarfile.open(archive_path)
+    for filename in pop_archive.getnames():
+        if filename.startswith('clones_'):
+            clone_fname = filename
+        elif filename.startswith('mutations_'):
+            mut_fname = filename
+        elif filename.startswith('params_'):
+            param_fname = filename
+        else:
+            raise Exception("population archive contains invalid files")
+    pop_archive.extract(clone_fname)
+    pop_archive.extract(mut_fname)
+    pop_archive.extract(param_fname)
+
+    opt, extra_params = load_parameters_from_file(param_fname)
+    all_mutations, mutation_map = load_muts_from_file(opt, mut_fname)
+    root_clone = load_clones_from_file(opt, mutation_map, clone_fname)
+
+    return opt, extra_params, root_clone, all_mutations
+
+
+def load_parameters_from_file(param_fname):
+    """
+    Load global parameters from population snapshot.
+    """
+    # TODO TODO TODO TODO TODO TODO TODO
+    return None, None
+
+
+def load_muts_from_file(opt, mut_fname):
+    """
+    Load all mutations from a population snapshot.
+
+    Load the entire population of mutations from
+    a population snapshot file.
+
+    Inputs
+    ------
+    opt: global parameter set, used in initialising each mutation
+    mut_fname: path to CSV file containing mutation snapshot
+
+    Returns
+    -------
+    2-tuple of dictionaries: (all_muts, mutation_map)
+
+    all_muts: a dictionary of mutations of the form
+              {mut_type: list of muts of that type}, passed
+              back to simulation as master list of mutations.
+
+    mutation_map: a dictionary of mutations of the form
+                  {mut_id: Mutation}, used to reconstruct
+                  the relationships between clones and mutations when
+                  loading population snapshot from file.
+    """
+    all_muts = {'b':[], 'n':[], 'd':[], 'r':[]}
+    mutation_map = {}
+
+    with open(mut_fname) as mut_file:
+        mut_reader = csv.DictReader(mut_file)
+        for row in mut_reader:
+            new_mut = Mutation.init_from_file(opt, all_muts, row)
+            mutation_map[new_mut.mut_id] = new_mut
+            try:
+                all_muts[new_mut.mut_type].append(new_mut)
+            except KeyError:
+                raise KeyError("invalid mutation type (from file): {}".format(new_mut.mut_type))
+
+    return all_muts, mutation_map
+
+
+def load_clones_from_file(opt, mutation_map, clone_fname):
+    """
+    Load all clones from a population snapshot.
+
+    Load the entire population of clones from
+    a population snapshot file. This function
+    loads the clones in breadth-first search
+    order in order to efficiently reconstruct
+    the clone tree; consequently, it assumes
+    the population was *stored* in BFS order.
+
+    Inputs
+    ------
+    opt: global parameter set, used in initialising each clone
+    mutation_map: dictionary mapping mutation IDs to Mutation objects
+    clone_fname: path to CSV file containing clone population snapshot
+
+    Returns
+    -------
+    The root of the clone tree (i.e. the initial subpopulation)
+    """
+    # as this is a BFS algorithm, we use a LIFO queue
+    parent_queue = deque([])
+
+    with open(clone_fname) as clone_file:
+        reader = csv.DictReader(clone_file)
+
+        # root should always be first clone in file
+        root_row = next(reader)
+        root = Subpopulation.init_from_file(opt, mutation_map, root_row)
+        parent_queue.append(root)
+
+        for row in reader:
+            # initialise clone (including associating it with its mutations)
+            new_clone = Subpopulation.init_from_file(opt, mutation_map, row)
+
+            # this clone's parent should be first in the queue
+            curr_parent = parent_queue[0]
+            if curr_parent.clone_id != new_clone.parent_id:
+                # something has gone wrong
+                raise Exception("clones were stored to file incorrectly, abort loading population.")
+
+            curr_parent.nodes.append(new_clone)
+            if len(curr_parent.nodes) == curr_parent.num_children:
+                # this clone is now connected to its children
+                del curr_parent.num_children
+                parent_queue.popleft()
+
+            if new_clone.num_children > 0:
+                parent_queue.append(new_clone)
+
+    # entire tree has been restored
+    return root
