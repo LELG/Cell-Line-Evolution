@@ -6,6 +6,7 @@ from __future__ import print_function
 import datetime
 import csv, tarfile
 from collections import deque
+import numpy as np
 import os, errno
 try:
     import cPickle as pickle
@@ -67,6 +68,11 @@ def save_parameters_to_file(popn, param_fname):
                    'avg_pro_rate': popn.avg_pro_rate,
                    'avg_mut_rate': popn.avg_mut_rate,}
 
+    # TODO clean up this ugly hack ...
+    # manual workaround for fact that you
+    # cannot pickle a function
+    del popn.opt.get_beta_dist_sample
+
     # pickle them
     pickled_params = pickle.dumps((popn.opt, popn_params))
 
@@ -95,7 +101,10 @@ def save_muts_to_file(all_muts, mut_fname):
                 mut_data = [mut.mut_id, mut.mut_type,
                             mut.prolif_rate_effect, mut.mut_rate_effect,
                             mut.resist_strength, mut.original_clone.clone_id]
-                writer.writerow(mut_data)
+                # convert all data to strings, to ensure, in
+                # particular, that None gets written in such a way
+                # that it can later be parsed by literal_eval
+                writer.writerow([repr(item) for item in mut_data])
 
 
 def save_clones_to_file(root, clone_fname):
@@ -150,8 +159,11 @@ def save_clones_to_file(root, clone_fname):
                           curr_clone.branch_length,
                           curr_clone.is_resistant, curr_clone.resist_strength,
                           # mutations
-                          repr(mut_id_dict)]
-            writer.writerow(clone_data)
+                          mut_id_dict]
+            # convert all data to string rep, to ensure, in
+            # particular, that None gets written in such a way
+            # that it can later be parsed by literal_eval
+            writer.writerow([repr(item) for item in clone_data])
             for child in curr_clone.nodes:
                 parents[child.clone_id] = curr_clone.clone_id
                 queue.append(child)
@@ -198,6 +210,11 @@ def load_parameters_from_file(param_fname):
         data = param_file.read()
 
     opt, popn_params = pickle.loads(data)
+
+    # TODO clean up this ugly hack ...
+    # duplicates a line in simulator.py
+    opt.get_beta_dist_sample = lambda: np.random.beta(1, 3)
+
     return opt, popn_params
 
 
