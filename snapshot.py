@@ -197,6 +197,16 @@ def load_population_from_file(archive_path):
     root_clone = load_clones_from_file(opt, mutation_map, clone_fname)
     new_popn = Population.init_from_file(opt, popn_params, root_clone, all_muts)
 
+    # now delete the individual files
+    for fname in [clone_fname, mut_fname, param_fname]:
+        # this try-except is taken from the StackOverflow post
+        #"Most pythonic way to delete a file which may not exist"
+        try:
+            os.remove(fname)
+        except OSError as err:
+            if err.errno != errno.ENOENT:
+                raise
+
     return new_popn
 
 
