@@ -3,17 +3,20 @@ A module containing functions for storing a population
 to a file, and loading it again.
 """
 from __future__ import print_function
-import csv
-from collections import deque
 import datetime
-import tarfile
-import errno
-import os
+import csv, tarfile
+from collections import deque
+import os, errno
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 from mutation import Mutation
 from subpopulation import Subpopulation
+from population import Population
 
 
-def save_population_to_file(opt, root_clone, all_muts):
+def save_population_to_file(popn):
     """Save population snapshot to file.
 
     Take a snapshot of the current simulation
@@ -21,14 +24,18 @@ def save_population_to_file(opt, root_clone, all_muts):
     then compress the files into a .tar archive.
     """
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M")
-    param_fname = "params_{}.csv".format(timestamp)
+    param_fname = "params_{}.pkl".format(timestamp)
     mut_fname = "mutations_{}.csv".format(timestamp)
     clone_fname = "clones_{}.csv".format(timestamp)
 
-    save_parameters_to_file(opt, param_fname)
+    # create CSV files
+    root_clone = popn.subpop
+    all_muts = popn.all_mutations
+    save_parameters_to_file(popn, param_fname)
     save_muts_to_file(all_muts, mut_fname)
     save_clones_to_file(root_clone, clone_fname)
 
+    # store files in tar archive
     fnames = [param_fname, mut_fname, clone_fname]
     pop_archive = tarfile.open("population_{}.tar.gz".format(timestamp), "w:gz")
     for fname in fnames:
@@ -46,9 +53,24 @@ def save_population_to_file(opt, root_clone, all_muts):
                 raise
 
 
-def save_parameters_to_file(opt, param_fname):
-    # TODO TODO TODO TODO TODO
-    pass
+def save_parameters_to_file(popn, param_fname):
+    """
+    Save population parameters to file.
+
+    Use Python's Pickle module to simplify reloading from file?
+    Assumes population is being stored *before* treatment introduced.
+    """
+    popn_params = {'tumoursize': popn.tumoursize,
+                   'clonecount': popn.clonecount,
+                   'avg_pro_rate': popn.avg_pro_rate,
+                   'avg_mut_rate': popn.avg_mut_rate,}
+
+    # pickle them
+    pickled_params = pickle.dumps((popn.opt, popn_params))
+
+    # write to file
+    with open(param_fname, 'w') as param_file:
+        param_file.write(pickled_params)
 
 
 def save_muts_to_file(all_muts, mut_fname):
@@ -140,6 +162,7 @@ def load_population_from_file(archive_path):
     which should be stored in a .tar archive.
     """
     pop_archive = tarfile.open(archive_path)
+    # get filenames for extraction
     for filename in pop_archive.getnames():
         if filename.startswith('clones_'):
             clone_fname = filename
@@ -149,23 +172,31 @@ def load_population_from_file(archive_path):
             param_fname = filename
         else:
             raise Exception("population archive contains invalid files")
+    # extract snapshot files to cwd
     pop_archive.extract(clone_fname)
     pop_archive.extract(mut_fname)
     pop_archive.extract(param_fname)
 
-    opt, extra_params = load_parameters_from_file(param_fname)
-    all_mutations, mutation_map = load_muts_from_file(opt, mut_fname)
+    # load everything
+    opt, popn_params = load_parameters_from_file(param_fname)
+    all_muts, mutation_map = load_muts_from_file(opt, mut_fname)
     root_clone = load_clones_from_file(opt, mutation_map, clone_fname)
+    new_popn = Population.init_from_file(opt, popn_params, root_clone, all_muts)
 
-    return opt, extra_params, root_clone, all_mutations
+    return new_popn
 
 
 def load_parameters_from_file(param_fname):
     """
     Load global parameters from population snapshot.
+
+    Assumes parameters have been pickled.
     """
-    # TODO TODO TODO TODO TODO TODO TODO
-    return None, None
+    with open(param_fname) as param_file:
+        data = param_file.read()
+
+    opt, popn_params = pickle.loads(data)
+    return opt, popn_params
 
 
 def load_muts_from_file(opt, mut_fname):
