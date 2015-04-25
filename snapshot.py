@@ -16,7 +16,7 @@ from subpopulation import Subpopulation
 from population import Population
 
 
-def save_population_to_file(popn):
+def save_population_to_file(popn, fpath):
     """Save population snapshot to file.
 
     Take a snapshot of the current simulation
@@ -36,8 +36,10 @@ def save_population_to_file(popn):
     save_clones_to_file(root_clone, clone_fname)
 
     # store files in tar archive
+    archive_name = "{}/population_{}.tar.gz".format(fpath, timestamp)
+    pop_archive = tarfile.open(archive_name, "w:gz")
+
     fnames = [param_fname, mut_fname, clone_fname]
-    pop_archive = tarfile.open("population_{}.tar.gz".format(timestamp), "w:gz")
     for fname in fnames:
         pop_archive.add(fname)
     pop_archive.close()
