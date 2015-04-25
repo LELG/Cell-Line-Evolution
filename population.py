@@ -20,35 +20,73 @@ class Population(object):
     such as tumour size, clone count, and
     average mutation and proliferation rates.
 
-    Its most significant attribute is its
-    Subpopulation, which functions as the root
-    of the 'tree' of subclones.
+    Its most significant attribute is subpop,
+    a Subpopulation object, which functions as
+    the root of the 'tree' of clones.
     """
-    def __init__(self, opt):
+    def __init__(self, opt, from_file=False):
         self.opt = opt
-        self.tumoursize = opt.init_size
-        self.clonecount = 1
         self.max_size_lim = opt.max_size_lim
         self.prolif_lim = self.opt.prolif_lim
-        self.subpop = Subpopulation(opt=opt,
-                                    prolif=opt.pro, mut_rate=opt.mut,
-                                    depth=0, t_curr=0,
-                                    col='n', prev_time=0)
-        if opt.init_diversity:
-            self.subpop.size = 0 #don't use init dummy popn if reading from file
-            self.subpop.new_subpop_from_file(self.opt, self.opt.sub_file)
+
+        if not from_file:
+            self.tumoursize = opt.init_size
+            self.clonecount = 1
+            self.all_mutations = {'b': [], 'n': [], 'd': [], 'r': []}
+            self.subpop = Subpopulation(opt=opt,
+                                        prolif=opt.pro, mut_rate=opt.mut,
+                                        depth=0, t_curr=0,
+                                        col='n', prev_time=0)
+            if opt.init_diversity:
+                self.subpop.size = 0
+                self.subpop.new_subpop_from_file(self.opt, self.opt.sub_file)
+            else:
+                self.subpop.size = opt.init_size
+            self.avg_pro_rate = self.opt.pro
+            self.avg_mut_rate = self.opt.mut
         else:
-            self.subpop.size = opt.init_size
+            # these attributes will be initialised from file
+            self.tumoursize = self.clonecount = None
+            self.all_mutations = self.subpop = None
+            self.avg_pro_rate = self.avg_mut_rate = None
+
         self.analytics_base = Analytics()
         self.select_pressure = 0.0
         self.mutagenic_pressure = 0.0
         self.selective_pressure_applied = False
-        self.avg_pro_rate = self.opt.pro
-        self.avg_mut_rate = self.opt.mut
         # these lists will be populated at crash time
         self.mid_proliferation = []
         self.mid_mutation = []
-        self.all_mutations = {'b': [], 'n': [], 'd': [], 'r': []}
+
+    @classmethod
+    def init_from_file(cls, opt, extra_params, root_clone, all_muts):
+        """
+        Initialise a population from a stored snapshot.
+
+        Inputs
+        ------
+        opt: global parameter set, just like one created for
+             a normal simulation
+        extra_params: dictionary containing values for various
+                      population attributes. See snapshot.py
+                      for details.
+
+        Returns
+        -------
+        A new Population object.
+        """
+        new_popn = cls(opt, from_file=True)
+        new_popn.subpop = root_clone
+        new_popn.all_mutations = all_muts
+
+        # Update attributes from file.
+        # Only update params that the population already has,
+        # to prevent bad input from pickled file
+        for param in extra_params:
+            if hasattr(new_popn, param):
+                setattr(new_popn, param, extra_params[param])
+            else:
+                raise Exception("attempting to set invalid attribute for population: {}".format(param))
 
     def update(self, treatmt, t_curr):
         """
