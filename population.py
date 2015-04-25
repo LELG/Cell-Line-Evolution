@@ -88,6 +88,8 @@ class Population(object):
             else:
                 raise Exception("attempting to set invalid attribute for population: {}".format(param))
 
+        return new_popn
+
     def update(self, treatmt, t_curr):
         """
         Update tumour and clones for a single time step.
