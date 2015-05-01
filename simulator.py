@@ -29,14 +29,12 @@ import population
 import treatment
 import analytics
 import mutation
-from utilities import secs_to_hms
+from utils import secs_to_hms
 import tree_to_xml
 import plotdata
 import dropdata
+from constants import END_POP_TOO_LARGE, END_POP_DIED_OUT, END_MAX_CYCLES
 
-END_POP_TOO_LARGE = "Population exceeded size limit."
-END_POP_DIED_OUT = "Population died out."
-END_MAX_CYCLES = "Simulation reached maximum cycle limit."
 
 class Simulator(object):
     """

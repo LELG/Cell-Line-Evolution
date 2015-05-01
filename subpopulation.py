@@ -14,6 +14,7 @@ from ast import literal_eval
 #import random
 import numpy as np
 from mutation import Mutation
+from constants import MUT_THRESHOLD, BEN_THRESHOLD, DEL_THRESHOLD
 
 class Subpopulation(object):
     """
@@ -330,10 +331,6 @@ class Subpopulation(object):
         -------
         - whether the mutation is neutral (True / False)
         """
-        MUT_THRESHOLD = 0.05
-        BEN_THRESHOLD = 0.05
-        DEL_THRESHOLD = 0.01
-
         pro_change = new_mutn.prolif_rate_effect / self.prolif_rate
         mut_change = abs(new_mutn.mut_rate_effect) / self.mut_rate
         if -DEL_THRESHOLD < pro_change < BEN_THRESHOLD:

@@ -17,6 +17,7 @@ Change log
 ----------
 """
 import csv
+from constants import CRASH_BUFFER
 
 class Analytics(object):
     """
@@ -86,7 +87,6 @@ class Analytics(object):
 
 def went_through_crash(treatmt, popn):
     """Determine whether a population survived the crash."""
-    CRASH_BUFFER = 25 #check just past crash time
     post_crash_time = treatmt.select_time + CRASH_BUFFER
     return len(popn.analytics_base.time) > post_crash_time
 

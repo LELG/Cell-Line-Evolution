@@ -28,7 +28,9 @@ Contents
     subpopulation --- Class, functions for individual clones
     treatment     --- Class, functions for treatment
     tree_to_xml   --- Export phylogenetic tree as XML file
-    utilities     --- Various utility functions
+    snapshot      --- Store and load population 'snapshots'
+    utils         --- Various utility functions
+    constants     --- Various constants used throughout the package
 
 :: Scripts etc.
 
