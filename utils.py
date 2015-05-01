@@ -21,8 +21,8 @@ Change Log
 ----------
 4 Feb 2015: created secs_to_hms() utility
             moved directory creation utility here
+1 May 2015: created delete_local_file() utility
 """
-
 import os
 import errno
 
@@ -40,4 +40,17 @@ def make_path_unless_exists(path):
         os.makedirs(path)
     except OSError as exception:
         if exception.errno != errno.EEXIST:
+            raise
+
+
+def delete_local_file(fname):
+    """Delete a file from the local directory (if it exists).
+
+    This try-except is taken from the StackOverflow post:
+        'Most pythonic way to delete a file which may not exist'
+    """
+    try:
+        os.remove(fname)
+    except OSError as err:
+        if err.errno != errno.ENOENT:
             raise
