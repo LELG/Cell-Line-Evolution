@@ -72,7 +72,6 @@ class Simulator(object):
         # calculate and record proliferation limit
         # this avoids the need to take it from command line
         self.opt.prolif_lim = opt.pro - opt.die
-        self.opt.get_beta_dist_sample = lambda: np.random.beta(1, 3)
 
         # TODO determine which of these params
         # really need to be copied out of opt.

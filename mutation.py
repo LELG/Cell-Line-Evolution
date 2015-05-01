@@ -112,11 +112,15 @@ class Mutation(object):
         self.original_clone.become_resistant(self.resist_strength)
 
 
+def mutn_effect_size_from_beta_dist():
+    """Use beta distribution to get random mutation effect size."""
+    return np.random.beta(1, 3)
+
+
 def get_prolif_rate_mutn(opt):
     """Generate a proliferation rate mutation effect."""
     scale_factor = opt.scale * opt.pro
-    prolif_rate_effect = get_mutn_effect(opt.get_beta_dist_sample,
-                                         scale_factor, opt.prob_mut_pos,
+    prolif_rate_effect = get_mutn_effect(scale_factor, opt.prob_mut_pos,
                                          opt.prob_mut_neg)
     return prolif_rate_effect
 
@@ -124,13 +128,12 @@ def get_prolif_rate_mutn(opt):
 def get_mut_rate_mutn(opt):
     """Generate a mutation rate mutation effect."""
     scale_factor = opt.mscale * opt.mut
-    mut_rate_effect = get_mutn_effect(opt.get_beta_dist_sample,
-                                      scale_factor, opt.prob_inc_mut,
+    mut_rate_effect = get_mutn_effect(scale_factor, opt.prob_inc_mut,
                                       opt.prob_dec_mut)
     return mut_rate_effect
 
 
-def get_mutn_effect(get_effect_size, scale_factor, prob_pos, prob_neg):
+def get_mutn_effect(scale_factor, prob_pos, prob_neg, get_effect_size=mutn_effect_size_from_beta_dist):
     """Get a mutation effect size and type.
 
     Note that `get_effect_size` must be a function

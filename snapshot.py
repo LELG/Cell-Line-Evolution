@@ -6,7 +6,6 @@ from __future__ import print_function
 import datetime
 import csv, tarfile
 from collections import deque
-import numpy as np
 import os, errno
 try:
     import cPickle as pickle
@@ -67,11 +66,6 @@ def save_parameters_to_file(popn, param_fname):
                    'clonecount': popn.clonecount,
                    'avg_pro_rate': popn.avg_pro_rate,
                    'avg_mut_rate': popn.avg_mut_rate,}
-
-    # TODO clean up this ugly hack ...
-    # manual workaround for fact that you
-    # cannot pickle a function
-    del popn.opt.get_beta_dist_sample
 
     # pickle them
     pickled_params = pickle.dumps((popn.opt, popn_params))
@@ -220,10 +214,6 @@ def load_parameters_from_file(param_fname):
         data = param_file.read()
 
     opt, popn_params = pickle.loads(data)
-
-    # TODO clean up this ugly hack ...
-    # duplicates a line in simulator.py
-    opt.get_beta_dist_sample = lambda: np.random.beta(1, 3)
 
     return opt, popn_params
 
