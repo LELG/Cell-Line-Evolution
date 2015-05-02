@@ -28,12 +28,13 @@ import numpy as np
 import population
 import treatment
 import analytics
+import snapshot
 import mutation
 from utils import secs_to_hms
 import tree_to_xml
 import plotdata
 import dropdata
-from constants import END_POP_TOO_LARGE, END_POP_DIED_OUT, END_MAX_CYCLES
+from constants import END_POP_TOO_LARGE, END_POP_DIED_OUT, END_MAX_CYCLES, END_SAVE_SNAPSHOT
 
 
 class Simulator(object):
@@ -151,6 +152,10 @@ class Simulator(object):
                 end_condition = END_POP_DIED_OUT
                 self.total_cycles = t_curr
                 break
+            if self.treatmt.is_introduced and self.opt.save_snapshot:
+                end_condition = END_SAVE_SNAPSHOT
+                self.total_cycles = t_curr
+                break
 
         # finish timing
         end_time = time.time()
@@ -245,12 +250,14 @@ class Simulator(object):
             plotdata.print_results(self.popn, "mid", t_curr)
         tree_to_xml.tree_parse(self.popn.subpop, self.popn.tumoursize,
                                t_curr, self.opt.run_dir, "mid0")
+        # TODO deprecate this drop?
         if self.opt.init_diversity:
             dropdata.drop(self.popn.subpop, self.opt.test_group_dir, "mid0")
-        #f = gzip.open('testsubpop.json.gz', 'wb')
-        #f.write(self.popn.subpop.to_JSON())
-        #f.close()
         self.write_clone_summary(self.popn, label="mid")
+        if self.opt.save_snapshot:
+            # save snapshot; don't bother generating resistance
+            snapshot.save_population_to_file(self.popn, self.run_dir)
+            return
         if self.opt.resistance:
             print("Generating resistance mutations ...")
             mutation.generate_resistance(self.popn.all_mutations,

@@ -173,6 +173,10 @@ def parse_cmd_line_args():
         Name of file containing list of
         subpopulations for an initially
         heterogeneous population.
+    save_snapshot : bool
+        Save a snapshot of the simulation
+        population just before treatment
+        is introduced.
 
     SCALING
     =======
@@ -244,6 +248,7 @@ def parse_cmd_line_args():
     saving_loading.add_argument('--init_size', type=int, default=25)
     saving_loading.add_argument('--init_diversity', type=int, default=0)
     saving_loading.add_argument('--sub_file', default='')
+    saving_loading.add_argument('--save_snapshot', action="store_true", default=False)
 
     scaling = parser.add_argument_group("scaling")
     scaling.add_argument('--scale', type=float, default=0.5)

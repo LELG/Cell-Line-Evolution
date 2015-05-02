@@ -12,6 +12,7 @@ CRASH_BUFFER = 25
 END_POP_TOO_LARGE = "Population exceeded size limit."
 END_POP_DIED_OUT = "Population died out."
 END_MAX_CYCLES = "Simulation reached maximum cycle limit."
+END_SAVE_SNAPSHOT = "Saving pre-crash population snapshot."
 
 # mutation effect thresholds below which mutations will be classed as 'neutral'
 # for instance if a threshold == 0.05, a mutation must change the
