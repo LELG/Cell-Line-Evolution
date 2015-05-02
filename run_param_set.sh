@@ -59,7 +59,7 @@ while [ $run_number -le $runs_per_param_set ]; do
   sim_params="$sim_params --param_set_dir $param_set_dir"
   sim_params="$sim_params --run_dir $run_dir"
   sim_params="$sim_params --max_cycles $max_cycles --max_size_lim $max_size_lim"
-  sim_params="$sim_params -p $proliferation_rate -d $death_rate -m $mutation_rate"
+  sim_params="$sim_params --pro $proliferation_rate --die $death_rate --mut $mutation_rate"
   sim_params="$sim_params --treatment_type $treatment_type"
   sim_params="$sim_params --decay_type $decay_type --decay_rate $decay_rate"
   sim_params="$sim_params --treatment_freq $treatment_freq"
