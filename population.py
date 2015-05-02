@@ -8,6 +8,7 @@ Yoshua Wakeham : yoshua.wakeham@petermac.org
 """
 
 from __future__ import print_function
+import gc
 from analytics import Analytics
 from subpopulation import Subpopulation
 
@@ -121,6 +122,8 @@ class Population(object):
         if self.opt.prune_clones:
             # delete all dead, childless clones
             self.subpop.prune_dead_end_clones()
+            # manual garbage collect - an attempt to improve mem usage
+            gc.collect()
 
         # update subpopulations, getting back
         # tumour size, clone count, and aggregate
