@@ -65,9 +65,11 @@ def parse_cmd_line_args():
 
     Args
     ----
-    None. The accepted command line arguments
+    The accepted command line arguments
     are as follows:
 
+    IDENTIFIERS
+    ===========
     test_group : string
         Identifier for current group of simulations.
     param_set : string
@@ -77,6 +79,8 @@ def parse_cmd_line_args():
         particular parameter set has been run in
         this set of simulations.
 
+    DIRECTORIES
+    ===========
     test_group_dir : string
         Main directory for this group of simulations.
     param_set_dir : string
@@ -84,6 +88,8 @@ def parse_cmd_line_args():
     run_dir : string
         Directory for this specific replicate run.
 
+    BOUNDS
+    ======
     max_cycles : integer
         Maximum number of time steps in simulation
     max_size_lim : integer
@@ -91,6 +97,8 @@ def parse_cmd_line_args():
         which triggers, first, selective pressure, and
         second, the end of the simulation.
 
+    TUMOUR PARAMETERS
+    =================
     pro : float
         Initial proliferation rate (homogeneous population)
     die : float
@@ -100,6 +108,8 @@ def parse_cmd_line_args():
     init_size : integer
         Initial tumour size (homogeneous population)
 
+    TREATMENT PARAMETERS
+    ====================
     treatment_type : string
         Treatment regime (e.g. single dose, metronomic, adaptive)
     decay_type : string
@@ -129,6 +139,8 @@ def parse_cmd_line_args():
         pressure. In future this may change to be an additive
         pressure, analogous to proliferation pressure.
 
+    RESISTANCE PARAMETERS
+    =====================
     --resistance : bool
         Allow for pre-existing resistance mutations
     num_resist_mutns : int
@@ -141,6 +153,8 @@ def parse_cmd_line_args():
         pressure conferred by a resistance mutation. This must be
         a float between 0 and 1.
 
+    PROBABILITIES
+    =============
     prob_mut_pos : float
         Probability that mutation with be beneficial
     prob_mut_neg : float
@@ -150,6 +164,8 @@ def parse_cmd_line_args():
     prob_dec_mut : float
         Probability of decreasing mutation rate
 
+    SAVING/LOADING
+    ==============
     init_diversity : bool
         Initial diversity of population
         (homogeneous or heterogeneous)
@@ -158,11 +174,15 @@ def parse_cmd_line_args():
         subpopulations for an initially
         heterogeneous population.
 
+    SCALING
+    =======
     scale : float
         Scaling parameter, partly hard coded at the moment
     mscale : float
         Mutation rate scaling parameter, partly hard coded at the moment
 
+    MISCELLANEOUS
+    =============
     --R : bool
         Output data in R format instead of matplotlib
     --M : bool
@@ -179,55 +199,61 @@ def parse_cmd_line_args():
     """
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-g', '--test_group')
-    parser.add_argument('--param_set')
-    parser.add_argument('--run_number', type=int)
+    identifiers = parser.add_argument_group("identifiers")
+    identifiers.add_argument('--test_group', required=True)
+    identifiers.add_argument('--param_set', required=True)
+    identifiers.add_argument('--run_number', required=True, type=int)
 
-    parser.add_argument('--test_group_dir')
-    parser.add_argument('--param_set_dir')
-    parser.add_argument('--run_dir')
+    directories = parser.add_argument_group("directories")
+    directories.add_argument('--test_group_dir', required=True)
+    directories.add_argument('--param_set_dir', required=True)
+    directories.add_argument('--run_dir', required=True)
 
-    parser.add_argument('-l', '--max_cycles', type=int)
-    parser.add_argument('-x', '--max_size_lim', type=int)
+    bounds = parser.add_argument_group("bounds")
+    bounds.add_argument('--max_cycles', type=int, default=int(1e5))
+    bounds.add_argument('--max_size_lim', type=int, default=int(1e5))
 
-    parser.add_argument('-p', '--pro', type=float)
-    parser.add_argument('-d', '--die', type=float)
-    parser.add_argument('-m', '--mut', type=float)
+    tumour_params = parser.add_argument_group("tumour params")
+    tumour_params.add_argument('--pro', type=float, default=0.04)
+    tumour_params.add_argument('--die', type=float, default=0.03)
+    tumour_params.add_argument('--mut', type=float, default=0.001)
 
-    parser.add_argument('--treatment_type', default='single_dose')
-    parser.add_argument('--decay_type', default='constant')
-    parser.add_argument('--decay_rate', type=float, default=0.0)
-    parser.add_argument('--treatment_freq', type=int, default=100)
-    parser.add_argument('--adaptive_increment', type=float, default=0.001)
-    parser.add_argument('--adaptive_threshold', type=float, default=0.025)
-    parser.add_argument('-t', '--select_time', type=int)
-    parser.add_argument('-s', '--select_pressure', type=float)
-    parser.add_argument('-u', '--mutagenic_pressure', type=float, default=0.0)
+    treatmt_params = parser.add_argument_group("treatment params")
+    treatmt_params.add_argument('--treatment_type', default='single_dose')
+    treatmt_params.add_argument('--decay_type', default='constant')
+    treatmt_params.add_argument('--decay_rate', type=float, default=0.0)
+    treatmt_params.add_argument('--treatment_freq', type=int, default=100)
+    treatmt_params.add_argument('--adaptive_increment', type=float, default=0.001)
+    treatmt_params.add_argument('--adaptive_threshold', type=float, default=0.025)
+    treatmt_params.add_argument('--select_time', type=int, default=400000)
+    treatmt_params.add_argument('--select_pressure', type=float, default=0.01)
+    treatmt_params.add_argument('--mutagenic_pressure', type=float, default=0.0)
 
-    parser.add_argument('--resistance', action="store_true", default=False)
-    parser.add_argument('--num_resist_mutns', type=int, default=-1)
-    parser.add_argument('--resist_strength', type=float, default=1.0)
+    resist_params = parser.add_argument_group("resistance params")
+    resist_params.add_argument('--resistance', action="store_true", default=False)
+    resist_params.add_argument('--num_resist_mutns', type=int, default=-1)
+    resist_params.add_argument('--resist_strength', type=float, default=1.0)
 
-    parser.add_argument('--prob_mut_pos', type=float)
-    parser.add_argument('--prob_mut_neg', type=float)
-    parser.add_argument('--prob_inc_mut', type=float)
-    parser.add_argument('--prob_dec_mut', type=float)
+    probabilities = parser.add_argument_group("probabilities")
+    probabilities.add_argument('--prob_mut_pos', type=float, default=0.01)
+    probabilities.add_argument('--prob_mut_neg', type=float, default=0.99)
+    probabilities.add_argument('--prob_inc_mut', type=float, default=0.0)
+    probabilities.add_argument('--prob_dec_mut', type=float, default=0.0)
 
-    parser.add_argument('-z', '--init_size', type=int, default=25)
-    parser.add_argument('--init_diversity', type=int)
-    parser.add_argument('--sub_file')
+    saving_loading = parser.add_argument_group("saving/loading")
+    saving_loading.add_argument('--init_size', type=int, default=25)
+    saving_loading.add_argument('--init_diversity', type=int, default=0)
+    saving_loading.add_argument('--sub_file', default='')
 
-    parser.add_argument('-c', '--scale', type=float)
-    parser.add_argument('-e', '--mscale', type=float)
+    scaling = parser.add_argument_group("scaling")
+    scaling.add_argument('--scale', type=float, default=0.5)
+    scaling.add_argument('--mscale', type=float, default=1.0)
 
-    parser.add_argument('--r_output', '--R',
-                        action="store_true", default=False)
-    parser.add_argument('--auto_treatment', '--M',
-                        action="store_true", default=False)
-    parser.add_argument('--prune_clones', '--Z',
-                        action="store_true", default=False)
-    parser.add_argument('--no_plots', '--NP',
-                        action="store_true", default=False)
+    misc = parser.add_argument_group("miscellaneous")
+    misc.add_argument('--r_output', '--R', action="store_true", default=False)
+    misc.add_argument('--auto_treatment', '--M', action="store_true", default=False)
+    misc.add_argument('--prune_clones', '--Z', action="store_true", default=False)
+    misc.add_argument('--no_plots', '--NP', action="store_true", default=False)
 
     return parser.parse_args()
 
