@@ -106,6 +106,12 @@ class Mutation(object):
             raise
         self.mut_type = new_mut_type
 
+    def classify_neutral(self, all_muts):
+        """Classify this mutation as a neutral mutation."""
+        self.prolif_rate_effect = 0.0
+        self.mut_rate_effect = 0.0
+        self.switch_mutn_type(all_muts, 'n')
+
     def become_resistant(self, all_muts, resist_strength):
         """Make this mutation a resistance mutation."""
         # switch which sublist this mutation appears in
