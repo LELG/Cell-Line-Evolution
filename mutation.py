@@ -17,11 +17,13 @@ class Mutation(object):
     # Used to assign unique IDs to mutations.
     num_muts_created = 0
 
-    def __init__(self, opt, all_muts, from_file=False):
+    def __init__(self, opt, t_curr, all_muts, from_file=False):
         """Create new mutation"""
         # assign ID and increment object counter
         self.mut_id = self.__class__.num_muts_created
         self.__class__.num_muts_created += 1
+
+        self.s_time = t_curr
 
         if not from_file:
             # get proliferation rate effect and mutation type
@@ -45,7 +47,8 @@ class Mutation(object):
                 raise
         # mutation is being initialised from file
         else:
-            self.prolif_rate_effect = self.mut_rate_effect = self.mut_type = None
+            self.prolif_rate_effect = self.mut_rate_effect = None
+            self.mut_type = None
             # this var will be used to associate the
             # mutation with its original clone
             self.original_clone_id = None
@@ -70,7 +73,7 @@ class Mutation(object):
         A new Mutation with attributes determined by attr_dict
         """
         # initialise new mutation object
-        new_mut = cls(opt, all_muts, from_file=True)
+        new_mut = cls(opt, 0, all_muts, from_file=True)
 
         # Update attributes from file.
         # Only update attributes that the mutation already has,

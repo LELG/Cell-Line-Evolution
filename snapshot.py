@@ -91,7 +91,7 @@ def save_muts_to_file(all_muts, mut_fname):
         writer = csv.writer(mut_file)
         header = ['mut_id', 'mut_type',
                   'prolif_rate_effect', 'mut_rate_effect',
-                  'resist_strength', 'original_clone_id']
+                  'resist_strength', 'original_clone_id', 's_time']
         writer.writerow(header)
 
         for mut_type in all_muts:
@@ -101,7 +101,8 @@ def save_muts_to_file(all_muts, mut_fname):
             for mut in all_muts[mut_type]:
                 mut_data = [mut.mut_id, mut.mut_type,
                             mut.prolif_rate_effect, mut.mut_rate_effect,
-                            mut.resist_strength, mut.original_clone.clone_id]
+                            mut.resist_strength, mut.original_clone.clone_id,
+                            mut.s_time]
                 # convert all data to strings, to ensure, in
                 # particular, that None values are written in such a way
                 # that they can later be parsed by literal_eval

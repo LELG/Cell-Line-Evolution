@@ -244,7 +244,7 @@ class Subpopulation(object):
         # will now register as dead
         if not self.is_dead():
             for _i in xrange(new_mutns):
-                new_mutn = Mutation(opt, all_muts)
+                new_mutn = Mutation(opt, t_curr, all_muts)
                 if self.is_neutral_mutn(new_mutn):
                     new_mutn.switch_mutn_type(all_muts, 'n')
                     self.add_mutation(new_mutn)
