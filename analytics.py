@@ -40,6 +40,9 @@ class Analytics(object):
         self.avg_proliferation = []
         self.select_pressure = []
 
+    def __repr__(self):
+        return "{}()".format(self.__class__.__name__)
+
     def update(self, popn, treatmt, t_curr):
         """
         Update analytics for a single time step.

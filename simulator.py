@@ -115,6 +115,12 @@ class Simulator(object):
         else:
             raise ValueError("Bad value for treatment type parameter")
 
+    def __repr__(self):
+        return "{}({}, ps {}, run {})".format(self.__class__.__name__,
+                                              self.test_group,
+                                              self.param_set,
+                                              self.run_number,)
+
 
     def run(self):
         """
