@@ -49,8 +49,6 @@ class Simulator(object):
     ----------
     opt : namespace containing all command-line
         parameters used to run this simulation.
-    is_running : bool, record whether the sim
-        is currently running.
     runtime : simulation runtime.
     total_cycles : total number of time steps
         elapsed in simulation.
@@ -98,7 +96,6 @@ class Simulator(object):
         self.prune_clones = opt.prune_clones
         self.no_plots = opt.no_plots
 
-        self.is_running = False
         self.treatment_introduced = False
         self.runtime = None
         self.total_cycles = self.max_cycles
@@ -139,7 +136,6 @@ class Simulator(object):
         -------
         None. Concludes with a call to Simulator.finish().
         """
-        self.is_running = True
 
         # begin timing simulation
         start_time = time.time()
@@ -166,8 +162,6 @@ class Simulator(object):
         # finish timing
         end_time = time.time()
         self.runtime = end_time - start_time
-
-        self.is_running = False
 
         # end simulation
         self.finish(end_condition)
