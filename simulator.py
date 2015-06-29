@@ -114,7 +114,7 @@ class Simulator(object):
                                               self.run_number,)
 
 
-    def run(self):
+    def run(self, start_cycle=0):
         """
         Run simulation.
 
@@ -125,7 +125,9 @@ class Simulator(object):
 
         Args
         ----
-        None
+        start_cycle: the simulation cycle to begin iterating from.
+                     This will be greater than zero if the sim is loading
+                     a population from file.
 
         Returns
         -------
@@ -136,7 +138,7 @@ class Simulator(object):
         start_time = time.time()
 
         end_condition = END_MAX_CYCLES
-        for t_curr in xrange(self.max_cycles):
+        for t_curr in xrange(start_cycle, self.max_cycles):
             self.update(t_curr)
 
             # test for end conditions
