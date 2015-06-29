@@ -45,13 +45,14 @@ class Population(object):
                 self.subpop.size = opt.init_size
             self.avg_pro_rate = self.opt.pro
             self.avg_mut_rate = self.opt.mut
+            self.analytics_base = Analytics()
         else:
             # these attributes will be initialised from file
             self.tumoursize = self.clonecount = None
             self.all_mutations = self.subpop = None
             self.avg_pro_rate = self.avg_mut_rate = None
+            self.analytics_base = None
 
-        self.analytics_base = Analytics()
         self.select_pressure = 0.0
         self.mutagenic_pressure = 0.0
         self.selective_pressure_applied = False
@@ -60,7 +61,7 @@ class Population(object):
         self.mid_mutation = []
 
     @classmethod
-    def init_from_file(cls, opt, extra_params, root_clone, all_muts):
+    def init_from_file(cls, opt, analytics, extra_params, root_clone, all_muts):
         """
         Initialise a population from a stored snapshot.
 
@@ -77,6 +78,7 @@ class Population(object):
         A new Population object.
         """
         new_popn = cls(opt, from_file=True)
+        new_popn.analytics_base = analytics
         new_popn.subpop = root_clone
         new_popn.all_mutations = all_muts
 

@@ -40,6 +40,23 @@ class Analytics(object):
         self.avg_proliferation = []
         self.select_pressure = []
 
+    @classmethod
+    def init_from_file(cls, anlt_fname):
+        """Load an analytics object from a CSV file representation."""
+        analytics = cls()
+        with open(anlt_fname) as filep:
+            reader = csv.DictReader(filep)
+            for rowdict in reader:
+                for attr in rowdict:
+                    # this relies on analytics values being either
+                    # ints or floats
+                    if '.' in rowdict[attr]:
+                        val = float(rowdict[attr])
+                    else:
+                        val = int(rowdict[attr])
+                    getattr(analytics, attr).append(val)
+        return analytics
+
     def __repr__(self):
         return "{}()".format(self.__class__.__name__)
 

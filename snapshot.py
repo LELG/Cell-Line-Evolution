@@ -13,6 +13,7 @@ except ImportError:
 from mutation import Mutation
 from subpopulation import Subpopulation
 from population import Population
+from analytics import Analytics
 from utils import delete_local_file
 
 
@@ -25,14 +26,16 @@ def save_population_to_file(t_curr, popn, fpath):
     """
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M")
     param_fname = "params_{}.pkl".format(timestamp)
+    anlt_fname = "anlt_{}.csv".format(timestamp)
     mut_fname = "mutations_{}.csv".format(timestamp)
     clone_fname = "clones_{}.csv".format(timestamp)
-    snapshot_fnames = [param_fname, mut_fname, clone_fname]
+    snapshot_fnames = [param_fname, anlt_fname, mut_fname, clone_fname]
 
     root_clone = popn.subpop
     all_muts = popn.all_mutations
 
     # create snapshot files
+    popn.analytics_base.write_to_file(anlt_fname)
     save_parameters_to_file(t_curr, popn, param_fname)
     save_muts_to_file(all_muts, mut_fname)
     save_clones_to_file(root_clone, clone_fname)
@@ -193,6 +196,8 @@ def load_population_from_file(archive_path):
             mut_fname = filename
         elif filename.startswith('params_'):
             param_fname = filename
+        elif filename.startswith('anlt_'):
+            anlt_fname = filename
         else:
             raise Exception("population archive contains invalid files")
 
@@ -201,6 +206,7 @@ def load_population_from_file(archive_path):
         popn_archive.extract(clone_fname)
         popn_archive.extract(mut_fname)
         popn_archive.extract(param_fname)
+        popn_archive.extract(anlt_fname)
     except:
         # one of our snapshot files hasn't been found
         raise
@@ -209,16 +215,17 @@ def load_population_from_file(archive_path):
 
     # load parameters, mutations and clones
     t_curr, opt, popn_params = load_parameters_from_file(param_fname)
+    analytics = Analytics.init_from_file(anlt_fname)
     all_muts, mutation_map = load_muts_from_file(opt, mut_fname)
     root_clone = load_clones_from_file(opt, mutation_map, clone_fname)
 
     # construct population from parameter set,
     # clone tree and mutation dictionary
-    new_popn = Population.init_from_file(opt, popn_params, root_clone, all_muts)
+    new_popn = Population.init_from_file(opt, analytics, popn_params, root_clone, all_muts)
 
     # now delete the individual snapshot files,
     # as we will always load popn from an archive
-    for fname in [clone_fname, mut_fname, param_fname]:
+    for fname in [anlt_fname, clone_fname, mut_fname, param_fname]:
         delete_local_file(fname)
 
     return t_curr, opt, new_popn
