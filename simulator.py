@@ -64,40 +64,61 @@ class Simulator(object):
         See popln.main.parse_cmd_line_args() for a
         description of the command line arguments.
         """
+        # copy entire option set
         self.opt = opt
 
-        # calculate and record proliferation limit
-        # this avoids the need to take it from command line
-        self.opt.prolif_lim = opt.pro - opt.die
-
-        # TODO determine which of these params
-        # really need to be copied out of opt.
+        # copy over identifier variables
         self.test_group = opt.test_group
         self.param_set = opt.param_set
         self.run_number = opt.run_number
-
         self.test_group_dir = opt.test_group_dir
         self.param_set_dir = opt.param_set_dir
         self.run_dir = opt.run_dir
 
-        self.max_cycles = opt.max_cycles
-        self.max_size_lim = opt.max_size_lim
+        if opt.load_snapshot:
+            # we're loading our population from a file
+            curr_cycle, popn_opt, popn = snapshot.load_population_from_file(opt.snapshot_archive)
 
-        self.init_diversity = opt.init_diversity
-        self.sub_file = opt.sub_file
+            self.popn = popn
 
-        self.r_output = opt.r_output
-        self.auto_treatment = opt.auto_treatment
-        self.prune_clones = opt.prune_clones
-        self.no_plots = opt.no_plots
+            # several parameters should be taken from the stored population,
+            # rather than the loading simulation. When specifying params
+            # for the loading sim, any values for these params are
+            # effectively ignored
+            params_to_overwrite = ['max_size_lim', 'pro', 'die', 'mut',
+                                   'init_size', 'prolif_lim',
+                                   'prob_mut_pos', 'prob_mut_neg',
+                                   'prob_inc_mut', 'prob_dec_mut',
+                                   'scale', 'mscale', 'prune_clones']
+            for param in params_to_overwrite:
+                stored_val = getattr(popn_opt, param)
+                setattr(self.opt, param, stored_val)
 
+            # now that the parameter sets have been merged, update
+            # the population's parameter set
+            self.popn.opt = self.opt
+
+            # start from snapshot cycle
+            self.start_cycle = curr_cycle
+        else:
+            # manually calculate proliferation limit
+            self.opt.prolif_lim = opt.pro - opt.die
+
+            # create a new Population
+            self.popn = population.Population(self.opt)
+
+            self.start_cycle = 0
+
+        # copy limit parameters
+        self.max_cycles = self.opt.max_cycles
+        self.max_size_lim = self.opt.max_size_lim
+
+        # set some tracking variables
         self.treatment_introduced = False
         self.runtime = None
         self.total_cycles = self.max_cycles
 
-        # create the Population
-        self.popn = population.Population(self.opt)
-        # create the Treatment
+        # finally, create Treatment object
         if opt.treatment_type == 'single_dose':
             self.treatmt = treatment.Treatment(self.opt, self)
         elif opt.treatment_type == 'metronomic':
@@ -106,6 +127,7 @@ class Simulator(object):
             self.treatmt = treatment.AdaptiveTreatment(self.opt, self)
         else:
             raise ValueError("Bad value for treatment type parameter")
+
 
     def __repr__(self):
         return "{}({}, ps {}, run {})".format(self.__class__.__name__,
@@ -214,7 +236,7 @@ class Simulator(object):
         data_dump_fpath = "{0}/data/analytics_data.csv".format(self.run_dir)
         self.popn.analytics_base.write_to_file(data_dump_fpath)
         # make plots
-        if not self.no_plots:
+        if not self.opt.no_plots:
             plotdata.print_results(self.popn, "end", self.total_cycles)
             plotdata.print_plots(self.popn, "new")
         fname = ""
@@ -222,7 +244,7 @@ class Simulator(object):
         tree_to_xml.tree_parse(self.popn.subpop, self.popn.tumoursize,
                                self.total_cycles, self.run_dir, fname)
         # if heterogeneous initial pop, output drop data
-        if self.init_diversity:
+        if self.opt.init_diversity:
             print("Printing drop data")
             dropdata.drop(self.popn.subpop, self.test_group_dir, "end")
 
