@@ -251,7 +251,7 @@ class Simulator(object):
         self.write_clone_summary(self.popn, label="mid")
         if self.opt.save_snapshot:
             # save snapshot; don't bother generating resistance
-            snapshot.save_population_to_file(self.popn, self.run_dir)
+            snapshot.save_population_to_file(t_curr, self.popn, self.run_dir)
             return
         if self.opt.resistance:
             print("Generating resistance mutations ...")

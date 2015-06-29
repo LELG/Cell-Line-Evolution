@@ -16,7 +16,7 @@ from population import Population
 from utils import delete_local_file
 
 
-def save_population_to_file(popn, fpath):
+def save_population_to_file(t_curr, popn, fpath):
     """Save population snapshot to file.
 
     Take a snapshot of the current simulation
@@ -33,7 +33,7 @@ def save_population_to_file(popn, fpath):
     all_muts = popn.all_mutations
 
     # create snapshot files
-    save_parameters_to_file(popn, param_fname)
+    save_parameters_to_file(t_curr, popn, param_fname)
     save_muts_to_file(all_muts, mut_fname)
     save_clones_to_file(root_clone, clone_fname)
 
@@ -49,7 +49,7 @@ def save_population_to_file(popn, fpath):
         delete_local_file(fname)
 
 
-def save_parameters_to_file(popn, param_fname):
+def save_parameters_to_file(t_curr, popn, param_fname):
     """
     Save population parameters to file.
 
@@ -67,7 +67,7 @@ def save_parameters_to_file(popn, param_fname):
 
     # pickle the global parameter set along with these
     # population parameters
-    pickled_params = pickle.dumps((popn.opt, popn_params))
+    pickled_params = pickle.dumps((t_curr, popn.opt, popn_params))
 
     # write to file
     with open(param_fname, 'w') as param_file:
@@ -208,7 +208,7 @@ def load_population_from_file(archive_path):
         popn_archive.close()
 
     # load parameters, mutations and clones
-    opt, popn_params = load_parameters_from_file(param_fname)
+    t_curr, opt, popn_params = load_parameters_from_file(param_fname)
     all_muts, mutation_map = load_muts_from_file(opt, mut_fname)
     root_clone = load_clones_from_file(opt, mutation_map, clone_fname)
 
@@ -221,7 +221,7 @@ def load_population_from_file(archive_path):
     for fname in [clone_fname, mut_fname, param_fname]:
         delete_local_file(fname)
 
-    return new_popn
+    return t_curr, opt, new_popn
 
 
 def load_parameters_from_file(param_fname):
@@ -235,9 +235,9 @@ def load_parameters_from_file(param_fname):
     with open(param_fname) as param_file:
         data = param_file.read()
 
-    opt, popn_params = pickle.loads(data)
+    t_curr, opt, popn_params = pickle.loads(data)
 
-    return opt, popn_params
+    return t_curr, opt, popn_params
 
 
 def load_muts_from_file(opt, mut_fname):
