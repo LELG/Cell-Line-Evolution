@@ -24,7 +24,7 @@ class Subpopulation(object):
     # Used to assign unique IDs to clones.
     num_clones_created = 0
 
-    def __init__(self, opt, prolif, mut_rate, depth, t_curr, col, prev_time, inherited_mutns=None, from_file=False):
+    def __init__(self, opt, prolif, mut_rate, depth, t_curr, col, prev_time, inherited_mutns=None, num_neutral_mutns=0, from_file=False):
         """Create new clone."""
         # assign ID and increment object counter
         self.clone_id = self.__class__.num_clones_created
@@ -45,9 +45,10 @@ class Subpopulation(object):
         self.branch_length = t_curr - prev_time
 
         if inherited_mutns is None:
-            self.mutations = {'b': [], 'n': [], 'd': [], 'r': []}
+            self.mutations = {'b': [], 'd': [], 'r': []}
         else:
             self.mutations = inherited_mutns
+        self.num_neutral_mutns = num_neutral_mutns
 
         if len(self.mutations['r']) > 0:
             self.is_resistant = True
@@ -247,7 +248,8 @@ class Subpopulation(object):
                 new_mutn = Mutation(opt, t_curr, all_muts)
                 if self.is_neutral_mutn(new_mutn):
                     new_mutn.classify_neutral(all_muts)
-                    self.add_mutation(new_mutn)
+                    new_mutn.original_clone = self
+                    self.num_neutral_mutns += 1
                 else:
                     self.new_child(t_curr, opt, new_mutn)
                     self.size -= 1
@@ -291,7 +293,8 @@ class Subpopulation(object):
                               prolif=new_prolif_rate, mut_rate=new_mut_rate,
                               depth=new_depth, t_curr=t_curr,
                               col=self.col, prev_time=self.s_time,
-                              inherited_mutns=child_mutns)
+                              inherited_mutns=child_mutns,
+                              num_neutral_mutns=self.num_neutral_mutns)
 
         new_mutn.original_clone = child
         self.nodes.append(child)
@@ -367,16 +370,32 @@ class Subpopulation(object):
         for node in self.nodes:
             node.switch_mutn_type(mutn, new_type)
 
-    def become_resistant(self, resist_strength):
+    def become_resistant(self, resist_mutn, orig_clone=False):
         """
         Register the fact that this clone contains a resistance mutation.
         """
         self.is_resistant = True
+
+        if resist_mutn.mut_type == 'n':
+            self.mutations['r'].append(resist_mutn)
+            self.num_neutral_mutns -= 1
+        elif resist_mutn.mut_type == 'd':
+            # need to remove mutn from our list of deleterious muts
+            self.switch_mutn_type(resist_mutn, 'r')
+        else:
+            raise ValueError("resistant mutation was not neutral/deleterious")
+        
         # on the off-chance we have acquired multiple resistance mutations,
         # our resistance strength is just whichever is stronger
-        self.resist_strength = max(self.resist_strength, resist_strength)
+        self.resist_strength = max(self.resist_strength, resist_mutn.resist_strength)
         for node in self.nodes:
-            node.become_resistant(resist_strength)
+            if orig_clone:
+                # we are in the clone where the mutation first arose, so
+                # we need to check which of our children will have inherited
+                # the now-resistant mutation; compare when each was created
+                if node.s_time <= resist_mutn.s_time:
+                    continue
+            node.become_resistant(resist_mutn)
 
     def prune_dead_end_clones(self):
         """Remove all dead end clones from subpopulation tree.
@@ -533,7 +552,7 @@ class Subpopulation(object):
         writer = csv.writer(summary_file)
 
         vals = (id(self),
-                len(self.mutations['b']), len(self.mutations['n']),
+                len(self.mutations['b']), self.num_neutral_mutns,
                 len(self.mutations['d']), len(self.mutations['r']),
                 self.size, self.depth, self.prolif_rate, self.mut_rate)
 

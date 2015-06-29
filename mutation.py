@@ -82,7 +82,8 @@ class Mutation(object):
             if hasattr(new_mut, attr):
                 setattr(new_mut, attr, literal_eval(attr_dict[attr]))
             else:
-                raise Exception("attempting to set invalid attribute for subpop: {}".format(attr))
+                raise Exception("attempting to set invalid attribute " +
+                                "for subpop: {}".format(attr))
 
         # insert mutation into all_muts dictionary,
         # assuming that all_muts has keys for each
@@ -103,7 +104,8 @@ class Mutation(object):
         try:
             all_muts[new_mut_type].append(self)
         except KeyError:
-            raise
+            raise KeyError("Invalid mutn type '{}'".format(new_mut_type))
+
         self.mut_type = new_mut_type
 
     def classify_neutral(self, all_muts):
@@ -115,10 +117,10 @@ class Mutation(object):
     def become_resistant(self, all_muts, resist_strength):
         """Make this mutation a resistance mutation."""
         # switch which sublist this mutation appears in
-        self.original_clone.switch_mutn_type(self, 'r')
+        #self.original_clone.switch_mutn_type(self, 'r')
         self.switch_mutn_type(all_muts, 'r')
         self.resist_strength = resist_strength
-        self.original_clone.become_resistant(self.resist_strength)
+        self.original_clone.become_resistant(self, orig_clone=True)
 
 
 def mutn_effect_size_from_beta_dist():
@@ -189,7 +191,8 @@ def generate_resistance(all_mutations, tumoursize, deterministic_num_r_muts, res
     if deterministic_num_r_muts >= 0:
         num_resist_mutns = deterministic_num_r_muts
     else:
-        num_resist_mutns = get_rand_num_r_mutns(len(del_neutr_mutns), tumoursize)
+        num_resist_mutns = get_rand_num_r_mutns(len(del_neutr_mutns),
+                                                tumoursize)
 
     # random.sample() returns a list of num_resist_mutns mutations,
     # randomly selected from del_neutr_mutns (with uniform likelihood)

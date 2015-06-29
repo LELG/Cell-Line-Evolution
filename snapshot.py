@@ -128,7 +128,8 @@ def save_clones_to_file(root_clone, clone_fname):
         header = ['clone_id', 'parent_id', 'num_children',
                   'prolif_rate', 'mut_rate', 'size', 'precrash_size',
                   'depth', 's_time', 'd_time', 'branch_length',
-                  'is_resistant', 'resist_strength', 'mutations',]
+                  'is_resistant', 'resist_strength',
+                  'mutations', 'num_neutral_mutns',]
         writer.writerow(header)
 
         # we use a LIFO queue to store the clones to file in BFS order
@@ -161,7 +162,7 @@ def save_clones_to_file(root_clone, clone_fname):
                           curr_clone.branch_length,
                           curr_clone.is_resistant, curr_clone.resist_strength,
                           # mutations
-                          mut_id_dict]
+                          mut_id_dict, curr_clone.num_neutral_mutns]
             # convert all data to string rep, to ensure, in
             # particular, that None vals are written in such a way
             # that it can later be parsed by literal_eval
