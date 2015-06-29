@@ -86,11 +86,6 @@ class Simulator(object):
         self.init_diversity = opt.init_diversity
         self.sub_file = opt.sub_file
 
-        # TODO shift these parameters to Treatment class?
-        self.select_time = opt.select_time
-        self.select_pressure = opt.select_pressure
-        self.mutagenic_pressure = opt.mutagenic_pressure
-
         self.r_output = opt.r_output
         self.auto_treatment = opt.auto_treatment
         self.prune_clones = opt.prune_clones
