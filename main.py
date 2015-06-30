@@ -52,7 +52,7 @@ def main():
     # create and run simulation
     sim = simulator.Simulator(opt)
     sim.print_info()
-    sim.run()
+    sim.run(sim.start_cycle)
 
 
 def parse_cmd_line_args():
@@ -107,6 +107,13 @@ def parse_cmd_line_args():
         Initial mutation rate (homogeneous population)
     init_size : integer
         Initial tumour size (homogeneous population)
+    init_diversity : bool
+        Initial diversity of population
+        (homogeneous or heterogeneous)
+    sub_file : string
+        Name of file containing list of
+        subpopulations for an initially
+        heterogeneous population.
 
     TREATMENT PARAMETERS
     ====================
@@ -166,17 +173,14 @@ def parse_cmd_line_args():
 
     SAVING/LOADING
     ==============
-    init_diversity : bool
-        Initial diversity of population
-        (homogeneous or heterogeneous)
-    sub_file : string
-        Name of file containing list of
-        subpopulations for an initially
-        heterogeneous population.
     save_snapshot : bool
         Save a snapshot of the simulation
         population just before treatment
         is introduced.
+    load_snapshot SNAPSHOT_ARCHIVE : string
+        Load a population from a stored snapshot.
+        SNAPSHOT_ARCHIVE specifies the filepath of the
+        snapshot archive.
 
     SCALING
     =======
@@ -201,6 +205,20 @@ def parse_cmd_line_args():
     An argparse.Namespace() containing the
     supplied values of the above parameters.
     """
+
+    # define a custom argparse action to enable cmd line options like
+    #     --load_snapshot SNAPSHOT_ARCHIVE
+    # rather than requiring the messier
+    #     --load_snapshot --snapshot_archive SNAPSHOT_ARCHIVE
+    # This code is based on the accepted answer at
+    # http://stackoverflow.com/questions/8632354
+    def store_flag_and_var(varname):
+        class customAction(argparse.Action):
+            def __call__(self, parser, opt, value, option_string=None):
+                setattr(opt, self.dest, True)
+                setattr(opt, varname, value)
+        return customAction
+
     parser = argparse.ArgumentParser()
 
     identifiers = parser.add_argument_group("identifiers")
@@ -221,6 +239,9 @@ def parse_cmd_line_args():
     tumour_params.add_argument('--pro', type=float, default=0.04)
     tumour_params.add_argument('--die', type=float, default=0.03)
     tumour_params.add_argument('--mut', type=float, default=0.001)
+    tumour_params.add_argument('--init_size', type=int, default=25)
+    tumour_params.add_argument('--init_diversity', type=int, default=0)
+    tumour_params.add_argument('--sub_file', default='')
 
     treatmt_params = parser.add_argument_group("treatment params")
     treatmt_params.add_argument('--treatment_type', default='single_dose')
@@ -244,11 +265,14 @@ def parse_cmd_line_args():
     probabilities.add_argument('--prob_inc_mut', type=float, default=0.0)
     probabilities.add_argument('--prob_dec_mut', type=float, default=0.0)
 
-    saving_loading = parser.add_argument_group("saving/loading")
-    saving_loading.add_argument('--init_size', type=int, default=25)
-    saving_loading.add_argument('--init_diversity', type=int, default=0)
-    saving_loading.add_argument('--sub_file', default='')
-    saving_loading.add_argument('--save_snapshot', action="store_true", default=False)
+    saving_loading = parser.add_argument_group("saving/loading",
+                                               "(mutually exclusive)")
+    mutex_saveload = saving_loading.add_mutually_exclusive_group()
+    mutex_saveload.add_argument('--save_snapshot',
+                                action="store_true", default=False)
+    mutex_saveload.add_argument('--load_snapshot',
+                                action=store_flag_and_var('snapshot_archive'),
+                                default=False, metavar="SNAPSHOT_ARCHIVE")
 
     scaling = parser.add_argument_group("scaling")
     scaling.add_argument('--scale', type=float, default=0.5)
