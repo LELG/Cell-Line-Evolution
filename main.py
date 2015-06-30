@@ -253,10 +253,10 @@ def parse_cmd_line_args():
     tumour_params.add_argument('--die', type=float, default=0.03)
     tumour_params.add_argument('--mut', type=float, default=0.001)
     mutex_tumour = tumour_params.add_mutually_exclusive_group(required=True)
-    mutex_tumour.add_argument('--init_size', type=int, default=25)
+    mutex_tumour.add_argument('--init_size', type=int)
     mutex_tumour.add_argument('--init_diversity',
                               action=store_flag_and_vars(['sub_file']),
-                              default=False, metavar='SUB_FILE')
+                              metavar='SUB_FILE')
 
     treatmt_params = parser.add_argument_group("treatment params")
     treatmt_params.add_argument('--treatment_type', default='single_dose')
