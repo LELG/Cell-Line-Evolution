@@ -60,6 +60,7 @@ while [ $run_number -le $runs_per_param_set ]; do
   sim_params="$sim_params --run_dir $run_dir"
   sim_params="$sim_params --max_cycles $max_cycles --max_size_lim $max_size_lim"
   sim_params="$sim_params --pro $proliferation_rate --die $death_rate --mut $mutation_rate"
+  sim_params="$sim_params $init_size $init_diversity"
   sim_params="$sim_params --treatment_type $treatment_type"
   sim_params="$sim_params --decay_type $decay_type --decay_rate $decay_rate"
   sim_params="$sim_params --treatment_freq $treatment_freq"
@@ -68,8 +69,7 @@ while [ $run_number -le $runs_per_param_set ]; do
   sim_params="$sim_params $resistance_flag $num_resist_mutns $resist_strength"
   sim_params="$sim_params --prob_mut_pos $prob_mut_pos --prob_mut_neg $prob_mut_neg"
   sim_params="$sim_params --prob_inc_mut $prob_inc_mut --prob_dec_mut $prob_dec_mut"
-  sim_params="$sim_params --init_size $init_size"
-  sim_params="$sim_params --init_diversity $init_diversity $sub_file $save_snapshot"
+  sim_params="$sim_params $snapshot"
   sim_params="$sim_params --scale $scale --mscale $mscale"
   sim_params="$sim_params $r_flag $m_flag $z_flag $np_flag"
 
