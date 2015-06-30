@@ -76,8 +76,13 @@ class Simulator(object):
         self.run_dir = opt.run_dir
 
         if opt.load_snapshot:
-            # we're loading our population from a file
+            print("Loading population ...")
+            start_load = time.time()
+
             curr_cycle, popn_opt, popn = snapshot.load_population_from_file(opt.snapshot_archive)
+
+            end_load = time.time()
+            print("Load completed in {:.3f} sec".format(end_load - start_load))
 
             self.popn = popn
 
@@ -89,6 +94,7 @@ class Simulator(object):
                                    'init_size', 'prolif_lim',
                                    'prob_mut_pos', 'prob_mut_neg',
                                    'prob_inc_mut', 'prob_dec_mut',
+                                   'select_time',
                                    'scale', 'mscale', 'prune_clones']
             for param in params_to_overwrite:
                 stored_val = getattr(popn_opt, param)
@@ -267,21 +273,27 @@ class Simulator(object):
         """Make plots and record data at time of treatment introduction."""
         if not self.opt.no_plots:
             plotdata.print_results(self.popn, "mid", t_curr)
+
         tree_to_xml.tree_parse(self.popn.subpop, self.popn.tumoursize,
                                t_curr, self.opt.run_dir, "mid0")
+
         # TODO deprecate this drop?
         if self.opt.init_diversity:
             dropdata.drop(self.popn.subpop, self.opt.test_group_dir, "mid0")
+
         self.write_clone_summary(self.popn, label="mid")
+
         if self.opt.save_snapshot:
             # save snapshot; don't bother generating resistance
             snapshot.save_population_to_file(t_curr, self.popn, self.run_dir)
             return
+
         if self.opt.resistance:
             print("Generating resistance mutations ...")
             mutation.generate_resistance(self.popn.all_mutations,
                                          self.popn.tumoursize,
                                          self.opt.num_resist_mutns)
+
         self.write_clone_summary(self.popn, label="resist")
 
     def print_info(self):

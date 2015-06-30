@@ -154,6 +154,7 @@ class Population(object):
         """Set and note certain variables at time of crash."""
         self.select_pressure = treatmt.curr_select_pressure
         self.mutagenic_pressure = treatmt.curr_mut_pressure
+        self.opt.select_time = treatmt.select_time
         self.selective_pressure_applied = True
         self.subpop.set_precrash_size()
         self.mid_proliferation = self.subpop.get_clone_attrs_as_list(["prolif_rate", "size"])
