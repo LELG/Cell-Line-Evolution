@@ -173,6 +173,8 @@ def parse_cmd_line_args():
 
     SAVING/LOADING
     ==============
+    * NOTE: the following options are mutually exclusive
+
     save_snapshot : bool
         Save a snapshot of the simulation
         population just before treatment
@@ -212,11 +214,22 @@ def parse_cmd_line_args():
     #     --load_snapshot --snapshot_archive SNAPSHOT_ARCHIVE
     # This code is based on the accepted answer at
     # http://stackoverflow.com/questions/8632354
-    def store_flag_and_var(varname):
+    def store_flag_and_vars(varnames):
+        """varnames is a list of variables to set based on cmd line input"""
         class customAction(argparse.Action):
-            def __call__(self, parser, opt, value, option_string=None):
+            def __call__(self, parser, opt, values, option_string=None):
                 setattr(opt, self.dest, True)
-                setattr(opt, varname, value)
+                if isinstance(values, list):
+                    if len(values) != len(varnames):
+                        errmsg = "expected {} varnames, got {}"
+                        raise ValueError(errmsg.format(len(values), len(varnames)))
+                    for i in range(len(values)):
+                        setattr(opt, varnames[i], values[i])
+                else:
+                    if len(varnames) != 1:
+                        errmsg = "expected one varname, got {}"
+                        raise ValueError(errmsg.format(len(varnames)))
+                    setattr(opt, varnames[0], values)
         return customAction
 
     parser = argparse.ArgumentParser()
@@ -242,7 +255,7 @@ def parse_cmd_line_args():
     mutex_tumour = tumour_params.add_mutually_exclusive_group(required=True)
     mutex_tumour.add_argument('--init_size', type=int, default=25)
     mutex_tumour.add_argument('--init_diversity',
-                              action=store_flag_and_var('sub_file'),
+                              action=store_flag_and_vars(['sub_file']),
                               default=False, metavar='SUB_FILE')
 
     treatmt_params = parser.add_argument_group("treatment params")
@@ -273,7 +286,7 @@ def parse_cmd_line_args():
     mutex_saveload.add_argument('--save_snapshot',
                                 action="store_true", default=False)
     mutex_saveload.add_argument('--load_snapshot',
-                                action=store_flag_and_var('snapshot_archive'),
+                                action=store_flag_and_vars(['snapshot_archive']),
                                 default=False, metavar="SNAPSHOT_ARCHIVE")
 
     scaling = parser.add_argument_group("scaling")
