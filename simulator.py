@@ -127,7 +127,7 @@ class Simulator(object):
 
         # finally, create Treatment object
         if opt.treatment_type == 'single_dose':
-            self.treatmt = treatment.Treatment(self.opt, self)
+            self.treatmt = treatment.SingleDoseTreatment(self.opt, self)
         elif opt.treatment_type == 'metronomic':
             self.treatmt = treatment.MetronomicTreatment(self.opt, self)
         elif opt.treatment_type == 'adaptive':

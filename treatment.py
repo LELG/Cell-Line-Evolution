@@ -19,12 +19,9 @@ Notes
 Change log
 ----------
 """
-import tree_to_xml
-import plotdata
-import dropdata
 import math
-import gzip
 from functools import partial
+import abc
 
 class Treatment(object):
     """
@@ -35,6 +32,13 @@ class Treatment(object):
     selective pressure present in the tumour
     at any given time step; and determines if
     and when to repeat a dose.
+
+    The treatment class is an abstract base class;
+    as such, it cannot be instantiated. This is because
+    all concrete treatment classes have distinct
+    *re-introduction* logic.
+
+    See below for concrete subclasses of Treatment.
 
     Attributes
     ----------
@@ -58,6 +62,8 @@ class Treatment(object):
     decay_func : function to determine how selective pressure
         decays over time
     """
+    __metaclass__ = abc.ABCMeta
+
     def __init__(self, opt, simulator):
         """Create a new Treatment object"""
         # adopt relevant command line parameters
@@ -136,13 +142,26 @@ class Treatment(object):
         """Determine if any pressure remains in the tumour."""
         return self.curr_select_pressure > 0.0
 
+    @abc.abstractmethod
     def reintroduction_conditions_met(self, popn, t_curr):
         """Determine whether to reintroduce treatment."""
-        pass
+        return
 
+    @abc.abstractmethod
     def reintroduce(self, popn, t_curr):
         """Reintroduce treatment."""
-        pass
+        return
+
+
+class SingleDoseTreatment(Treatment):
+    """
+    Model a single dose of treatment.
+    """
+    def reintroduction_conditions_met(self, popn, t_curr):
+        return
+
+    def reintroduce(self, popn, t_curr):
+        return
 
 
 class MetronomicTreatment(Treatment):
