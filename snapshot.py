@@ -177,41 +177,43 @@ def save_clones_to_file(root_clone, clone_fname):
                 queue.append(child)
 
 
-def load_population_from_file(archive_path):
+def load_population_from_file(archive_path, extract_path="."):
     """Load a population from a snapshot.
 
     Load a population from a snapshot,
     which should be stored in a .tar archive.
+    
+    archive_path - path to archive
+    extract_path - path to directory where files will be extracted
     """
     popn_archive = tarfile.open(archive_path)
 
+    clone_fname = mut_fname = param_fname = anlt_fname = None
+
     # get filenames for extraction
     # NB this may break if filenames in save_population_to_file() are changed
-    clone_fname = mut_fname = param_fname = None
+    members_to_extract = []
+    for member in popn_archive.getmembers():
+        if member.name.startswith('clones_'):
+            clone_fname = "{}/{}".format(extract_path, member.name)
+            members_to_extract.append(member)
+        elif member.name.startswith('mutations_'):
+            mut_fname = "{}/{}".format(extract_path, member.name)
+            members_to_extract.append(member)
+        elif member.name.startswith('params_'):
+            param_fname = "{}/{}".format(extract_path, member.name)
+            members_to_extract.append(member)
+        elif member.name.startswith('anlt_'):
+            anlt_fname = "{}/{}".format(extract_path, member.name)
+            members_to_extract.append(member)
 
-    for filename in popn_archive.getnames():
-        if filename.startswith('clones_'):
-            clone_fname = filename
-        elif filename.startswith('mutations_'):
-            mut_fname = filename
-        elif filename.startswith('params_'):
-            param_fname = filename
-        elif filename.startswith('anlt_'):
-            anlt_fname = filename
-        else:
-            raise Exception("population archive contains invalid files")
+    fnames = [clone_fname, mut_fname, param_fname, anlt_fname]
+    if not all(fnames):
+        raise Exception("population archive is missing required files")
 
-    try:
-        # extract snapshot files to current working directory
-        popn_archive.extract(clone_fname)
-        popn_archive.extract(mut_fname)
-        popn_archive.extract(param_fname)
-        popn_archive.extract(anlt_fname)
-    except:
-        # one of our snapshot files hasn't been found
-        raise
-    finally:
-        popn_archive.close()
+    # extract snapshot files
+    popn_archive.extractall(path=extract_path, members=members_to_extract)
+    popn_archive.close()
 
     # load parameters, mutations and clones
     t_curr, opt, popn_params = load_parameters_from_file(param_fname)
@@ -221,11 +223,12 @@ def load_population_from_file(archive_path):
 
     # construct population from parameter set,
     # clone tree and mutation dictionary
-    new_popn = Population.init_from_file(opt, analytics, popn_params, root_clone, all_muts)
+    new_popn = Population.init_from_file(opt, analytics, popn_params,
+                                         root_clone, all_muts)
 
     # now delete the individual snapshot files,
     # as we will always load popn from an archive
-    for fname in [anlt_fname, clone_fname, mut_fname, param_fname]:
+    for fname in fnames:
         delete_local_file(fname)
 
     return t_curr, opt, new_popn

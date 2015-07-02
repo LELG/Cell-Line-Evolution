@@ -79,7 +79,8 @@ class Simulator(object):
             print("Loading population ...")
             start_load = time.time()
 
-            curr_cycle, popn_opt, popn = snapshot.load_population_from_file(opt.snapshot_archive)
+            curr_cycle, popn_opt, popn = snapshot.load_population_from_file(archive_path=opt.snapshot_archive,
+                                                                            extract_path=self.run_dir)
 
             end_load = time.time()
             print("Load completed in {:.3f} sec".format(end_load - start_load))
