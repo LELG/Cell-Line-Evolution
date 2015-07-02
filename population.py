@@ -93,6 +93,15 @@ class Population(object):
 
         return new_popn
 
+
+    def __repr__(self):
+        repr_string = "{}(sim id: {}/{}/{}, tumoursize: {}, clonecount: {})"
+        return repr_string.format(self.__class__.__name__,
+                                  self.opt.test_group, self.opt.param_set,
+                                  self.opt.run_number, self.tumoursize,
+                                  self.clonecount)
+
+
     def update(self, treatmt, t_curr):
         """
         Update tumour and clones for a single time step.

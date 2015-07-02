@@ -91,6 +91,14 @@ class Treatment(object):
         self.is_introduced = False
 
 
+    def __repr__(self):
+        repr_string = "{}(init pressure {}, select time {}, decay type {})"
+        return repr_string.format(self.__class__.__name__,
+                                  self.init_select_pressure,
+                                  self.select_time,
+                                  self.decay_type)
+
+
     def introduce(self, popn, t_curr):
         """
         Introduce treatment into simulation.

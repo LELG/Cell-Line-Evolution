@@ -95,6 +95,15 @@ class Mutation(object):
 
         return new_mut
 
+
+    def __repr__(self):
+        repr_string = "{}(type: {}, prolif_rate_effect: {:.4f}, timestamp: {})"
+        return repr_string.format(self.__class__.__name__,
+                                  self.mut_type,
+                                  self.prolif_rate_effect,
+                                  self.s_time)
+
+
     def switch_mutn_type(self, all_muts, new_mut_type):
         """Change the mutation type of this mutation."""
         try:

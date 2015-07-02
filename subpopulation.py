@@ -176,12 +176,26 @@ class Subpopulation(object):
             new_subpop.size = opt.init_size
             self.nodes.append(new_subpop)
 
+
+    def __repr__(self):
+        repr_string = "{}(id: {}, size: {}, prolif rate: {:.4f}, mut rate: {:.4f}, num children: {})"
+        return repr_string.format(self.__class__.__name__,
+                                  self.clone_id, self.size,
+                                  self.prolif_rate, self.mut_rate,
+                                  len(self.nodes))
+
+
     def info(self):
         """Print info about this clone and all its children"""
-        print("Clone Info")
-        print(self.__dict__)
-        print("No. of nodes: ", len(self.nodes))
-        print(self.prolif_rate, self.mut_rate)
+        print(self)
+        curated_attrs = {}
+        attrs = ['branch_length', 'death_rate', 'parent_id', 'is_resistant',
+                 'mutations', 's_time', 'd_time', 'resist_strength',
+                 'col', 'depth', 'precrash_size', 'num_neutral_mutns']
+        for attr in attrs:
+            curated_attrs[attr] = self.__dict__[attr]
+        print("other info:", curated_attrs)
+        print("------")
         for node in self.nodes:
             node.info()
 
